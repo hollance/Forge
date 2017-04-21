@@ -111,6 +111,8 @@ func == (lhs: DataShape, rhs: DataShape) -> Bool {
       && lhs.channels == rhs.channels
 }
 
+public typealias ParameterCallback = (String, Int, ParameterType) -> ParameterData?
+
 /**
   The top-level object for the neural network.
   
@@ -132,8 +134,16 @@ public class Model {
 
   /**
     Creates all the MPSCNN objects for this graph.
+    
+    - Parameters:
+      - inflightBuffers: How many tasks the CPU and GPU can do in parallel.
+      - parameterCallback: Used for loading the parameters of the layers.
+        The closure takes three arguments: name, expected size in bytes, and
+        whether to load the weights or bias values for the layer.
   */
-  public func compile(device: MTLDevice, inflightBuffers: Int) -> Bool {
+  public func compile(device: MTLDevice,
+                      inflightBuffers: Int,
+                      parameterCallback: ParameterCallback) -> Bool {
     if compiled {
       print("Compile error: graph has already been compiled")
       return false
@@ -156,7 +166,7 @@ public class Model {
       }
 
       if !node.inputShape.isFullySpecified && !node.allowsIncompleteShape {
-        print("Compile error: input shape \(node.inputShape) for node '\(node)' has unknown dimensions")
+        print("Compile error: input shape \(node.inputShape) for layer '\(node)' has unknown dimensions")
         return false
       }
 
@@ -168,7 +178,27 @@ public class Model {
           imageDescriptors[shape] = shape.createImageDescriptor()
         }
 
-        if let compute = node.createCompute(device: device) {
+        // FUTURE: Sort the layers by largest weights to smallest, in order to
+        // load the largest layers first. This makes it possible to load very
+        // big models on devices with limited memory capacity, since the params
+        // need to be copied into MPSCNN and therefore are in memory twice for
+        // a short while.
+
+        var weightParameters: ParameterData?
+        if node.weightCount > 0 {
+          let sizeWeights = node.weightCount * MemoryLayout<Float>.stride
+          weightParameters = parameterCallback(node.name, sizeWeights, .weights)
+        }
+
+        var biasParameters: ParameterData?
+        if node.biasCount > 0 {
+          let sizeBiases = node.biasCount * MemoryLayout<Float>.stride
+          biasParameters = parameterCallback(node.name, sizeBiases, .biases)
+        }
+
+        if let compute = node.createCompute(device: device,
+                                            weights: weightParameters,
+                                            biases: biasParameters) {
           node.compute = compute
 
           // Does the first layer take a MTLTexture or an MPSImage?
@@ -177,7 +207,7 @@ public class Model {
             firstComputeLayer = false
           }
         } else {
-          print("Compile error: could not create compute object for node '\(node)'")
+          print("Compile error: could not create compute object for layer '\(node)'")
           return false
         }
       }
@@ -358,7 +388,7 @@ public class Model {
   When you create a model, you're actually building a graph of these Layer
   objects.
 */
-public class Layer: CustomDebugStringConvertible {
+open class Layer: CustomDebugStringConvertible {
   var name: String
   var next: Layer?
 
@@ -393,7 +423,7 @@ public class Layer: CustomDebugStringConvertible {
     fatalError("Subclass must implement this function")
   }
 
-  func createCompute(device: MTLDevice) -> Compute? {
+  func createCompute(device: MTLDevice, weights: ParameterData?, biases: ParameterData?) -> Compute? {
     fatalError("Subclass must implement this function")
   }
 
@@ -498,16 +528,12 @@ public class Convolution: Layer {
     return outputShape.channels
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
-    let sizeWeights = weightCount * MemoryLayout<Float>.stride
-    let sizeBias = biasCount * MemoryLayout<Float>.stride
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
 
-    guard let weightsPath = Bundle.main.path(forResource: name + "_W", ofType: "bin"),
-          let weightsData = Parameters(path: weightsPath, fileSize: sizeWeights),
-          let biasPath = Bundle.main.path(forResource: name + "_b", ofType: "bin"),
-          let biasData = Parameters(path: biasPath, fileSize: sizeBias) else {
-      print("Error loading network parameters '\(name)'")
-      return nil
+    guard let weights = weights, let biases = biases else {
+      fatalError("Compile error: missing parameters for layer '\(name)'")
     }
 
     let desc = MPSCNNConvolutionDescriptor(kernelWidth: kernel.0,
@@ -520,8 +546,8 @@ public class Convolution: Layer {
 
     let layer = MPSCNNConvolution(device: device,
                                   convolutionDescriptor: desc,
-                                  kernelWeights: weightsData.pointer,
-                                  biasTerms: biasData.pointer,
+                                  kernelWeights: weights.pointer,
+                                  biasTerms: biases.pointer,
                                   flags: .none)
     layer.edgeMode = .zero
 
@@ -565,7 +591,9 @@ public class MaxPooling: Pooling {
     return "MaxPool"
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
     // FUTURE: Since pooling layers don't have parameters, it makes sense to
     // reuse them where possible. Put them into a dictionary using the kernel
     // size and stride as key.
@@ -588,7 +616,9 @@ public class AveragePooling: Pooling {
     return "AvgPool"
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
     // FUTURE: Also recycle these. See note in max-pool layer.
     let layer = MPSCNNPoolingAverage(device: device,
                                      kernelWidth: kernel.0,
@@ -637,20 +667,12 @@ public class Dense: Layer {
     return neurons
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
-    let sizeWeights = weightCount * MemoryLayout<Float>.stride
-    let sizeBias = biasCount * MemoryLayout<Float>.stride
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
 
-    // FUTURE: create a callback that gets invoked on compile, that gives
-    // the client the chance to load the parameters in whatever way they
-    // want. During compile(), we'll sort the layers so that the largest is
-    // loaded first.
-    guard let weightsPath = Bundle.main.path(forResource: name + "_W", ofType: "bin"),
-          let weightsData = Parameters(path: weightsPath, fileSize: sizeWeights),
-          let biasPath = Bundle.main.path(forResource: name + "_b", ofType: "bin"),
-          let biasData = Parameters(path: biasPath, fileSize: sizeBias) else {
-      print("Error loading network parameters '\(name)'")
-      return nil
+    guard let weights = weights, let biases = biases else {
+      fatalError("Compile error: missing parameters for layer '\(name)'")
     }
 
     // A fully-connected layer is a special version of a convolutional layer
@@ -664,8 +686,8 @@ public class Dense: Layer {
 
     let layer = MPSCNNFullyConnected(device: device,
                                      convolutionDescriptor: desc,
-                                     kernelWeights: weightsData.pointer,
-                                     biasTerms: biasData.pointer,
+                                     kernelWeights: weights.pointer,
+                                     biasTerms: biases.pointer,
                                      flags: .none)
     return Compute.mpscnn(layer)
   }
@@ -687,7 +709,9 @@ public class Softmax: Layer {
     return inputShape
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
     return Compute.mpscnn(MPSCNNSoftMax(device: device))
   }
 }
@@ -711,7 +735,9 @@ public class Activation: Layer {
     return inputShape
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
     return Compute.mpscnn(filter)
   }
 }
@@ -739,7 +765,9 @@ public class Resize: Layer {
     return DataShape(width: width, height: height, channels: 3)
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
     return Compute.mps(MPSImageLanczosScale(device: device))
   }
 }
@@ -794,7 +822,78 @@ public class Custom: Layer {
                      channels: channels ?? inputShape.channels)
   }
 
-  override func createCompute(device: MTLDevice) -> Compute? {
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) -> Compute? {
     return Compute.custom(custom)
   }
 }
+
+public enum ParameterType {
+  case weights
+  case biases
+}
+
+public protocol ParameterData {
+  var pointer: UnsafeMutablePointer<Float> { get }
+}
+
+public class ParameterLoaderBundle: ParameterData {
+  private var fileSize: Int
+  private var fd: CInt!
+  private var hdr: UnsafeMutableRawPointer!
+  private(set) public var pointer: UnsafeMutablePointer<Float>
+
+  /**
+    Load layer parameters from a file in the app bundle.
+    
+    - Parameters:
+      - name: Name of the layer.
+      - fileSize: Expected number of bytes to load.
+      - prefix: Added to the front of the filename, e.g. `"weights_"`
+      - suffix: Added to the back of the filename, e.g. `"_W"`
+      - ext: The file extension, e.g. `"bin"`
+  */
+  public init?(name: String, fileSize: Int, prefix: String = "", suffix: String = "", ext: String) {
+    self.fileSize = fileSize
+
+    let resourceName = prefix + name + suffix
+    guard let path = Bundle.main.path(forResource: resourceName, ofType: ext) else {
+      print("Error: resource \"\(resourceName)\" not found")
+      return nil
+    }
+
+    fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+    if fd == -1 {
+      print("Error: failed to open \"\(path)\", error = \(errno)")
+      return nil
+    }
+
+    hdr = mmap(nil, fileSize, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0)
+    if hdr == nil {
+      print("Error: mmap failed, errno = \(errno)")
+      return nil
+    }
+
+    let numBytes = fileSize / MemoryLayout<Float>.stride
+    pointer = hdr.bindMemory(to: Float.self, capacity: numBytes)
+    if pointer == UnsafeMutablePointer<Float>(bitPattern: -1) {
+      print("Error: mmap failed, errno = \(errno)")
+      return nil
+    }
+  }
+
+  deinit {
+    if let hdr = hdr {
+      let result = munmap(hdr, Int(fileSize))
+      assert(result == 0, "Error: munmap failed, errno = \(errno)")
+    }
+    if let fd = fd {
+      close(fd)
+    }
+  }
+}
+
+// FUTURE: add other parameter loaders, such as:
+//   - ParameterLoaderAssetCatalog: load using NSDataAsset
+//   - ParameterLoaderRandom: fill up with random values
