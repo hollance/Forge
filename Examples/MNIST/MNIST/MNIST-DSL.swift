@@ -1,0 +1,83 @@
+/*
+  Copyright (c) 2016-2017 M.I. Hollemans
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+*/
+
+import Foundation
+import Metal
+import MetalKit
+import MetalPerformanceShaders
+import Forge
+
+/*
+  Implements the LeNet-5 MNIST neural network using the DSL. This code is
+  a lot shorter and easier to read!
+*/
+public class MNIST: NeuralNetwork {
+  let relu: MPSCNNNeuronReLU
+  let makeGrayscale: MakeGrayscale
+  let model: Model
+
+  required public init(device: MTLDevice, inflightBuffers: Int) {
+    relu = MPSCNNNeuronReLU(device: device, a: 0)
+    makeGrayscale = MakeGrayscale(device: device)
+
+    model = Model()
+            => Input()        // this is optional thanks to Resize
+            => Resize(width: 28, height: 28)
+            => Custom(makeGrayscale, channels: 1, name: "MakeGrayscale")
+            => Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
+            => MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
+            => Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
+            => MaxPooling(kernel: (2, 2), stride: (2, 2))
+            => Dense(neurons: 320, filter: relu, name: "fc1")
+            => Dense(neurons: 10, name: "fc2")
+            => Softmax()
+
+    model["MakeGrayscale"]!.temporaryImage = false
+
+    let success = model.compile(device: device, inflightBuffers: inflightBuffers)
+    if success {
+      print(model.summary())
+    }
+  }
+
+  public func encode(commandBuffer: MTLCommandBuffer, texture inputTexture: MTLTexture, inflightIndex: Int) {
+    model.encode(commandBuffer: commandBuffer, texture: inputTexture, inflightIndex: inflightIndex)
+  }
+
+  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult {
+    // Convert the MTLTexture from outputImage into something we can use
+    // from Swift and then find the class with the highest probability.
+    // Note: there are only 10 classes but the number of channels in the 
+    // output texture will always be a multiple of 4; in this case 12.
+    let probabilities = model.outputImage(inflightIndex: inflightIndex).toFloatArray()
+    assert(probabilities.count == 12)
+    let (maxIndex, maxValue) = probabilities.argmax()
+
+    var result = NeuralNetworkResult()
+    result.predictions.append((label: "\(maxIndex)", probability: maxValue))
+
+    // Enable this to see the output of the MakeGrayscale shader.
+    result.debugTexture = model.image(forLayer: "MakeGrayscale", inflightIndex: inflightIndex).texture
+    result.debugScale = 1/255
+    return result
+  }
+}
