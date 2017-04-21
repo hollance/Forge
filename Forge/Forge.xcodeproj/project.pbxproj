@@ -161,8 +161,8 @@
 			children = (
 				7BA396481EA8C58A00F4C4D6 /* ComputeHelpers.swift */,
 				7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */,
-				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
 				7B8236BA1EAA4F9F00127F0C /* SimpleKernel.swift */,
+				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
 			);
 			name = "Compute Kernels";
 			sourceTree = "<group>";

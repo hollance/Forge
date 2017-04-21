@@ -26,12 +26,12 @@ import MetalPerformanceShaders
 /**
   Simple wrapper around a compute shader.
 */
-public class SimpleKernel {
+open class SimpleKernel {
   let device: MTLDevice
   let pipeline: MTLComputePipelineState
   let name: String
 
-  init(device: MTLDevice, functionName: String, useForgeLibrary: Bool = false) {
+  public init(device: MTLDevice, functionName: String, useForgeLibrary: Bool = false) {
     self.device = device
     self.name = functionName
     if useForgeLibrary {

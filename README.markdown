@@ -32,7 +32,7 @@ model = Model()
 **Preprocessing kernels.** Often you need to preprocess data before it goes into the neural network. Forge comes with a few handy kernels for this:
 
 - SubtractMeanColor
-- RGB2Grayscale
+- RGB2Gray
 - RGB2BGR
 	
 **Custom compute kernels.** Many neural networks require custom compute kernels, so Forge provides helpers that make it easy to write and launch your own kernels.

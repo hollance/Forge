@@ -32,17 +32,17 @@ import Forge
 */
 public class MNIST: NeuralNetwork {
   let relu: MPSCNNNeuronReLU
-  let makeGrayscale: RGB2Gray
+  let makeGrayscale: Preprocessing
   let model: Model
 
   required public init(device: MTLDevice, inflightBuffers: Int) {
     relu = MPSCNNNeuronReLU(device: device, a: 0)
-    makeGrayscale = RGB2Gray(device: device)
+    makeGrayscale = Preprocessing(device: device)
 
     model = Model()
             => Input()        // this is optional thanks to Resize
             => Resize(width: 28, height: 28)
-            => Custom(makeGrayscale, channels: 1, name: "MakeGrayscale")
+            => Custom(makeGrayscale, channels: 1, name: "Preprocessing")
             => Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
             => MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
             => Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
@@ -51,7 +51,7 @@ public class MNIST: NeuralNetwork {
             => Dense(neurons: 10, name: "fc2")
             => Softmax()
 
-    model["MakeGrayscale"]!.temporaryImage = false
+    model["Preprocessing"]!.temporaryImage = false
 
     let success = model.compile(device: device, inflightBuffers: inflightBuffers)
     if success {
@@ -75,8 +75,8 @@ public class MNIST: NeuralNetwork {
     var result = NeuralNetworkResult()
     result.predictions.append((label: "\(maxIndex)", probability: maxValue))
 
-    // Enable this to see the output of the MakeGrayscale shader.
-    result.debugTexture = model.image(forLayer: "MakeGrayscale", inflightIndex: inflightIndex).texture
+    // Enable this to see the output of the preprocessing shader.
+    result.debugTexture = model.image(forLayer: "Preprocessing", inflightIndex: inflightIndex).texture
     result.debugScale = 1/255
     return result
   }

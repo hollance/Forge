@@ -43,7 +43,7 @@ public class MNIST: NeuralNetwork {
   var outputImage: [MPSImage] = []
 
   let lanczos: MPSImageLanczosScale
-  let makeGrayscale: RGB2Gray
+  let makeGrayscale: Preprocessing
   let relu: MPSCNNNeuronReLU
   let softmax: MPSCNNSoftMax
 
@@ -73,7 +73,7 @@ public class MNIST: NeuralNetwork {
     }
 
     lanczos = MPSImageLanczosScale(device: device)
-    makeGrayscale = RGB2Gray(device: device)
+    makeGrayscale = Preprocessing(device: device)
     relu = MPSCNNNeuronReLU(device: device, a: 0)
     softmax = MPSCNNSoftMax(device: device)
 
@@ -84,7 +84,7 @@ public class MNIST: NeuralNetwork {
     fc1 = dense(device: device, shape: (7, 7), inChannels: 50, fanOut: 320, filter: relu, name: "fc1")
     fc2 = dense(device: device, fanIn: 320, fanOut: 10, filter: nil, name: "fc2")
 
-    // I want to show the output of the MakeGrayscale shader on the screen for
+    // I want to show the output of the preprocessing shader on the screen for
     // debugging, so store its results in a real MSPImage, not a temporary one.
     grayImg = MPSImage(device: device, imageDescriptor: grayImgDesc)
   }
@@ -143,7 +143,7 @@ public class MNIST: NeuralNetwork {
     var result = NeuralNetworkResult()
     result.predictions.append((label: "\(maxIndex)", probability: maxValue))
 
-    // Enable this to see the output of the MakeGrayscale shader.
+    // Enable this to see the output of the preprocessing shader.
     result.debugTexture = grayImg.texture
     result.debugScale = 1/255
     return result
