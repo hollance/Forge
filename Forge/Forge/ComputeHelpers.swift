@@ -24,50 +24,62 @@ import Foundation
 import Metal
 import MetalPerformanceShaders
 
+var defaultMetalLibrary: MTLLibrary!
 var forgeMetalLibrary: MTLLibrary!
+
+func loadDefaultMetalLibrary(device: MTLDevice) -> MTLLibrary {
+  if defaultMetalLibrary == nil {
+    defaultMetalLibrary = device.newDefaultLibrary()
+    if defaultMetalLibrary == nil {
+      fatalError("Could not load default Metal library")
+    }
+  }
+  return defaultMetalLibrary
+}
 
 func loadForgeMetalLibrary(device: MTLDevice) -> MTLLibrary {
   if forgeMetalLibrary == nil {
-    let bundle = Bundle(for: Runner.self)
-    if let path = bundle.path(forResource: "default", ofType: "metallib") {
-      do {
-        forgeMetalLibrary = try device.makeLibrary(filepath: path)
-      } catch {
-        fatalError("Could not load Forge Metal library")
-      }
-    } else {
+    guard let path = Bundle(for: Runner.self).path(forResource: "default",
+                                                   ofType: "metallib") else {
       fatalError("Could not find Forge Metal library")
+    }
+    do {
+      forgeMetalLibrary = try device.makeLibrary(filepath: path)
+    } catch {
+      fatalError("Could not load Forge Metal library")
     }
   }
   return forgeMetalLibrary
 }
 
 /**
-  Creates a pipeline for a compute kernel using Forge's Metal library.
+  Creates a pipeline for a compute kernel.
 */
-func makeForgeFunction(device: MTLDevice, name: String) -> MTLComputePipelineState {
-  return makeFunction(library: loadForgeMetalLibrary(device: device), name: name)
-}
+public func makeFunction(device: MTLDevice, name: String,
+                         constantValues: MTLFunctionConstantValues? = nil,
+                         useForgeLibrary: Bool = false) -> MTLComputePipelineState {
 
-/**
-  Creates a pipeline for a compute kernel using the default Metal library.
-*/
-public func makeFunction(device: MTLDevice, name: String) -> MTLComputePipelineState {
-  guard let library = device.newDefaultLibrary() else {
-    fatalError("Could not load default Metal library")
-  }
-  return makeFunction(library: library, name: name)
+  let library = useForgeLibrary ? loadForgeMetalLibrary(device: device)
+                                : loadDefaultMetalLibrary(device: device)
+
+  return makeFunction(library: library, name: name, constantValues: constantValues)
 }
 
 /**
   Helper function that creates a pipeline for a compute kernel.
 */
-public func makeFunction(library: MTLLibrary, name: String) -> MTLComputePipelineState {
+public func makeFunction(library: MTLLibrary, name: String,
+                         constantValues: MTLFunctionConstantValues? = nil) -> MTLComputePipelineState {
   do {
-    guard let kernelFunction = library.makeFunction(name: name) else {
-      fatalError("Could not load compute function '\(name)'")
+    if let constantValues = constantValues {
+      let kernelFunction = try library.makeFunction(name: name, constantValues: constantValues)
+      return try library.device.makeComputePipelineState(function: kernelFunction)
+    } else {
+      guard let kernelFunction = library.makeFunction(name: name) else {
+        fatalError("Could not load compute function '\(name)'")
+      }
+      return try library.device.makeComputePipelineState(function: kernelFunction)
     }
-    return try library.device.makeComputePipelineState(function: kernelFunction)
   } catch {
     fatalError("Could not create compute pipeline for function '\(name)'")
   }

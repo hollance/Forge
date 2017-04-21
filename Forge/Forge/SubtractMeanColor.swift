@@ -24,29 +24,45 @@ import Metal
 import MetalPerformanceShaders
 
 /**
-  Simple wrapper around a compute shader.
+  Subtracts the mean red, green, blue colors from each input pixel.
+
+  For each pixel this first multiplies all channels by `scale`, then subtracts
+  `red`, `green`, and `blue` from the RGB channels; alpha is set to 0.
 */
-open class SimpleKernel {
+public class SubtractMeanColor {
   let device: MTLDevice
   let pipeline: MTLComputePipelineState
-  let name: String
 
-  public init(device: MTLDevice, functionName: String, useForgeLibrary: Bool = false) {
+  /**
+    Creates a new SubtractMeanColor kernel for the specified colors.
+
+    - Parameters:
+      - scale: Used to scale up the pixels, which are typically in the range
+        [0, 1] at this point. After scaling and subtracting the mean color,
+        the pixels in the destination image will be in the range [-128, 128].
+  */
+  public init(device: MTLDevice, red: Float = 123.68, green: Float = 116.779,
+              blue: Float = 103.939, scale: Float = 255) {
     self.device = device
-    self.name = functionName
-    pipeline = makeFunction(device: device, name: functionName, useForgeLibrary: useForgeLibrary)
+
+    var float32 = [red, green, blue, 0, scale]
+    var float16 = float32to16(&float32, count: float32.count)
+
+    let values = MTLFunctionConstantValues()
+    values.setConstantValue(&float16, type: .half4, at: 0)
+    values.setConstantValue(&float16 + 4, type: .half, at: 1)
+
+    pipeline = makeFunction(device: device, name: "subtractMeanColor", constantValues: values, useForgeLibrary: true)
   }
 
   public func encode(commandBuffer: MTLCommandBuffer, sourceImage: MPSImage, destinationImage: MPSImage) {
     let encoder = commandBuffer.makeComputeCommandEncoder()
-    encoder.pushDebugGroup(name)
     encoder.setComputePipelineState(pipeline)
     encoder.setTexture(sourceImage.texture, at: 0)
     encoder.setTexture(destinationImage.texture, at: 1)
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
-    encoder.popDebugGroup()
     encoder.endEncoding()
   }
 }
 
-extension SimpleKernel: CustomKernel { }
+extension SubtractMeanColor: CustomKernel { }

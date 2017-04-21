@@ -23,10 +23,11 @@
 import Metal
 
 /**
-  Converts a 3 or 4 channel input image into a 1 channel image.
+  Converts a 3-channel RGB input image to BGR. This is needed for networks
+  trained on Caffe.
 */
-public class RGB2Gray: SimpleKernel {
+public class RGB2BGR: SimpleKernel {
   public init(device: MTLDevice) {
-    super.init(device: device, functionName: "rgb2Gray", useForgeLibrary: true)
+    super.init(device: device, functionName: "rgb2bgr", useForgeLibrary: true)
   }
 }
