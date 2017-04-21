@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B8236B81EAA4F4700127F0C /* RGB2Gray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */; };
+		7B8236B91EAA4F4700127F0C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236B71EAA4F4700127F0C /* Shaders.metal */; };
+		7B8236BB1EAA4F9F00127F0C /* SimpleKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236BA1EAA4F9F00127F0C /* SimpleKernel.swift */; };
 		7BA395C81EA8C24100F4C4D6 /* Forge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA395BE1EA8C24100F4C4D6 /* Forge.framework */; };
 		7BA395CD1EA8C24100F4C4D6 /* ArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA395CC1EA8C24100F4C4D6 /* ArrayTests.swift */; };
 		7BA395CF1EA8C24100F4C4D6 /* Forge.h in Headers */ = {isa = PBXBuildFile; fileRef = 7BA395C11EA8C24100F4C4D6 /* Forge.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -40,6 +43,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RGB2Gray.swift; sourceTree = "<group>"; };
+		7B8236B71EAA4F4700127F0C /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		7B8236BA1EAA4F9F00127F0C /* SimpleKernel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleKernel.swift; sourceTree = "<group>"; };
 		7BA395BE1EA8C24100F4C4D6 /* Forge.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Forge.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BA395C11EA8C24100F4C4D6 /* Forge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Forge.h; sourceTree = "<group>"; };
 		7BA395C21EA8C24100F4C4D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -154,6 +160,9 @@
 			isa = PBXGroup;
 			children = (
 				7BA396481EA8C58A00F4C4D6 /* ComputeHelpers.swift */,
+				7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */,
+				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
+				7B8236BA1EAA4F9F00127F0C /* SimpleKernel.swift */,
 			);
 			name = "Compute Kernels";
 			sourceTree = "<group>";
@@ -291,6 +300,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B8236B91EAA4F4700127F0C /* Shaders.metal in Sources */,
 				7BA396581EA8C58A00F4C4D6 /* MTLTexture+Array.swift in Sources */,
 				7BA3966D1EA94D8900F4C4D6 /* MTLBuffer+Array.swift in Sources */,
 				7BA396551EA8C58A00F4C4D6 /* Float16.swift in Sources */,
@@ -302,10 +312,12 @@
 				7BA396841EAA0B1F00F4C4D6 /* Random.swift in Sources */,
 				7BA3966F1EAA06BC00F4C4D6 /* Debugging.swift in Sources */,
 				7BA396561EA8C58A00F4C4D6 /* LayerHelpers.swift in Sources */,
+				7B8236BB1EAA4F9F00127F0C /* SimpleKernel.swift in Sources */,
 				7BA396541EA8C58A00F4C4D6 /* ComputeHelpers.swift in Sources */,
 				7BA396571EA8C58A00F4C4D6 /* MPSImage+Floats.swift in Sources */,
 				7BA396871EAA176500F4C4D6 /* DSL.swift in Sources */,
 				7BA3965B1EA8C58A00F4C4D6 /* TextureLoader.swift in Sources */,
+				7B8236B81EAA4F4700127F0C /* RGB2Gray.swift in Sources */,
 				7BA396591EA8C58A00F4C4D6 /* Parameters.swift in Sources */,
 				7BA396821EAA07A200F4C4D6 /* Math.swift in Sources */,
 			);

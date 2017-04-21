@@ -43,7 +43,7 @@ public class MNIST: NeuralNetwork {
   var outputImage: [MPSImage] = []
 
   let lanczos: MPSImageLanczosScale
-  let makeGrayscale: MakeGrayscale
+  let makeGrayscale: RGB2Gray
   let relu: MPSCNNNeuronReLU
   let softmax: MPSCNNSoftMax
 
@@ -73,7 +73,7 @@ public class MNIST: NeuralNetwork {
     }
 
     lanczos = MPSImageLanczosScale(device: device)
-    makeGrayscale = MakeGrayscale(device: device)
+    makeGrayscale = RGB2Gray(device: device)
     relu = MPSCNNNeuronReLU(device: device, a: 0)
     softmax = MPSCNNSoftMax(device: device)
 

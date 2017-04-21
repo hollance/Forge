@@ -10,9 +10,7 @@
 		7BA395EC1EA8C27400F4C4D6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7BA395EA1EA8C27400F4C4D6 /* Main.storyboard */; };
 		7BA395EE1EA8C27400F4C4D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA395ED1EA8C27400F4C4D6 /* Assets.xcassets */; };
 		7BA3961D1EA8C50E00F4C4D6 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396191EA8C50E00F4C4D6 /* CameraViewController.swift */; };
-		7BA3961E1EA8C50E00F4C4D6 /* MakeGrayscale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3961A1EA8C50E00F4C4D6 /* MakeGrayscale.swift */; };
 		7BA3961F1EA8C50E00F4C4D6 /* MNIST.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3961B1EA8C50E00F4C4D6 /* MNIST.swift */; };
-		7BA396221EA8C52700F4C4D6 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396211EA8C52700F4C4D6 /* Shaders.metal */; };
 		7BA396421EA8C53000F4C4D6 /* five.png in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396321EA8C53000F4C4D6 /* five.png */; };
 		7BA396441EA8C53000F4C4D6 /* three.png in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396341EA8C53000F4C4D6 /* three.png */; };
 		7BA396661EA8CB7900F4C4D6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396641EA8CB7900F4C4D6 /* AppDelegate.swift */; };
@@ -25,8 +23,6 @@
 		7BA3967E1EAA077E00F4C4D6 /* fc1_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396761EAA077E00F4C4D6 /* fc1_W.bin */; };
 		7BA3967F1EAA077E00F4C4D6 /* fc2_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396771EAA077E00F4C4D6 /* fc2_b.bin */; };
 		7BA396801EAA077E00F4C4D6 /* fc2_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396781EAA077E00F4C4D6 /* fc2_W.bin */; };
-		7BA396A91EAA21AD00F4C4D6 /* MakeGrayscale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3961A1EA8C50E00F4C4D6 /* MakeGrayscale.swift */; };
-		7BA396AA1EAA21B000F4C4D6 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396211EA8C52700F4C4D6 /* Shaders.metal */; };
 		7BA396AB1EAA21B300F4C4D6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396641EA8CB7900F4C4D6 /* AppDelegate.swift */; };
 		7BA396AC1EAA21B500F4C4D6 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396651EA8CB7900F4C4D6 /* VideoCapture.swift */; };
 		7BA396AD1EAA21BA00F4C4D6 /* conv1_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396711EAA077E00F4C4D6 /* conv1_b.bin */; };
@@ -80,9 +76,7 @@
 		7BA395ED1EA8C27400F4C4D6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7BA395F21EA8C27400F4C4D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7BA396191EA8C50E00F4C4D6 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
-		7BA3961A1EA8C50E00F4C4D6 /* MakeGrayscale.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MakeGrayscale.swift; sourceTree = "<group>"; };
 		7BA3961B1EA8C50E00F4C4D6 /* MNIST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MNIST.swift; sourceTree = "<group>"; };
-		7BA396211EA8C52700F4C4D6 /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		7BA396321EA8C53000F4C4D6 /* five.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = five.png; sourceTree = "<group>"; };
 		7BA396341EA8C53000F4C4D6 /* three.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = three.png; sourceTree = "<group>"; };
 		7BA396641EA8CB7900F4C4D6 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -167,8 +161,6 @@
 				7BA396191EA8C50E00F4C4D6 /* CameraViewController.swift */,
 				7BA3961B1EA8C50E00F4C4D6 /* MNIST.swift */,
 				7BA396C41EAA293300F4C4D6 /* MNIST-DSL.swift */,
-				7BA3961A1EA8C50E00F4C4D6 /* MakeGrayscale.swift */,
-				7BA396211EA8C52700F4C4D6 /* Shaders.metal */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -324,8 +316,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7BA396221EA8C52700F4C4D6 /* Shaders.metal in Sources */,
-				7BA3961E1EA8C50E00F4C4D6 /* MakeGrayscale.swift in Sources */,
 				7BA3961F1EA8C50E00F4C4D6 /* MNIST.swift in Sources */,
 				7BA396661EA8CB7900F4C4D6 /* AppDelegate.swift in Sources */,
 				7BA396671EA8CB7900F4C4D6 /* VideoCapture.swift in Sources */,
@@ -339,8 +329,6 @@
 			files = (
 				7BA396AB1EAA21B300F4C4D6 /* AppDelegate.swift in Sources */,
 				7BA396AC1EAA21B500F4C4D6 /* VideoCapture.swift in Sources */,
-				7BA396AA1EAA21B000F4C4D6 /* Shaders.metal in Sources */,
-				7BA396A91EAA21AD00F4C4D6 /* MakeGrayscale.swift in Sources */,
 				7BA396C31EAA229700F4C4D6 /* CameraViewController.swift in Sources */,
 				7BA396C61EAA293600F4C4D6 /* MNIST-DSL.swift in Sources */,
 			);

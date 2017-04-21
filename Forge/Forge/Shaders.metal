@@ -1,7 +1,7 @@
 #include <metal_stdlib>
 using namespace metal;
 
-kernel void makeGrayscale(
+kernel void rgb2Gray(
   texture2d<half, access::read> inTexture [[texture(0)]],
   texture2d<half, access::write> outTexture [[texture(1)]],
   uint2 gid [[thread_position_in_grid]])

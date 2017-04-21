@@ -32,12 +32,12 @@ import Forge
 */
 public class MNIST: NeuralNetwork {
   let relu: MPSCNNNeuronReLU
-  let makeGrayscale: MakeGrayscale
+  let makeGrayscale: RGB2Gray
   let model: Model
 
   required public init(device: MTLDevice, inflightBuffers: Int) {
     relu = MPSCNNNeuronReLU(device: device, a: 0)
-    makeGrayscale = MakeGrayscale(device: device)
+    makeGrayscale = RGB2Gray(device: device)
 
     model = Model()
             => Input()        // this is optional thanks to Resize
