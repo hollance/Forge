@@ -77,6 +77,9 @@ public class MNIST: NeuralNetwork {
     relu = MPSCNNNeuronReLU(device: device, a: 0)
     softmax = MPSCNNSoftMax(device: device)
 
+    weightsLoader = { name, count in ParameterLoaderBundle(name: name, count: count, suffix: "_W", ext: "bin") }
+    biasLoader = { name, count in ParameterLoaderBundle(name: name, count: count, suffix: "_b", ext: "bin") }
+
     conv1 = convolution(device: device, kernel: (5, 5), inChannels: 1, outChannels: 20, filter: relu, name: "conv1")
     pool1 = maxPooling(device: device, kernel: (2, 2), stride: (2, 2))
     conv2 = convolution(device: device, kernel: (5, 5), inChannels: 20, outChannels: 50, filter: relu, name: "conv2")

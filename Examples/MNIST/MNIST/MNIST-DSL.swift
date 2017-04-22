@@ -54,10 +54,10 @@ public class MNIST: NeuralNetwork {
     model["Preprocessing"]!.temporaryImage = false
 
     let success = model.compile(device: device, inflightBuffers: inflightBuffers) {
-      name, byteSize, type in ParameterLoaderBundle(name: name,
-                                                    fileSize: byteSize,
-                                                    suffix: type == .weights ? "_W" : "_b",
-                                                    ext: "bin")
+      name, count, type in ParameterLoaderBundle(name: name,
+                                                 count: count,
+                                                 suffix: type == .weights ? "_W" : "_b",
+                                                 ext: "bin")
     }
 
     if success {

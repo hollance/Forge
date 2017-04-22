@@ -163,18 +163,11 @@ extension MTLComputeCommandEncoder {
   public func dispatch(pipeline: MTLComputePipelineState, image: MPSImage) {
     let numSlices = ((image.featureChannels + 3)/4) * image.numberOfImages
 
-    let h, w, d: Int
-    if numSlices == 1 {
-      h = pipeline.threadExecutionWidth
-      w = pipeline.maxTotalThreadsPerThreadgroup / h
-      d = 1
-    } else {
-      // TODO: Figure out the best way to divide up the work. Does it make
-      // sense to work on 2 or more slices at once? Need to measure this!
-      h = 16; w = 16; d = 2
-    }
-
+    let h = pipeline.threadExecutionWidth
+    let w = pipeline.maxTotalThreadsPerThreadgroup / h
+    let d = 1
     let threadGroupSize = MTLSizeMake(w, h, d)
+
     let threadGroups = MTLSizeMake(
       (image.width  + threadGroupSize.width  - 1) / threadGroupSize.width,
       (image.height + threadGroupSize.height - 1) / threadGroupSize.height,
@@ -182,5 +175,44 @@ extension MTLComputeCommandEncoder {
     
     setComputePipelineState(pipeline)
     dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
+  }
+}
+
+/**
+  Copies user-supplied weights into an MTLBuffer.
+
+  Because we're working with textures, the number of channels must always be
+  a multiple of 4. For example, the first row of a 3x3 kernel with 4 or fewer
+  channels looks like this in memory: 0,1,2,3 | 0,1,2,3 | 0,1,2,3. And for 4-8 
+  channels it looks like: 0,1,2,3,4,5,6,7 | 0,1,2,3,4,5,6,7 | 0,1,2,3,4,5,6,7.
+
+  But when featureChannels is not a multiple of 4, the weights supplied by the
+  user may look like this: 0,1,2 | 0,1,2 | 0,1,2 and so on. In that case we
+  need to insert zero bytes for the missing channels when copying the weights
+  to the MTLBuffer.
+*/
+func weightsToBufferFloat16(weights: UnsafePointer<Float>,
+                            buffer: MTLBuffer,
+                            featureChannels: Int,
+                            count: Int) {
+
+  let slices = (featureChannels + 3) / 4
+  let paddedChannels = slices * 4
+
+  // The number of channels is a multiple of 4, so we can do a straight copy.
+  if paddedChannels == featureChannels {
+    let ptr = UnsafeMutablePointer(mutating: weights)
+    float32to16(input: ptr, output: buffer.contents(), count: count)
+
+  // Otherwise, copy "featureChannels" weights at a time and add padding bytes.
+  } else {
+    var srcPtr = UnsafeMutablePointer(mutating: weights)
+    var dstPtr = buffer.contents().bindMemory(to: Float16.self, capacity: count)
+
+    for _ in 0..<count/slices {
+      float32to16(input: srcPtr, output: dstPtr, count: featureChannels)
+      srcPtr += featureChannels
+      dstPtr += paddedChannels
+    }
   }
 }

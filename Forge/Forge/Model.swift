@@ -88,7 +88,7 @@ public class Model {
     - Parameters:
       - inflightBuffers: How many tasks the CPU and GPU can do in parallel.
       - parameterCallback: Used for loading the parameters of the layers.
-        The closure takes three arguments: name, expected size in bytes, and
+        The closure takes three arguments: name, expected parameter count, and
         whether to load the weights or bias values for the layer.
   */
   public func compile(device: MTLDevice,
@@ -136,14 +136,12 @@ public class Model {
 
         var weightParameters: ParameterData?
         if node.weightCount > 0 {
-          let sizeWeights = node.weightCount * MemoryLayout<Float>.stride
-          weightParameters = parameterCallback(node.name, sizeWeights, .weights)
+          weightParameters = parameterCallback(node.name, node.weightCount, .weights)
         }
 
         var biasParameters: ParameterData?
         if node.biasCount > 0 {
-          let sizeBiases = node.biasCount * MemoryLayout<Float>.stride
-          biasParameters = parameterCallback(node.name, sizeBiases, .biases)
+          biasParameters = parameterCallback(node.name, node.biasCount, .biases)
         }
 
         if let compute = node.createCompute(device: device,

@@ -28,10 +28,12 @@ import MetalPerformanceShaders
 /* 
   Helper functions for creating the layers.
 
-  The name of the layer is used to load its weights and bias values. 
-  The weights must be stored as raw 32-bit floats in the file "name_W.bin"
-  inside the app bundle. The bias values are stored in "name_b.bin".
+  The name of the layer is used to load its weights and bias values. You need
+  to assign loader functions to weightsLoader and biasLoader.
 */
+
+public var weightsLoader: ((String, Int) -> ParameterData?)?
+public var biasLoader: ((String, Int) -> ParameterData?)?
 
 /**
   Creates a convolution layer.
@@ -49,13 +51,11 @@ public func convolution(device: MTLDevice,
                         stride: (Int, Int) = (1, 1),
                         mergeOffset: Int = 0) -> MPSCNNConvolution {
 
-  let sizeWeights = inChannels * kernel.1 * kernel.0 * outChannels * MemoryLayout<Float>.stride
-  let sizeBias = outChannels * MemoryLayout<Float>.stride
+  let countWeights = inChannels * kernel.1 * kernel.0 * outChannels
+  let countBias = outChannels
 
-  guard let weightsPath = Bundle.main.path(forResource: name + "_W", ofType: "bin"),
-        let weightsData = Parameters(path: weightsPath, fileSize: sizeWeights),
-        let biasPath = Bundle.main.path(forResource: name + "_b", ofType: "bin"),
-        let biasData = Parameters(path: biasPath, fileSize: sizeBias) else {
+  guard let weightsData = weightsLoader?(name, countWeights),
+        let biasData = biasLoader?(name, countBias) else {
     fatalError("Error loading network parameters '\(name)'")
   }
 
@@ -131,13 +131,11 @@ public func dense(device: MTLDevice,
                   name: String,
                   mergeOffset: Int = 0) -> MPSCNNFullyConnected {
 
-  let sizeWeights = inChannels * shape.0 * shape.1 * fanOut * MemoryLayout<Float>.stride
-  let sizeBias = fanOut * MemoryLayout<Float>.stride
+  let countWeights = inChannels * shape.0 * shape.1 * fanOut
+  let countBias = fanOut
 
-  guard let weightsPath = Bundle.main.path(forResource: name + "_W", ofType: "bin"),
-        let weightsData = Parameters(path: weightsPath, fileSize: sizeWeights),
-        let biasPath = Bundle.main.path(forResource: name + "_b", ofType: "bin"),
-        let biasData = Parameters(path: biasPath, fileSize: sizeBias) else {
+  guard let weightsData = weightsLoader?(name, countWeights),
+        let biasData = biasLoader?(name, countBias) else {
     fatalError("Error loading network parameters '\(name)'")
   }
 
@@ -201,4 +199,51 @@ extension MPSCNNConvolution {
       self.offset = MPSOffset(x: self.kernelWidth/2, y: self.kernelHeight/2, z: 0)
     }
   }
+}
+
+/**
+  Creates a depth-wise convolution layer.
+  
+  - Parameters:
+    - kernel: `(width, height)`
+    - stride: `(x, y)`
+*/
+public func depthwiseConvolution(device: MTLDevice,
+                 kernel: (Int, Int),
+                 channels: Int,
+                 name: String,
+                 stride: (Int, Int) = (1, 1)) -> DepthwiseConvolutionKernel {
+
+  let countWeights = channels * kernel.1 * kernel.0
+
+  guard let weightsData = weightsLoader?(name, countWeights) else {
+    fatalError("Error loading network parameters '\(name)'")
+  }
+
+  return DepthwiseConvolutionKernel(device: device,
+                                    kernelWidth: kernel.0,
+                                    kernelHeight: kernel.1,
+                                    featureChannels: channels,
+                                    strideInPixelsX: stride.0,
+                                    strideInPixelsY: stride.1,
+                                    kernelWeights: weightsData.pointer)
+}
+
+/**
+  Creates a 1x1 convolution layer.
+*/
+public func pointwiseConvolution(device: MTLDevice,
+                                 inChannels: Int,
+                                 outChannels: Int,
+                                 filter: MPSCNNNeuron,
+                                 name: String,
+                                 stride: (Int, Int) = (1, 1),
+                                 mergeOffset: Int = 0) -> MPSCNNConvolution {
+
+  return convolution(device: device,
+                     kernel: (1, 1),
+                     inChannels: inChannels,
+                     outChannels: outChannels,
+                     filter: filter,
+                     name: name)
 }
