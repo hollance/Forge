@@ -107,7 +107,6 @@ public class MNIST: NeuralNetwork {
     // numbers up by a factor 255.
     //let grayImg = MPSTemporaryImage(commandBuffer: commandBuffer, imageDescriptor: grayImgDesc)
     makeGrayscale.encode(commandBuffer: commandBuffer, sourceImage: scaledImg, destinationImage: grayImg)
-    scaledImg.readCount -= 1
 
     let conv1Img = MPSTemporaryImage(commandBuffer: commandBuffer, imageDescriptor: conv1ImgDesc)
     conv1.applyPadding(type: .same, sourceImage: grayImg, destinationImage: conv1Img)

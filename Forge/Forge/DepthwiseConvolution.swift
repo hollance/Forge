@@ -104,5 +104,9 @@ public class DepthwiseConvolutionKernel {
     encoder.setBuffer(weightsBuffer, offset: 0, at: 0)
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
     encoder.endEncoding()
+
+    if let image = sourceImage as? MPSTemporaryImage {
+      image.readCount -= 1
+    }
   }
 }

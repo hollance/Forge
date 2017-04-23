@@ -46,6 +46,11 @@ open class SimpleKernel {
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
     encoder.popDebugGroup()
     encoder.endEncoding()
+
+    // Let Metal know the temporary image can be recycled.
+    if let image = sourceImage as? MPSTemporaryImage {
+      image.readCount -= 1
+    }
   }
 }
 

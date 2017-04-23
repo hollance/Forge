@@ -417,6 +417,13 @@ public class Resize: Layer {
 
 /**
   The Custom layer type accepts any object that conforms to this protocol.
+
+  - NOTE: The `encode()` function must do the following:
+  
+          // Let Metal know the temporary image can be recycled.
+          if let image = sourceImage as? MPSTemporaryImage {
+            image.readCount -= 1
+          }
 */
 public protocol CustomKernel {
   func encode(commandBuffer: MTLCommandBuffer, sourceImage: MPSImage, destinationImage: MPSImage)

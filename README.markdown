@@ -49,7 +49,7 @@ model = Model()
 
 To see a demo of Forge in action, open **Forge.xcworkspace** in Xcode and run the **MNIST** app on your device.
 
-You need at least Xcode 8.3 and a device with an A8 processor (iPhone 6 or better). You cannot build for the simulator as it does not support Metal.
+You need at least Xcode 8.3 and a device with an A8 processor (iPhone 6 or better) running iOS 10 or later. You cannot build for the simulator as it does not support Metal.
 
 ## How to install Forge
 
@@ -66,11 +66,24 @@ NOTE: You cannot build for the simulator, only for "Generic iOS Device" or an ac
 
 [TODO: Instructions coming soon. For now look at the example apps.]
 
+For an example of using the domain-specific language for quickly making new networks, [see the blog post](TODO).
+
+> Tip: The [Caffe2](http://caffe2.ai/) deep learning tool also contains [a bunch of MPSCNN code](https://github.com/caffe2/caffe2/tree/master/caffe2/contrib/mpscnn-fb). 
+
 ## Where are the unit tests?
 
 Sorry, Metal does not work on the simulator and Xcode can't run logic tests on the device. Catch-22.
 
 ## TODO
+
+#### General
+
+- Improve API documentation
+- Add package manager support of some kind
+- Add unit tests (should run as a separate app, not as a test target)
+- Add more layer types
+- Add more examples
+- Make a nice logo (use as icon for example apps)
 
 #### VideoCapture
 

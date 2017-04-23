@@ -62,6 +62,10 @@ public class SubtractMeanColor {
     encoder.setTexture(destinationImage.texture, at: 1)
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
     encoder.endEncoding()
+
+    if let image = sourceImage as? MPSTemporaryImage {
+      image.readCount -= 1
+    }
   }
 }
 

@@ -253,11 +253,6 @@ public class Model {
           kernel.encode(commandBuffer: commandBuffer,
                         sourceImage: sourceImage,
                         destinationImage: destinationImage)
-
-          // Let Metal know the temporary image can be recycled.
-          if let tmp = sourceImage as? MPSTemporaryImage {
-            tmp.readCount -= 1
-          }
         }
         sourceImage = destinationImage
       }

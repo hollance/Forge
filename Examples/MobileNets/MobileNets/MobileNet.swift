@@ -208,9 +208,6 @@ public class MobileNet: NeuralNetwork {
         layer.encode(commandBuffer: commandBuffer, sourceImage: inputImage, destinationImage: img)
       } else if let layer = layer as? DepthwiseConvolutionKernel {
         layer.encode(commandBuffer: commandBuffer, sourceImage: inputImage, destinationImage: img)
-        if let image = inputImage as? MPSTemporaryImage {
-          image.readCount -= 1
-        }
       }
       inputImage = img
     }
