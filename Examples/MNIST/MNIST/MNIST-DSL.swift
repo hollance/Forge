@@ -31,27 +31,25 @@ import Forge
   a lot shorter and easier to read!
 */
 public class MNIST: NeuralNetwork {
-  let relu: MPSCNNNeuronReLU
-  let makeGrayscale: Preprocessing
   let model: Model
 
   required public init(device: MTLDevice, inflightBuffers: Int) {
-    relu = MPSCNNNeuronReLU(device: device, a: 0)
-    makeGrayscale = Preprocessing(device: device)
+    let relu = MPSCNNNeuronReLU(device: device, a: 0)
+    let makeGrayscale = Preprocessing(device: device)
 
     model = Model()
-            => Input()        // this is optional thanks to Resize
-            => Resize(width: 28, height: 28)
-            => Custom(makeGrayscale, channels: 1, name: "Preprocessing")
-            => Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
-            => MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
-            => Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
-            => MaxPooling(kernel: (2, 2), stride: (2, 2))
-            => Dense(neurons: 320, filter: relu, name: "fc1")
-            => Dense(neurons: 10, name: "fc2")
-            => Softmax()
+            --> Input()        // this is optional thanks to Resize
+            --> Resize(width: 28, height: 28)
+            --> Custom(makeGrayscale, channels: 1, name: "Preprocessing")
+            --> Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
+            --> MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
+            --> Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
+            --> MaxPooling(kernel: (2, 2), stride: (2, 2))
+            --> Dense(neurons: 320, filter: relu, name: "fc1")
+            --> Dense(neurons: 10, name: "fc2")
+            --> Softmax()
 
-    model["Preprocessing"]!.temporaryImage = false
+    model["Preprocessing"]!.imageIsTemporary = false
 
     let success = model.compile(device: device, inflightBuffers: inflightBuffers) {
       name, count, type in ParameterLoaderBundle(name: name,

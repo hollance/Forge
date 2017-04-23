@@ -112,7 +112,7 @@ class CameraViewController: UIViewController {
     DispatchQueue.global().async {
 
       timeIt("Setting up neural network") {
-        self.network = Inception3Net(device: self.device, inflightBuffers: MaxBuffersInFlight)
+        self.network = Inception3(device: self.device, inflightBuffers: MaxBuffersInFlight)
       }
 
       DispatchQueue.main.async(execute: completion)

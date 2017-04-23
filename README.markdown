@@ -85,6 +85,11 @@ Sorry, Metal does not work on the simulator and Xcode can't run logic tests on t
 - Add more examples
 - Make a nice logo (use as icon for example apps)
 
+#### DSL
+
+- Sometimes compiling Inception takes 0.5 seconds and other times only about 0.12 seconds (which is similar to the setup time Apple's original Inception code). I wonder what's causing this...
+- Reuse the pooling layer MPSCNN objects.
+
 #### VideoCapture
 
 This should properly handle interruptions from phone calls, FaceTime, going to the background, etc. It is not yet robust enough for production code.
@@ -97,7 +102,7 @@ Refactor the examples to share more code. Currently there is a bit of code dupli
 
 Forge is copyright 2016-2017 Matthijs Hollemans and is licensed under the terms of the [MIT license](LICENSE.txt).
 
-The **Inception** example app is based on [Apple's Inception-v3 sample code](https://developer.apple.com/library/content/samplecode/MetalImageRecognition/Introduction/Intro.html) but completely rewritten using the DSL. We do use their learned parameters. Thanks, Apple!
+The **Inception** example app is based on [Apple's Inception-v3 sample code](https://developer.apple.com/library/content/samplecode/MetalImageRecognition/Introduction/Intro.html) but completely rewritten using the DSL. We use their learned parameters. Thanks, Apple!
 
 The **MobileNets** example app is an implementation of the network architecture from the paper [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861v1).
 
