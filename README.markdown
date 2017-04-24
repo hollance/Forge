@@ -14,14 +14,14 @@ Features of Forge:
 
 ```swift
 model = Model()
-        => Resize(width: 28, height: 28)
-        => Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
-        => MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
-        => Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
-        => MaxPooling(kernel: (2, 2), stride: (2, 2))
-        => Dense(neurons: 320, filter: relu, name: "fc1")
-        => Dense(neurons: 10, name: "fc2")
-        => Softmax()
+        --> Resize(width: 28, height: 28)
+        --> Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
+        --> MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
+        --> Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
+        --> MaxPooling(kernel: (2, 2), stride: (2, 2))
+        --> Dense(neurons: 320, filter: relu, name: "fc1")
+        --> Dense(neurons: 10, name: "fc2")
+        --> Softmax()
 ```
 
 **Custom layers.** MPSCNN only supports a limited number of layers, so we've added a few of our own:
