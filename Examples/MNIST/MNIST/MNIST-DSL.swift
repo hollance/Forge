@@ -33,7 +33,7 @@ import Forge
 public class MNIST: NeuralNetwork {
   let model: Model
 
-  required public init(device: MTLDevice, inflightBuffers: Int) {
+  public init(device: MTLDevice, inflightBuffers: Int) {
     let relu = MPSCNNNeuronReLU(device: device, a: 0)
     let makeGrayscale = Preprocessing(device: device)
 
@@ -42,7 +42,7 @@ public class MNIST: NeuralNetwork {
             --> Resize(width: 28, height: 28)
             --> Custom(makeGrayscale, channels: 1, name: "Preprocessing")
             --> Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
-            --> MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
+            --> MaxPooling(kernel: (2, 2), stride: (2, 2))
             --> Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
             --> MaxPooling(kernel: (2, 2), stride: (2, 2))
             --> Dense(neurons: 320, filter: relu, name: "fc1")

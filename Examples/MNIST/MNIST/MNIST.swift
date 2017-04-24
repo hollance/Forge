@@ -65,7 +65,7 @@ public class MNIST: NeuralNetwork {
 
   let grayImg: MPSImage
 
-  required public init(device: MTLDevice, inflightBuffers: Int) {
+  public init(device: MTLDevice, inflightBuffers: Int) {
     // Since the GPU can be working on several inputs at once, this needs to
     // allocate multiple output images.
     for _ in 0..<inflightBuffers {

@@ -36,12 +36,12 @@ public class MobileNet: NeuralNetwork {
       - shallow: Whether to exclude the group of 5 conv layers in the middle.
       - classes: The number of classes in the softmax.
   */
-  required public init(device: MTLDevice,
-                       alpha: Float = 1,
-                       rho: Float = 1,
-                       shallow: Bool = false,
-                       classes: Int = 1000,
-                       inflightBuffers: Int) {
+  public init(device: MTLDevice,
+              alpha: Float = 1,
+              rho: Float = 1,
+              shallow: Bool = false,
+              classes: Int = 1000,
+              inflightBuffers: Int) {
 
     self.classes = classes
 

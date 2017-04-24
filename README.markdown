@@ -2,7 +2,7 @@
 
 **Forge** is a collection of helper code that makes it a little easier to construct deep neural networks using Apple's MPSCNN framework.
 
-[Read the blog post](http://TODO)
+[Read the blog post](http://machinethink.net/blog/forge-neural-network-toolkit-for-metal/)
 
 ## What does this do?
 
@@ -16,7 +16,7 @@ Features of Forge:
 model = Model()
         --> Resize(width: 28, height: 28)
         --> Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
-        --> MaxPooling(kernel: (2, 2), stride: (2, 2), name: "mp")
+        --> MaxPooling(kernel: (2, 2), stride: (2, 2))
         --> Convolution(kernel: (5, 5), channels: 50, filter: relu, name: "conv2")
         --> MaxPooling(kernel: (2, 2), stride: (2, 2))
         --> Dense(neurons: 320, filter: relu, name: "fc1")
@@ -66,7 +66,7 @@ NOTE: You cannot build for the simulator, only for "Generic iOS Device" or an ac
 
 [TODO: Instructions coming soon. For now look at the example apps.]
 
-For an example of using the domain-specific language for quickly making new networks, [see the blog post](TODO).
+For an example of using the domain-specific language for quickly making new networks, [see the blog post](http://machinethink.net/blog/forge-neural-network-toolkit-for-metal/).
 
 > Tip: The [Caffe2](http://caffe2.ai/) deep learning tool also contains [a bunch of MPSCNN code](https://github.com/caffe2/caffe2/tree/master/caffe2/contrib/mpscnn-fb). 
 
