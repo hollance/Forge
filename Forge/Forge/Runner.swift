@@ -132,9 +132,9 @@ public class Runner {
       // The completion handler for the command buffer is called on some
       // background thread. This may be the same thread that encoded the
       // GPU commands (if not waiting on the semaphore), or another one.
-      commandBuffer.addCompletedHandler { commandBuffer in
+      commandBuffer.addCompletedHandler { [inflightIndex] commandBuffer in
 
-        var result = network.fetchResult(inflightIndex: self.inflightIndex)
+        var result = network.fetchResult(inflightIndex: inflightIndex)
         result.elapsed = CACurrentMediaTime() - startTime
 
         //print("GPU execution duration:", commandBuffer.gpuEndTime - commandBuffer.gpuStartTime)
