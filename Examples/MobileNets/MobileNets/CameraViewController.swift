@@ -133,7 +133,11 @@ class CameraViewController: UIViewController {
     DispatchQueue.global().async {
 
       timeIt("Setting up neural network") {
-        self.network = MobileNet(device: self.device, inflightBuffers: MaxBuffersInFlight)
+        self.network = MobileNet(device: self.device,
+                                 widthMultiplier: 1,
+                                 resolutionMultiplier: 1,
+                                 shallow: false,
+                                 inflightBuffers: MaxBuffersInFlight)
       }
       DispatchQueue.main.async(execute: completion)
     }

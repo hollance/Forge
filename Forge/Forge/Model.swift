@@ -105,6 +105,12 @@ class ModelCompiler {
         registerImageDescriptor(for: shape)
       }
 
+      // The passthrough layer is just a trick that lets us optionally add
+      // layers or not. We don't actually want them in the model.
+      if node.next is PassthroughLayer {
+        node.next = node.next!.next
+      }
+
       ptr = node.next
       ptr?.inputShape = shape
     }

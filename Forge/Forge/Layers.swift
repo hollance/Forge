@@ -183,6 +183,32 @@ public class Input: Layer {
 }
 
 /**
+  This layer doesn't do anything. But it lets us write the following:
+  
+      let maybe: Layer
+      if someCondition {
+        maybe = SomeLayer() <-- SomeOtherLayer()
+      } else {
+        maybe = PassthroughLayer()
+      }
+      
+      let model = Model()
+                --> TheFirstLayer()
+                --> maybe
+                --> AnotherLayer()
+
+  If `someCondition` is false, the PassthroughLayer is used, which effectively
+  means nothing happens at that point. It's just a trick to make this kind of
+  construct possible. The PassthroughLayer is actually removed from the model
+  by the compiler.
+*/
+public class PassthroughLayer: Layer {
+  public init() {
+    super.init()
+  }
+}
+
+/**
   Abstract base class for layers that encode a single MPSCNN kernel.
 */
 public class MPSCNNLayer: Layer {
@@ -238,8 +264,8 @@ public class Convolution: MPSCNNLayer {
 
   override func outputShape(for inputShape: DataShape) -> DataShape {
     if padding {
-      return DataShape(width: inputShape.width,
-                      height: inputShape.height,
+      return DataShape(width: inputShape.width  / stride.0,
+                      height: inputShape.height / stride.1,
                     channels: channels)
     } else {
       return DataShape(width: (inputShape.width  - kernel.0) / stride.0 + 1,
@@ -401,6 +427,43 @@ public class AveragePooling: Pooling {
                                     strideInPixelsY: stride.1)
 
     pool.offset = calculatePadding(pool)
+    pool.edgeMode = .clamp
+    pool.destinationFeatureChannelOffset = mergeOffset
+    self.mpscnn = pool
+  }
+}
+
+/**
+  Global average-pooling layer
+  
+  This does the same thing as an AveragePooling layer with a kernel size equal
+  to the input's spatial dimensions. If the input image is WxHxC, this averages
+  across the width and height, and outputs a 1x1xC image.
+*/
+public class GlobalAveragePooling: MPSCNNLayer {
+  public override init(name: String = "") {
+    super.init(name: name)
+  }
+
+  override var typeName: String {
+    return "GlbAvgPool"
+  }
+
+  override func outputShape(for inputShape: DataShape) -> DataShape {
+    return DataShape(width: 1, height: 1, channels: inputShape.channels)
+  }
+
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) throws {
+
+    let pool = MPSCNNPoolingAverage(device: device,
+                                    kernelWidth: inputShape.width,
+                                    kernelHeight: inputShape.height,
+                                    strideInPixelsX: inputShape.width,
+                                    strideInPixelsY: inputShape.height)
+
+    pool.offset = MPSOffset(x: inputShape.width/2, y: inputShape.height/2, z: 0)
     pool.edgeMode = .clamp
     pool.destinationFeatureChannelOffset = mergeOffset
     self.mpscnn = pool
@@ -718,5 +781,94 @@ public class Group: Layer {
       }
     }
     return (text, params)
+  }
+}
+
+public class DepthwiseConvolution: Layer {
+  let kernel: (Int, Int)
+  let stride: (Int, Int)
+  let useReLU: Bool
+  var compute: DepthwiseConvolutionKernel!
+
+  /**
+    Creates a depth-wise convolution layer.
+  
+    - Parameters:
+      - kernel: `(width, height)`
+      - stride: `(x, y)`
+      - useReLU: Whether to apply a ReLU directly in the shader. You can also
+        add `Activation(relu)` behind this layer instead.
+      - name: The name is used to load the layer's parameters.
+  */
+  public init(kernel: (Int, Int),
+              stride: (Int, Int) = (1, 1),
+              useReLU: Bool = true,
+              name: String = "") {
+    self.kernel = kernel
+    self.stride = stride
+    self.useReLU = useReLU
+    super.init(name: name)
+  }
+
+  override var typeName: String {
+    return "DepthwConv"
+  }
+
+  override func outputShape(for inputShape: DataShape) -> DataShape {
+      return DataShape(width: inputShape.width  / stride.0,
+                      height: inputShape.height / stride.1,
+                    channels: inputShape.channels)
+  }
+
+  override var weightCount: Int {
+    return inputShape.channels * kernel.1 * kernel.0
+  }
+
+  override var biasCount: Int {
+    return 0
+  }
+
+  override func createCompute(device: MTLDevice,
+                              weights: ParameterData?,
+                              biases: ParameterData?) throws {
+
+    guard let weights = weights else {
+      throw ModelError.compileError(message: "missing parameters for layer '\(name)'")
+    }
+
+    compute = DepthwiseConvolutionKernel(device: device,
+                                         kernelWidth: kernel.0,
+                                         kernelHeight: kernel.1,
+                                         featureChannels: inputShape.channels,
+                                         strideInPixelsX: stride.0,
+                                         strideInPixelsY: stride.1,
+                                         channelMultiplier: 1,
+                                         relu: useReLU,
+                                         kernelWeights: weights.pointer)
+  }
+
+  override func encode(commandBuffer: MTLCommandBuffer,
+                       sourceImage: MPSImage,
+                       destinationImage: MPSImage) {
+    compute.encode(commandBuffer: commandBuffer,
+                   sourceImage: sourceImage,
+                   destinationImage: destinationImage)
+  }
+}
+
+public class PointwiseConvolution: Convolution {
+  /**
+    Creates a point-wise convolution layer, which is really the same as a 
+    convolutional layer with a 1x1 kernel.
+  */
+  public init(channels: Int,
+              stride: (Int, Int) = (1, 1),
+              filter: MPSCNNNeuron? = nil,
+              name: String = "") {
+    super.init(kernel: (1, 1), channels: channels, filter: filter, name: name)
+  }
+
+  override var typeName: String {
+    return "PointwConv"
   }
 }

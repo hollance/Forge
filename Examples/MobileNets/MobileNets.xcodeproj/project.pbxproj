@@ -10,11 +10,11 @@
 		7B8237131EABDCE000127F0C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B8237111EABDCE000127F0C /* Main.storyboard */; };
 		7B8237151EABDCE000127F0C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B8237141EABDCE000127F0C /* Assets.xcassets */; };
 		7B8237371EABDD9200127F0C /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8237261EABDD9200127F0C /* CameraViewController.swift */; };
-		7B82373C1EABDD9200127F0C /* MobileNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B82372B1EABDD9200127F0C /* MobileNet.swift */; };
 		7B82374A1EABDDFD00127F0C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8237481EABDDFD00127F0C /* AppDelegate.swift */; };
 		7B82374B1EABDDFD00127F0C /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8237491EABDDFD00127F0C /* VideoCapture.swift */; };
 		7B82374D1EABDE0F00127F0C /* Forge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B82374C1EABDE0F00127F0C /* Forge.framework */; };
 		7B82374E1EABDE0F00127F0C /* Forge.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B82374C1EABDE0F00127F0C /* Forge.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7BD4246C1EB0DF0600451777 /* MobileNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD424691EB0D74500451777 /* MobileNet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,10 +37,10 @@
 		7B8237141EABDCE000127F0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = MobileNets/Assets.xcassets; sourceTree = "<group>"; };
 		7B8237191EABDCE000127F0C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = MobileNets/Info.plist; sourceTree = "<group>"; };
 		7B8237261EABDD9200127F0C /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
-		7B82372B1EABDD9200127F0C /* MobileNet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileNet.swift; sourceTree = "<group>"; };
 		7B8237481EABDDFD00127F0C /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7B8237491EABDDFD00127F0C /* VideoCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
 		7B82374C1EABDE0F00127F0C /* Forge.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Forge.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7BD424691EB0D74500451777 /* MobileNet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobileNet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				7B8237261EABDD9200127F0C /* CameraViewController.swift */,
-				7B82372B1EABDD9200127F0C /* MobileNet.swift */,
+				7BD424691EB0D74500451777 /* MobileNet.swift */,
 			);
 			name = Sources;
 			path = MobileNets;
@@ -178,7 +178,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7B82374A1EABDDFD00127F0C /* AppDelegate.swift in Sources */,
-				7B82373C1EABDD9200127F0C /* MobileNet.swift in Sources */,
+				7BD4246C1EB0DF0600451777 /* MobileNet.swift in Sources */,
 				7B82374B1EABDDFD00127F0C /* VideoCapture.swift in Sources */,
 				7B8237371EABDD9200127F0C /* CameraViewController.swift in Sources */,
 			);
