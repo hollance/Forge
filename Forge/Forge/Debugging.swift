@@ -45,3 +45,36 @@ public func printChannelsForPixel(x: Int, y: Int, image: MPSImage) {
     }
   }
 }
+
+/**
+  Useful for checking that a computation gives the right answer, within the
+  precision of 16-bit floats (which is only ~3 decimals).
+  
+  If the largest error is something like 0.000x and the average error is around
+  1e-05 then you're good.
+*/
+public func verifySimilarResults(_ a: [Float], _ b: [Float], printSuspicious: Bool = true) {
+  let count = min(a.count, b.count)
+  if a.count != b.count {
+    print("Array sizes are not the same: \(a.count) vs. \(b.count)")
+  }
+
+  var largestError: Float = 0
+  var largestErrorIndex = -1
+  var averageError: Float = 0
+  for i in 0..<count {
+    let error = abs(a[i] - b[i])
+    if error > largestError {
+      largestError = error
+      largestErrorIndex = i
+    }
+    if printSuspicious && error > 0.01 {
+      print("\t\(i): \(a[i]) \t \(b[i]) \t \(error)")
+    }
+    averageError += error
+  }
+  averageError /= Float(count)
+
+  print("Largest error: \(largestError) at index \(largestErrorIndex)")
+  print("Average error: \(averageError)")
+}
