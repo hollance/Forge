@@ -180,39 +180,129 @@ extension MTLComputeCommandEncoder {
 
 /**
   Copies user-supplied weights into an MTLBuffer.
+  
+  The weights must be arranged in memory as:
+  
+      [outputChannels][kernelHeight][kernelWidth][inputChannels]
 
-  Because we're working with textures, the number of channels must always be
-  a multiple of 4. For example, the first row of a 3x3 kernel with 4 or fewer
-  channels looks like this in memory: 0,1,2,3 | 0,1,2,3 | 0,1,2,3. And for 4-8 
-  channels it looks like: 0,1,2,3,4,5,6,7 | 0,1,2,3,4,5,6,7 | 0,1,2,3,4,5,6,7.
+  Because we're working with textures, the number of input and output channels 
+  must always be a multiple of 4 in the MTLBuffer.
+  
+  For example, the first row of a 3x3 kernel with 4 or fewer channels looks 
+  like this in memory: 0,1,2,3 | 0,1,2,3 | 0,1,2,3. And for 4-8 channels it 
+  looks like this: 0,1,2,3,4,5,6,7 | 0,1,2,3,4,5,6,7 | 0,1,2,3,4,5,6,7.
 
-  But when featureChannels is not a multiple of 4, the weights supplied by the
-  user may look like this: 0,1,2 | 0,1,2 | 0,1,2 and so on. In that case we
-  need to insert zero bytes for the missing channels when copying the weights
-  to the MTLBuffer.
+  But when inputFeatureChannels is not a multiple of 4, the weights supplied by
+  the user may look like: 0,1,2 | 0,1,2 | 0,1,2 and so on. In that case we need
+  to insert zero-bytes for the missing channels when copying the weights to the
+  MTLBuffer. That's why you need to use this function and not just memcpy().
 */
-func weightsToBufferFloat16(weights: UnsafePointer<Float>,
-                            buffer: MTLBuffer,
-                            featureChannels: Int,
-                            count: Int) {
+func copy(weights: UnsafePointer<Float>,
+          to buffer: MTLBuffer,
+          channelFormat: MPSImageFeatureChannelFormat,
+          kernelWidth: Int,
+          kernelHeight: Int,
+          inputFeatureChannels: Int,
+          outputFeatureChannels: Int) {
 
-  let slices = (featureChannels + 3) / 4
-  let paddedChannels = slices * 4
+  assert(channelFormat == .float16)
 
-  // The number of channels is a multiple of 4, so we can do a straight copy.
-  if paddedChannels == featureChannels {
+  let inputSlices = (inputFeatureChannels + 3) / 4
+  let paddedInputChannels = inputSlices * 4
+
+  // Calculate how many elements we should copy. Note that the number of output
+  // channels isn't necessarily a multiple of 4 in the given weights, so we may
+  // have to copy over fewer bytes than fit in the MTLBuffer (the remainder of 
+  // the buffer will be all zeros in that case).
+  let count = outputFeatureChannels * kernelHeight * kernelWidth * paddedInputChannels
+  assert(buffer.length / MemoryLayout<Float16>.stride >= count)
+
+  // If the number of input channels is a multiple of 4, we can do a straight
+  // copy from the given weights into the MTLBuffer.
+  if paddedInputChannels == inputFeatureChannels {
     let ptr = UnsafeMutablePointer(mutating: weights)
     float32to16(input: ptr, output: buffer.contents(), count: count)
 
-  // Otherwise, copy "featureChannels" weights at a time and add padding bytes.
+  // Otherwise, copy "inputFeatureChannels" weights at a time and add 0-bytes
+  // in between to pad the length to a multiple of 4.
   } else {
     var srcPtr = UnsafeMutablePointer(mutating: weights)
     var dstPtr = buffer.contents().bindMemory(to: Float16.self, capacity: count)
 
-    for _ in 0..<count/slices {
-      float32to16(input: srcPtr, output: dstPtr, count: featureChannels)
-      srcPtr += featureChannels
-      dstPtr += paddedChannels
+    for _ in 0..<outputFeatureChannels * kernelHeight * kernelWidth {
+      float32to16(input: srcPtr, output: dstPtr, count: inputFeatureChannels)
+      srcPtr += inputFeatureChannels
+      dstPtr += paddedInputChannels
     }
   }
+}
+
+/**
+  Creates an MTLBuffer to hold weights.
+*/
+func makeBuffer(device: MTLDevice,
+                channelFormat: MPSImageFeatureChannelFormat,
+                kernelWidth: Int,
+                kernelHeight: Int,
+                inputFeatureChannels: Int,
+                outputFeatureChannels: Int,
+                weights: UnsafePointer<Float>) -> MTLBuffer {
+
+  assert(channelFormat == .float16)
+
+  let inputSlices = (inputFeatureChannels + 3) / 4
+  let outputSlices = (outputFeatureChannels + 3) / 4
+  let count = outputSlices * kernelHeight * kernelWidth * inputSlices * 4
+
+  let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
+
+  copy(weights: weights, to: buffer, channelFormat: channelFormat,
+       kernelWidth: kernelWidth, kernelHeight: kernelHeight,
+       inputFeatureChannels: inputFeatureChannels,
+       outputFeatureChannels: outputFeatureChannels)
+
+  // For debugging:
+  //let ptr = buffer.contents().bindMemory(to: Float16.self, capacity: count)
+  //print(float16to32(ptr, count: count))
+
+  return buffer
+}
+
+/**
+  Copies user-supplied bias values into an MTLBuffer.
+  
+  There should be one bias value for each output channel.
+*/
+func copy(biasTerms: UnsafePointer<Float>,
+          to buffer: MTLBuffer,
+          channelFormat: MPSImageFeatureChannelFormat,
+          outputFeatureChannels: Int) {
+
+  assert(channelFormat == .float16)
+
+  let count = outputFeatureChannels
+  assert(buffer.length / MemoryLayout<Float16>.stride >= count)
+
+  let ptr = UnsafeMutablePointer(mutating: biasTerms)
+  float32to16(input: ptr, output: buffer.contents(), count: count)
+}
+
+/**
+  Creates an MTLBuffer to hold bias values.
+*/
+func makeBuffer(device: MTLDevice,
+                channelFormat: MPSImageFeatureChannelFormat,
+                outputFeatureChannels: Int,
+                biasTerms: UnsafePointer<Float>) -> MTLBuffer {
+
+  assert(channelFormat == .float16)
+
+  let outputSlices = (outputFeatureChannels + 3) / 4
+  let count = outputSlices
+  let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
+
+  copy(biasTerms: biasTerms, to: buffer, channelFormat: channelFormat,
+       outputFeatureChannels: outputFeatureChannels)
+
+  return buffer
 }

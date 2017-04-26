@@ -111,8 +111,6 @@ kernel void depthwiseConv3x3_half(
   // Applying a ReLU in the shader is quicker than creating a new layer for it.
   if (applyReLU) out = fmax(out, 0.0h);
 
-  out.w = 1.0;   // just for testing!
-
   outTexture.write(out, gid);
 }
 

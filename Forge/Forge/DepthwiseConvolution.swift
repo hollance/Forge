@@ -67,13 +67,14 @@ public class DepthwiseConvolutionKernel {
     self.device = device
 
     // Convert the weights to 16-bit floats and copy them into a Metal buffer.
-    let slices = (featureChannels + 3) / 4
-    let count = kernelHeight * kernelWidth * slices * 4
-    weightsBuffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
-    weightsToBufferFloat16(weights: kernelWeights,
-                           buffer: weightsBuffer,
-                           featureChannels: featureChannels,
-                           count: count)
+    // There is 1 output channel for each input channel.
+    weightsBuffer = makeBuffer(device: device,
+                               channelFormat: .float16,
+                               kernelWidth: kernelWidth,
+                               kernelHeight: kernelHeight,
+                               inputFeatureChannels: featureChannels,
+                               outputFeatureChannels: 1,
+                               weights: kernelWeights)
 
     // Specialize the compute function, so that the Metal compiler will build
     // a unique kernel based on the chosen options for stride, etc. We could
@@ -88,7 +89,7 @@ public class DepthwiseConvolutionKernel {
     // If there's more than one texture slice in the image, we have to use a
     // kernel that uses texture2d_array objects.
     let functionName: String
-    if slices == 1 {
+    if featureChannels <= 4 {
       functionName = "depthwiseConv3x3_half"
     } else {
       functionName = "depthwiseConv3x3_half_array"
