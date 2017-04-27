@@ -27,6 +27,7 @@ model = Model()
 **Custom layers.** MPSCNN only supports a limited number of layers, so we've added a few of our own:
 
 - Depth-wise convolution
+- Transpose channels
 - Deconvolution (coming soon!)
 
 **Preprocessing kernels.** Often you need to preprocess data before it goes into the neural network. Forge comes with a few handy kernels for this:

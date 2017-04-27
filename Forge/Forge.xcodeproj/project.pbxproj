@@ -35,6 +35,7 @@
 		7BA396821EAA07A200F4C4D6 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396811EAA07A200F4C4D6 /* Math.swift */; };
 		7BA396841EAA0B1F00F4C4D6 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396831EAA0B1F00F4C4D6 /* Random.swift */; };
 		7BA396871EAA176500F4C4D6 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396861EAA176500F4C4D6 /* Model.swift */; };
+		7BD4249A1EB216B700451777 /* TransposeChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD424991EB216B700451777 /* TransposeChannels.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,7 @@
 		7BA396811EAA07A200F4C4D6 /* Math.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Math.swift; sourceTree = "<group>"; };
 		7BA396831EAA0B1F00F4C4D6 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
 		7BA396861EAA176500F4C4D6 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		7BD424991EB216B700451777 /* TransposeChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransposeChannels.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,10 +159,11 @@
 			isa = PBXGroup;
 			children = (
 				7B8236FF1EABD42000127F0C /* DepthwiseConvolution.swift */,
-				7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */,
 				7B8236C41EAA5BFC00127F0C /* RGB2BGR.swift */,
-				7B8236C21EAA5AF300127F0C /* SubtractMeanColor.swift */,
+				7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */,
 				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
+				7B8236C21EAA5AF300127F0C /* SubtractMeanColor.swift */,
+				7BD424991EB216B700451777 /* TransposeChannels.swift */,
 			);
 			name = Layers;
 			sourceTree = "<group>";
@@ -324,6 +327,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7B8236B91EAA4F4700127F0C /* Shaders.metal in Sources */,
+				7BD4249A1EB216B700451777 /* TransposeChannels.swift in Sources */,
 				7BA396581EA8C58A00F4C4D6 /* MTLTexture+Array.swift in Sources */,
 				7BA3966D1EA94D8900F4C4D6 /* MTLBuffer+Array.swift in Sources */,
 				7BA396551EA8C58A00F4C4D6 /* Float16.swift in Sources */,

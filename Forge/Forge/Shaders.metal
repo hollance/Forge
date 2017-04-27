@@ -150,3 +150,42 @@ kernel void depthwiseConv3x3_half_array(
 
   outTexture.write(half4(slices, slice, 0.0h, 0.0h), gid.xy, gid.z);
 }
+
+// MARK: - Transpose channels
+
+kernel void transposeChannels_half(
+  texture2d<half, access::read> inTexture [[texture(0)]],
+  texture2d<half, access::write> outTexture [[texture(1)]],
+  const device ushort* permute [[buffer(0)]],
+  ushort2 gid [[thread_position_in_grid]])
+{
+  if (gid.x >= outTexture.get_width() ||
+      gid.y >= outTexture.get_height()) return;
+
+  const half4 in = inTexture.read(gid);
+  const half4 out = half4(in[permute[0]], in[permute[1]], in[permute[2]], in[permute[3]]);
+  outTexture.write(out, gid);
+}
+
+kernel void transposeChannels_half_array(
+  texture2d_array<half, access::read> inTexture [[texture(0)]],
+  texture2d_array<half, access::write> outTexture [[texture(1)]],
+  const device ushort* permute [[buffer(0)]],
+  ushort3 gid [[thread_position_in_grid]])
+{
+  if (gid.x >= outTexture.get_width() ||
+      gid.y >= outTexture.get_height() ||
+      gid.z >= outTexture.get_array_size()) return;
+
+  half4 out = half4(0.0h);
+
+  for (ushort i = 0; i < 4; ++i) {
+    const ushort perm = permute[(gid.z << 2) + i];
+    const ushort slice = perm >> 2;
+    const ushort comp = perm - (slice << 2);
+    const half4 in = inTexture.read(gid.xy, slice);
+    out[i] = in[comp];
+  }
+
+  outTexture.write(out, gid.xy, gid.z);
+}
