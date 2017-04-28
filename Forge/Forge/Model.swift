@@ -215,7 +215,7 @@ class ModelCompiler {
 
     if node.needsEncoding {
       guard let destinationImage = destinationImage else {
-        fatalError("Error: expected destination image")
+        fatalError("Error: layer '\(node.name)' expected destination image")
       }
 
       if node.wantsTextures {
@@ -225,15 +225,19 @@ class ModelCompiler {
         } else if let sourceTexture = sourceTexture {
           inputTexture = sourceTexture   // valid only for first layer
         } else {
-          fatalError("Error: expected source texture")
+          fatalError("Error: layer '\(node.name)' expected source texture")
         }
 
         node.encode(commandBuffer: commandBuffer,
                     sourceTexture: inputTexture,
                     destinationTexture: destinationImage.texture)
+
+        if let image = sourceImage as? MPSTemporaryImage {
+          image.readCount -= 1
+        }
       } else {
         guard let sourceImage = sourceImage else {
-          fatalError("Error: expected source image")
+          fatalError("Error: layer '\(node.name)' expected source image")
         }
 
         node.encode(commandBuffer: commandBuffer,
@@ -242,7 +246,10 @@ class ModelCompiler {
       }
     }
 
-    return destinationImage
+    // Almost every layer will return a valid destination image. But some
+    // layers, such as Input (with a fully-specified size), will simply pass
+    // through the source image unchanged.
+    return destinationImage ?? sourceImage
   }
 }
 
