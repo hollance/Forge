@@ -612,6 +612,31 @@ public class Resize: Layer {
                    sourceTexture: sourceTexture,
                    destinationTexture: destinationTexture)
   }
+
+  /**
+    Crops the input image before it gets scaled down.
+
+    The crop region is specified in input image coordinates.
+
+    If you're always cropping the same region you can call this method right
+    before or after compiling the model. If you're always cropping a different
+    region (for example, using face detection on the input texture) then you
+    should call this method right before you encode the model.
+  */
+  public func setCropRegion(x: Int, y: Int, width: Int, height: Int) {
+    let scaleX = Double(outputShape.width) / Double(width)
+    let scaleY = Double(outputShape.height) / Double(height)
+    let translateX = Double(-x) * scaleX
+    let translateY = Double(-y) * scaleY
+    var transform = MPSScaleTransform(scaleX: scaleX,
+                                      scaleY: scaleY,
+                                      translateX: translateX,
+                                      translateY: translateY)
+
+    withUnsafePointer(to: &transform) { ptr in
+      lanczos.scaleTransform = ptr
+    }
+  }
 }
 
 /**

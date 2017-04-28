@@ -39,7 +39,7 @@ public class MNIST: NeuralNetwork {
 
     model = Model()
             --> Input()        // this is optional thanks to Resize
-            --> Resize(width: 28, height: 28)
+            --> Resize(width: 28, height: 28, name: "Resizing")
             --> Custom(makeGrayscale, channels: 1, name: "Preprocessing")
             --> Convolution(kernel: (5, 5), channels: 20, filter: relu, name: "conv1")
             --> MaxPooling(kernel: (2, 2), stride: (2, 2))
@@ -64,6 +64,12 @@ public class MNIST: NeuralNetwork {
   }
 
   public func encode(commandBuffer: MTLCommandBuffer, texture inputTexture: MTLTexture, inflightIndex: Int) {
+    // This is how you can dynamically crop the input texture before resizing
+    // (this crops the input image to the center square):
+    if let resizing = model["Resizing"] as? Resize {
+      resizing.setCropRegion(x: 0, y: 60, width: 360, height: 360)
+    }
+
     model.encode(commandBuffer: commandBuffer, texture: inputTexture, inflightIndex: inflightIndex)
   }
 
