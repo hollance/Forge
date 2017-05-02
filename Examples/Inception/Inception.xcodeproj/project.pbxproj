@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2E1D264E1EB91EA3003B0D4C /* Inception3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970C1EAA2DB100F4C4D6 /* Inception3.swift */; };
 		7BA396FF1EAA2D8100F4C4D6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396FD1EAA2D8100F4C4D6 /* Main.storyboard */; };
 		7BA397011EAA2D8100F4C4D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA397001EAA2D8100F4C4D6 /* Assets.xcassets */; };
 		7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970B1EAA2DB100F4C4D6 /* CameraViewController.swift */; };
@@ -986,6 +987,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E1D264E1EB91EA3003B0D4C /* Inception3.swift in Sources */,
 				7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */,
 				7BA397141EAA2DBB00F4C4D6 /* AppDelegate.swift in Sources */,
 				7BA397151EAA2DBB00F4C4D6 /* VideoCapture.swift in Sources */,
