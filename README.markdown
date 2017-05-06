@@ -83,13 +83,13 @@ A *tensor* describes data. It's really just a fancy word for multidimensional ar
 
 You always start by declaring an `Input` tensor:
 
-```
+```swift
 let input = Input()
 ```
 
 Or like so:
 
-```
+```swift
 let input = Input(width: 100, height: 100, channels: 3)
 ```
 
@@ -109,7 +109,7 @@ A layer takes a tensor, performs some kind of computation on the data, and outpu
 
 You can declare a layer like this:
 
-```
+```swift
 let sigmoid = MPSCNNNeuronSigmoid(device: device)
 let layer = Dense(neurons: 100, activation: sigmoid, name: "dense1")
 ```
@@ -118,7 +118,7 @@ This creates a new fully-connected -- or "dense" -- layer with 100 neurons and s
 
 To get the output of the layer, you apply the layer to the input tensor:
 
-```
+```swift
 let output = input --> layer
 ```
 
@@ -126,7 +126,7 @@ The `-->` is a custom operator that makes it easy to connect tensors and layers.
 
 One way to create the model is in separate steps:
 
-```
+```swift
 let input = Input()
 
 let layer1 = Resize(width: 28, height: 28)
@@ -143,7 +143,7 @@ x = x --> layer4
 
 But more typically, you'd create your model by connecting all the tensors and layers in one go:
 
-```
+```swift
 let input = Input()
 
 let output = input
@@ -157,7 +157,7 @@ The nice thing about this mini-language is that it automatically infers the size
 
 Sometimes it's useful to keep track of a specific layer or tensor. In that case you'd store a reference to these objects somewhere:
 
-```
+```swift
 let resizeLayer: Resize
 let conv1Output: Tensor
 . . .
@@ -179,7 +179,7 @@ Now we can use `resizeLayer` to change the properties of this layer later on (fo
 
 We can use `conv1Output` to access the tensor. Normally you don't need to keep track of individual tensors, but it's handy for debugging purposes. A tensor writes its data into an `MPSTemporaryImage`, which only exists for a very short while. By setting the tensor's `imageIsTemporary` property to false, it will use a permanent `MPSImage` instead. After the forward pass through the network completes, you can ask the model for this tensor's image and look at its contents. This is useful for making sure your neural network actually computes the right thing.
 
-```
+```swift
 // before compiling:
 conv1Output.imageIsTemporary = false
 
@@ -190,7 +190,7 @@ print(image.toFloatArray())
 
 This method of connecting tensors to layers to tensors to layers etc is quite powerful. For example, here's how you can make an Inception module:
 
-```
+```swift
 let avgPool = AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
 
 let mixed0 = Concatenate([
@@ -213,13 +213,13 @@ The `Model` contains the graph you have just defined and is the main interface t
 
 To create the model, you supply both the input and the output tensor:
 
-```
+```swift
 model = Model(input: input, output: output)
 ```
 
 Once you've created the model you can compile it:
 
-```
+```swift
 let success = model.compile(device: device, inflightBuffers: 3) {
   name, count, type in 
   return ParameterLoaderBundle(name: name, count: count,
@@ -246,7 +246,7 @@ After the model successfully compiles, `print(model.summary())` will output a li
 
 Once you have a compiled model you call `model.encode()` to encode the GPU commands into a Metal `MTLCommandBuffer` object:
 
-```
+```swift
 model.encode(commandBuffer: commandBuffer, texture: inputTexture, inflightIndex: i)
 ```
 
@@ -254,7 +254,7 @@ This performs a single forward pass of the neural network.
 
 After the command buffer completes executing on the GPU, you can read the neural network's output as follows:
 
-```
+```swift
 let probabilities = model.outputImage(inflightIndex: i).toFloatArray()
 let top5 = probabilities.top(k: 5)
 let top5Labels = top5.map { x -> (String, Float) in (labels[x.0], x.1) }
@@ -285,7 +285,7 @@ Sometimes compiling Inception takes 0.5 seconds and other times only about 0.12 
 
 ##### Allow nested concatenation
 
-```
+```swift
 let m1 = Concatenate([a, b])
 let m2 = Concatenate([m1, c])
 ```
@@ -294,7 +294,7 @@ Here, tensors `a`, `b`, and `c` should all write into `m2`'s image (`m1` does no
 
 ##### Allow "residual" or bypass connections
 
-```
+```swift
 let a = ... 
 let b = a --> Convolution()
 let c = Concatenate(a, b)
@@ -306,7 +306,7 @@ Here, tensor `a` writes into `c`'s image (no problem). But `b` will read from `c
 
 Currently you can write this:
 
-```
+```swift
 let x = input --> Layer() --> ...
 let y = x --> Layer()
 let model = Model(input: input, output: x)
