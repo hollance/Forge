@@ -39,7 +39,7 @@ let model = Model(input: input, output: output)
 - SubtractMeanColor
 - RGB2Gray
 - RGB2BGR
-	
+
 **Custom compute kernels.** Many neural networks require custom compute kernels, so Forge provides helpers that make it easy to write and launch your own kernels.
 
 **Debugging tools.** When you implement a neural network in Metal you want to make sure it actually computes the correct thing. Due to the way Metal encodes the data, inspecting the contents of the `MTLTexture` objects is not always straightforward. Forge can help with this.
@@ -148,9 +148,9 @@ let input = Input()
 
 let output = input
          --> Resize(width: 28, height: 28)
-		 --> Convolution(kernel: (5, 5), channels: 20, activation: relu, name: "conv1")
-		 --> Dense(neurons: 10, name: "dense1")
-		 --> Softmax()
+         --> Convolution(kernel: (5, 5), channels: 20, activation: relu, name: "conv1")
+         --> Dense(neurons: 10, name: "dense1")
+         --> Softmax()
 ```
 
 The nice thing about this mini-language is that it automatically infers the size of the data as it flows through the network. With the possible exception of the `Input` tensor, you never have to specify how large the tensors are. (You can see these inferred sizes with `print(model.summary())` after you've compiled the model.)
@@ -172,7 +172,7 @@ conv1Output = input
 
 let output = conv1Output 
          --> Dense(neurons: 10, name: "dense1")
-		 --> Softmax()
+         --> Softmax()
 ```
 
 Now we can use `resizeLayer` to change the properties of this layer later on (for example, to crop the input image based on face detection).
