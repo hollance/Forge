@@ -86,6 +86,10 @@ public class ParameterLoaderBundle: ParameterData {
   }
 }
 
+/**
+  Fills up the weights and bias arrays with random values. Useful for quickly
+  trying out a model.
+*/
 public class ParameterLoaderRandom: ParameterData {
   private(set) public var pointer: UnsafeMutablePointer<Float>
 

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B3DA4E81EBB36D100BD3F06 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DA4E71EBB36D100BD3F06 /* Model.swift */; };
+		7B3DA4EA1EBBB45D00BD3F06 /* Tensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DA4E91EBBB45D00BD3F06 /* Tensor.swift */; };
+		7B3DA4EC1EBBB48F00BD3F06 /* Layers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DA4EB1EBBB48F00BD3F06 /* Layers.swift */; };
 		7B8236B81EAA4F4700127F0C /* RGB2Gray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */; };
 		7B8236B91EAA4F4700127F0C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236B71EAA4F4700127F0C /* Shaders.metal */; };
 		7B8236BB1EAA4F9F00127F0C /* SimpleKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236BA1EAA4F9F00127F0C /* SimpleKernel.swift */; };
@@ -14,7 +17,6 @@
 		7B8236C51EAA5BFC00127F0C /* RGB2BGR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236C41EAA5BFC00127F0C /* RGB2BGR.swift */; };
 		7B8236C81EAA7CBF00127F0C /* Parameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236C71EAA7CBF00127F0C /* Parameters.swift */; };
 		7B8236CA1EAA7DE900127F0C /* DataShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236C91EAA7DE900127F0C /* DataShape.swift */; };
-		7B8236CC1EAA7E2700127F0C /* Layers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236CB1EAA7E2700127F0C /* Layers.swift */; };
 		7B8237001EABD42000127F0C /* DepthwiseConvolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236FF1EABD42000127F0C /* DepthwiseConvolution.swift */; };
 		7BA395C81EA8C24100F4C4D6 /* Forge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA395BE1EA8C24100F4C4D6 /* Forge.framework */; };
 		7BA395CD1EA8C24100F4C4D6 /* ArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA395CC1EA8C24100F4C4D6 /* ArrayTests.swift */; };
@@ -34,7 +36,6 @@
 		7BA3966F1EAA06BC00F4C4D6 /* Debugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3966E1EAA06BC00F4C4D6 /* Debugging.swift */; };
 		7BA396821EAA07A200F4C4D6 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396811EAA07A200F4C4D6 /* Math.swift */; };
 		7BA396841EAA0B1F00F4C4D6 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396831EAA0B1F00F4C4D6 /* Random.swift */; };
-		7BA396871EAA176500F4C4D6 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396861EAA176500F4C4D6 /* Model.swift */; };
 		7BD4249A1EB216B700451777 /* TransposeChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD424991EB216B700451777 /* TransposeChannels.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,6 +50,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7B3DA4E71EBB36D100BD3F06 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		7B3DA4E91EBBB45D00BD3F06 /* Tensor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tensor.swift; sourceTree = "<group>"; };
+		7B3DA4EB1EBBB48F00BD3F06 /* Layers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Layers.swift; sourceTree = "<group>"; };
 		7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RGB2Gray.swift; sourceTree = "<group>"; };
 		7B8236B71EAA4F4700127F0C /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		7B8236BA1EAA4F9F00127F0C /* SimpleKernel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleKernel.swift; sourceTree = "<group>"; };
@@ -56,7 +60,6 @@
 		7B8236C41EAA5BFC00127F0C /* RGB2BGR.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RGB2BGR.swift; sourceTree = "<group>"; };
 		7B8236C71EAA7CBF00127F0C /* Parameters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parameters.swift; sourceTree = "<group>"; };
 		7B8236C91EAA7DE900127F0C /* DataShape.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataShape.swift; sourceTree = "<group>"; };
-		7B8236CB1EAA7E2700127F0C /* Layers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Layers.swift; sourceTree = "<group>"; };
 		7B8236FF1EABD42000127F0C /* DepthwiseConvolution.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DepthwiseConvolution.swift; sourceTree = "<group>"; };
 		7BA395BE1EA8C24100F4C4D6 /* Forge.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Forge.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BA395C11EA8C24100F4C4D6 /* Forge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Forge.h; sourceTree = "<group>"; };
@@ -79,7 +82,6 @@
 		7BA3966E1EAA06BC00F4C4D6 /* Debugging.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Debugging.swift; sourceTree = "<group>"; };
 		7BA396811EAA07A200F4C4D6 /* Math.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Math.swift; sourceTree = "<group>"; };
 		7BA396831EAA0B1F00F4C4D6 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
-		7BA396861EAA176500F4C4D6 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		7BD424991EB216B700451777 /* TransposeChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransposeChannels.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -106,9 +108,10 @@
 			isa = PBXGroup;
 			children = (
 				7B8236C91EAA7DE900127F0C /* DataShape.swift */,
-				7B8236CB1EAA7E2700127F0C /* Layers.swift */,
-				7BA396861EAA176500F4C4D6 /* Model.swift */,
+				7B3DA4EB1EBBB48F00BD3F06 /* Layers.swift */,
+				7B3DA4E71EBB36D100BD3F06 /* Model.swift */,
 				7B8236C71EAA7CBF00127F0C /* Parameters.swift */,
+				7B3DA4E91EBBB45D00BD3F06 /* Tensor.swift */,
 			);
 			name = DSL;
 			sourceTree = "<group>";
@@ -338,19 +341,20 @@
 				7BA396531EA8C58A00F4C4D6 /* Array+Extensions.swift in Sources */,
 				7BA3965D1EA8C58A00F4C4D6 /* UIImage+RawBytes.swift in Sources */,
 				7BA396841EAA0B1F00F4C4D6 /* Random.swift in Sources */,
+				7B3DA4EC1EBBB48F00BD3F06 /* Layers.swift in Sources */,
 				7B8236C81EAA7CBF00127F0C /* Parameters.swift in Sources */,
 				7B8236C31EAA5AF300127F0C /* SubtractMeanColor.swift in Sources */,
 				7BA3966F1EAA06BC00F4C4D6 /* Debugging.swift in Sources */,
 				7B8236CA1EAA7DE900127F0C /* DataShape.swift in Sources */,
 				7B8236C51EAA5BFC00127F0C /* RGB2BGR.swift in Sources */,
 				7BA396561EA8C58A00F4C4D6 /* LayerHelpers.swift in Sources */,
+				7B3DA4EA1EBBB45D00BD3F06 /* Tensor.swift in Sources */,
 				7B8236BB1EAA4F9F00127F0C /* SimpleKernel.swift in Sources */,
 				7BA396541EA8C58A00F4C4D6 /* ComputeHelpers.swift in Sources */,
+				7B3DA4E81EBB36D100BD3F06 /* Model.swift in Sources */,
 				7BA396571EA8C58A00F4C4D6 /* MPSImage+Floats.swift in Sources */,
-				7BA396871EAA176500F4C4D6 /* Model.swift in Sources */,
 				7BA3965B1EA8C58A00F4C4D6 /* TextureLoader.swift in Sources */,
 				7B8236B81EAA4F4700127F0C /* RGB2Gray.swift in Sources */,
-				7B8236CC1EAA7E2700127F0C /* Layers.swift in Sources */,
 				7BA396821EAA07A200F4C4D6 /* Math.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

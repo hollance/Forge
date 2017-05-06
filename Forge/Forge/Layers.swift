@@ -27,71 +27,31 @@ import MetalPerformanceShaders
 /**
   The abstract base class for all layers. You cannot create instances of this 
   class directly.
-  
-  When you create a model, you're actually building a graph of these Layer
-  objects.
 */
-open class Layer: CustomDebugStringConvertible {
+open class Layer {
   var name: String
-  var next: Layer?
-
-  // Whether this layer actually computes anything.
-  var needsEncoding = true
 
   // Most layers take MPSImages as input but for Resize it's more optimal to
   // work directly on the input texture. That saves making an MPSImage object.
   // Probably a premature optimization. ;-)
   var wantsTextures = false
 
-  // Most layers require that the complete shape of the input texture is known.
+  // Most layers require that the complete shape of the input tensor is known.
   // However, some layers (such as Resize and Custom) can handle inputs of any
   // size. If your first layer is a type that must know the size (Convolution)
-  // then you need to specify that size with an Input layer.
+  // then you need to specify that size to the Input tensor.
   var allowsIncompleteShape = false
 
-  // Used to set destinationFeatureChannelOffset for merging the output from
-  // multiple layers into one image. If needsDestinationImage is true, a new
-  // (temporary) image is allocated for this layer; if false, the layer will
-  // write into the destination image from its enclosing Group.
-  var mergeOffset = 0
-  var needsDestinationImage = true
+  // The same layer can be used by multiple tensors, but we should only create
+  // its compute just once. Reusing layers is mostly useful for things like
+  // pooling, which don't take parameters.
+  var createdCompute = false
 
-  // These are filled in by the compiler.
-  var inputShape = DataShape()
-  var outputShape = DataShape()
-
-  /**
-    Whether this layer writes its results into an MPSTemporaryImage. Normally
-    this is true for all layers except the last. You can override this if you
-    want to keep track of the layer's MPSImage for processing afterwards.
-  */
-  public var imageIsTemporary = true
+  // The parameter count shown in the summary. (Filled in by the compiler.)
+  var paramCount = 0
 
   fileprivate init(name: String = "") {
     self.name = name
-  }
-
-  public var debugDescription: String {
-    return name
-  }
-
-  /** 
-    Returns the last layer in this chain, or self if this is the last (or only)
-    layer in the chain.
-  */
-  var lastLayer: Layer {
-    var node = self
-    while case let next? = node.next { node = next }
-    return node
-  }
-
-  func summary(indent: Int = 0) -> (String, Int) {
-    let i = String(repeating: " ", count: indent*2)
-    let n = i + name.padding(toLength: 30 - indent*2, withPad: " ", startingAt: 0)
-    let t = typeName.padding(toLength: 10, withPad: " ", startingAt: 0)
-    let s = outputShape.debugDescription.padding(toLength: 16, withPad: " ", startingAt: 0)
-    let p = weightCount + biasCount
-    return (String(format: "%@ %@ %@ %d", n, t, s, p) + "\n", p)
   }
 
   /* Subclasses must implement these methods. */
@@ -104,107 +64,42 @@ open class Layer: CustomDebugStringConvertible {
     fatalError("Subclass must implement this function")
   }
 
-  func createCompute(device: MTLDevice, weights: ParameterData?, biases: ParameterData?) throws {
+  func createCompute(device: MTLDevice,
+                     inputShape: DataShape,
+                     outputShape: DataShape,
+                     weights: ParameterData?,
+                     biases: ParameterData?) throws {
     // do nothing
   }
 
-  func encode(commandBuffer: MTLCommandBuffer, sourceImage: MPSImage, destinationImage: MPSImage) {
-    // do nothing
+  func encode(commandBuffer: MTLCommandBuffer,
+              sourceTensor: Tensor,
+              destinationTensor: Tensor) {
+    // Note: sourceTensor.image and destinationTensor.image are guaranteed
+    // to be non-nil at this point, so it's OK to force-unwrap them.
   }
 
-  func encode(commandBuffer: MTLCommandBuffer, sourceTexture: MTLTexture, destinationTexture: MTLTexture) {
-    // do nothing
+  func encode(commandBuffer: MTLCommandBuffer,
+              sourceTensor: Tensor,
+              sourceTexture: MTLTexture,
+              destinationTensor: Tensor) {
+    // This is a special-case method for layers that prefer to work with
+    // textures rather than MPSImages. The output will always be a texture
+    // from an MPSImage but this not necessarily true for the input texture.
   }
 
-  // If these return 0, we won't attempt to load any parameters for the layer.
-  var weightCount: Int { return 0 }
-  var biasCount: Int { return 0 }
-
-  /* If a layer type has child layers (like Group) then it should implement
-     the methods below. */
-
-  func calculateOutputShapesForChildren(compiler: ModelCompiler) throws {
-    // do nothing
+  func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+    return 0
   }
 
-  func createComputeForChildren(compiler: ModelCompiler) throws {
-    // do nothing
-  }
-
-  func encodeChildren(compiler: ModelCompiler,
-                      commandBuffer: MTLCommandBuffer,
-                      sourceImage: MPSImage?,
-                      destinationImage: MPSImage?,
-                      inflightIndex: Int) {
-    // do nothing
+  func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+    return 0
   }
 }
 
-/**
-  A placeholder for input. This layer doesn't do anything, but can be used to
-  force the input texture to be in a specific shape.
-  
-  If your first layer is `Resize`, which takes a texture of arbitrary size and
-  scales it to a fixed size, then you don't really need `Input`.
-  
-  However, if your first layer is something like a `Convolution`, then you need
-  `Input` to specify the size of the texture that goes into the conv layer. 
-  (Without it, we won't know how large the `Convolution` layer's output will be
-  and as a result we can't allocate an MPSTemporaryImage for it.)
-*/
-public class Input: Layer {
-
-  public init(width: Int? = nil,
-              height: Int? = nil,
-              channels: Int? = nil,
-              name: String = "") {
-
-    super.init(name: name)
-    self.inputShape = DataShape(width: width ?? -1,
-                                height: height ?? -1,
-                                channels: channels ?? -1)
-
-    // We're not computing anything for this layer.
-    needsEncoding = false
-    needsDestinationImage = false
-
-    if !self.inputShape.isFullySpecified {
-      allowsIncompleteShape = true
-    }
-  }
-
-  override var typeName: String {
-    return "Input"
-  }
-
-  override func outputShape(for inputShape: DataShape) -> DataShape {
-    return inputShape
-  }
-}
-
-/**
-  This layer doesn't do anything. But it lets us write the following:
-  
-      let maybe: Layer
-      if someCondition {
-        maybe = SomeLayer() <-- SomeOtherLayer()
-      } else {
-        maybe = PassthroughLayer()
-      }
-      
-      let model = Model()
-                --> TheFirstLayer()
-                --> maybe
-                --> AnotherLayer()
-
-  If `someCondition` is false, the PassthroughLayer is used, which effectively
-  means nothing happens at that point. It's just a trick to make this kind of
-  construct possible. The PassthroughLayer is actually removed from the model
-  by the compiler.
-*/
-public class PassthroughLayer: Layer {
-  public init() {
-    super.init()
+extension Layer: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    return name
   }
 }
 
@@ -215,11 +110,18 @@ public class MPSCNNLayer: Layer {
   var mpscnn: MPSCNNKernel!
 
   override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceImage: MPSImage,
-                       destinationImage: MPSImage) {
+                       sourceTensor: Tensor,
+                       destinationTensor: Tensor) {
+
+    // FUTURE: For a residual connection, where we may want to read from the
+    // destination image (and write to that same destination image), we would
+    // set mpscnn.offset and clipRect here using sourceTensor's channel offset.
+
+    mpscnn.destinationFeatureChannelOffset = destinationTensor.destinationChannelOffset
+
     mpscnn.encode(commandBuffer: commandBuffer,
-                  sourceImage: sourceImage,
-                  destinationImage: destinationImage)
+                  sourceImage: sourceTensor.image!,
+                  destinationImage: destinationTensor.image!)
   }
 }
 
@@ -231,7 +133,8 @@ public class Convolution: MPSCNNLayer {
   let channels: Int
   let stride: (Int, Int)
   let padding: Bool
-  let filter: MPSCNNNeuron?
+  let activation: MPSCNNNeuron?
+  var conv: MPSCNNConvolution!
 
   /**
     Creates a convolution layer.
@@ -248,13 +151,13 @@ public class Convolution: MPSCNNLayer {
               channels: Int,
               stride: (Int, Int) = (1, 1),
               padding: Bool = true,
-              filter: MPSCNNNeuron? = nil,
+              activation: MPSCNNNeuron? = nil,
               name: String = "") {
     self.kernel = kernel
     self.channels = channels
     self.stride = stride
     self.padding = padding
-    self.filter = filter
+    self.activation = activation
     super.init(name: name)
   }
 
@@ -274,15 +177,17 @@ public class Convolution: MPSCNNLayer {
     }
   }
 
-  override var weightCount: Int {
+  override func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return inputShape.channels * kernel.1 * kernel.0 * outputShape.channels
   }
 
-  override var biasCount: Int {
+  override func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return outputShape.channels
   }
 
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
 
@@ -294,23 +199,36 @@ public class Convolution: MPSCNNLayer {
                                            kernelHeight: kernel.1,
                                            inputFeatureChannels: inputShape.channels,
                                            outputFeatureChannels: outputShape.channels,
-                                           neuronFilter: filter)
+                                           neuronFilter: activation)
     desc.strideInPixelsX = stride.0
     desc.strideInPixelsY = stride.1
 
-    let conv = MPSCNNConvolution(device: device,
-                                 convolutionDescriptor: desc,
-                                 kernelWeights: weights.pointer,
-                                 biasTerms: biases.pointer,
-                                 flags: .none)
-
-    conv.offset = calculatePadding(conv)
+    conv = MPSCNNConvolution(device: device,
+                             convolutionDescriptor: desc,
+                             kernelWeights: weights.pointer,
+                             biasTerms: biases.pointer,
+                             flags: .none)
     conv.edgeMode = .zero
-    conv.destinationFeatureChannelOffset = mergeOffset
-    self.mpscnn = conv
+    mpscnn = conv
   }
 
-  func calculatePadding(_ conv: MPSCNNConvolution) -> MPSOffset {
+  override func encode(commandBuffer: MTLCommandBuffer,
+                       sourceTensor: Tensor,
+                       destinationTensor: Tensor) {
+
+    // We compute the padding at encode-time, so that this layer can be
+    // reused on tensors of different sizes. Note that the input and output
+    // depth must not vary, only the width and height may be different.
+    conv.offset = calculatePadding(inputShape: sourceTensor.shape,
+                                   outputShape: destinationTensor.shape)
+
+    super.encode(commandBuffer: commandBuffer,
+                 sourceTensor: sourceTensor,
+                 destinationTensor: destinationTensor)
+  }
+
+  func calculatePadding(inputShape: DataShape,
+                        outputShape: DataShape) -> MPSOffset {
     if padding {
       let padH = (outputShape.height - 1) * conv.strideInPixelsY + conv.kernelHeight - inputShape.height
       let padW = (outputShape.width  - 1) * conv.strideInPixelsX + conv.kernelWidth  - inputShape.width
@@ -328,6 +246,7 @@ public class Pooling: MPSCNNLayer {
   let kernel: (Int, Int)
   let stride: (Int, Int)
   let padding: Bool
+  var pool: MPSCNNPooling!
 
   /**
     Creates a new pooling layer.
@@ -360,7 +279,22 @@ public class Pooling: MPSCNNLayer {
     }
   }
 
-  func calculatePadding(_ pool: MPSCNNPooling) -> MPSOffset {
+  override func encode(commandBuffer: MTLCommandBuffer,
+                       sourceTensor: Tensor,
+                       destinationTensor: Tensor) {
+
+    // We compute the padding at encode-time, so that this layer can be
+    // reused on tensors of different sizes.
+    pool.offset = calculatePadding(inputShape: sourceTensor.shape,
+                                   outputShape: destinationTensor.shape)
+
+    super.encode(commandBuffer: commandBuffer,
+                 sourceTensor: sourceTensor,
+                 destinationTensor: destinationTensor)
+  }
+
+  func calculatePadding(inputShape: DataShape,
+                        outputShape: DataShape) -> MPSOffset {
     if padding {
       let padH = (outputShape.height - 1) * pool.strideInPixelsY + pool.kernelHeight - inputShape.height
       let padW = (outputShape.width  - 1) * pool.strideInPixelsX + pool.kernelWidth  - inputShape.width
@@ -368,14 +302,6 @@ public class Pooling: MPSCNNLayer {
     } else {
       return MPSOffset(x: pool.kernelWidth/2, y: pool.kernelHeight/2, z: 0)
     }
-  }
-
-  override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceImage: MPSImage,
-                       destinationImage: MPSImage) {
-    mpscnn.encode(commandBuffer: commandBuffer,
-                  sourceImage: sourceImage,
-                  destinationImage: destinationImage)
   }
 }
 
@@ -388,22 +314,18 @@ public class MaxPooling: Pooling {
   }
 
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
 
-    // FUTURE: Since pooling layers don't have parameters, it makes sense to
-    // reuse them where possible. Put them into a dictionary using the kernel
-    // size and stride as key.
-    let pool = MPSCNNPoolingMax(device: device,
-                                kernelWidth: kernel.0,
-                                kernelHeight: kernel.1,
-                                strideInPixelsX: stride.0,
-                                strideInPixelsY: stride.1)
-
-    pool.offset = calculatePadding(pool)
+    pool = MPSCNNPoolingMax(device: device,
+                            kernelWidth: kernel.0,
+                            kernelHeight: kernel.1,
+                            strideInPixelsX: stride.0,
+                            strideInPixelsY: stride.1)
     pool.edgeMode = .clamp
-    pool.destinationFeatureChannelOffset = mergeOffset
-    self.mpscnn = pool
+    mpscnn = pool
   }
 }
 
@@ -416,20 +338,18 @@ public class AveragePooling: Pooling {
   }
 
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
 
-    // FUTURE: Also recycle these. See note in max-pool layer.
-    let pool = MPSCNNPoolingAverage(device: device,
-                                    kernelWidth: kernel.0,
-                                    kernelHeight: kernel.1,
-                                    strideInPixelsX: stride.0,
-                                    strideInPixelsY: stride.1)
-
-    pool.offset = calculatePadding(pool)
+    pool = MPSCNNPoolingAverage(device: device,
+                                kernelWidth: kernel.0,
+                                kernelHeight: kernel.1,
+                                strideInPixelsX: stride.0,
+                                strideInPixelsY: stride.1)
     pool.edgeMode = .clamp
-    pool.destinationFeatureChannelOffset = mergeOffset
-    self.mpscnn = pool
+    mpscnn = pool
   }
 }
 
@@ -454,6 +374,8 @@ public class GlobalAveragePooling: MPSCNNLayer {
   }
 
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
 
@@ -465,7 +387,6 @@ public class GlobalAveragePooling: MPSCNNLayer {
 
     pool.offset = MPSOffset(x: inputShape.width/2, y: inputShape.height/2, z: 0)
     pool.edgeMode = .clamp
-    pool.destinationFeatureChannelOffset = mergeOffset
     self.mpscnn = pool
   }
 }
@@ -475,7 +396,7 @@ public class GlobalAveragePooling: MPSCNNLayer {
 */
 public class Dense: MPSCNNLayer {
   let neurons: Int
-  let filter: MPSCNNNeuron?
+  let activation: MPSCNNNeuron?
 
   /**
     Creates a fully-connected layer.
@@ -484,9 +405,9 @@ public class Dense: MPSCNNLayer {
       - neurons: The number of neurons in this layer.
       - name: The name is used to load the layer's parameters.
   */
-  public init(neurons: Int, filter: MPSCNNNeuron? = nil, name: String = "") {
+  public init(neurons: Int, activation: MPSCNNNeuron? = nil, name: String = "") {
     self.neurons = neurons
-    self.filter = filter
+    self.activation = activation
     super.init(name: name)
   }
 
@@ -498,15 +419,17 @@ public class Dense: MPSCNNLayer {
     return DataShape(width: 1, height: 1, channels: neurons)
   }
 
-  override var weightCount: Int {
+  override func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return inputShape.channels * inputShape.height * inputShape.width * neurons
   }
 
-  override var biasCount: Int {
+  override func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return neurons
   }
 
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
 
@@ -521,15 +444,13 @@ public class Dense: MPSCNNLayer {
                                            kernelHeight: inputShape.height,
                                            inputFeatureChannels: inputShape.channels,
                                            outputFeatureChannels: neurons,
-                                           neuronFilter: filter)
+                                           neuronFilter: activation)
 
     mpscnn = MPSCNNFullyConnected(device: device,
                                   convolutionDescriptor: desc,
                                   kernelWeights: weights.pointer,
                                   biasTerms: biases.pointer,
                                   flags: .none)
-
-    mpscnn.destinationFeatureChannelOffset = mergeOffset
   }
 }
 
@@ -550,6 +471,8 @@ public class Softmax: MPSCNNLayer {
   }
 
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
     mpscnn = MPSCNNSoftMax(device: device)
@@ -560,9 +483,9 @@ public class Softmax: MPSCNNLayer {
   Lets you use any MPSCNNNeuron as a layer of its own.
 */
 public class Activation: MPSCNNLayer {
-  public init(_ filter: MPSCNNNeuron, name: String = "") {
+  public init(_ activation: MPSCNNNeuron, name: String = "") {
     super.init(name: name)
-    self.mpscnn = filter
+    self.mpscnn = activation
   }
 
   override var typeName: String {
@@ -600,17 +523,20 @@ public class Resize: Layer {
   }
 
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
     return lanczos = MPSImageLanczosScale(device: device)
   }
 
   override func encode(commandBuffer: MTLCommandBuffer,
+                       sourceTensor: Tensor,
                        sourceTexture: MTLTexture,
-                       destinationTexture: MTLTexture) {
+                       destinationTensor: Tensor) {
     lanczos.encode(commandBuffer: commandBuffer,
                    sourceTexture: sourceTexture,
-                   destinationTexture: destinationTexture)
+                   destinationTexture: destinationTensor.image!.texture)
   }
 
   /**
@@ -623,11 +549,11 @@ public class Resize: Layer {
     region (for example, using face detection on the input texture) then you
     should call this method right before you encode the model.
   */
-  public func setCropRegion(x: Int, y: Int, width: Int, height: Int) {
-    let scaleX = Double(outputShape.width) / Double(width)
-    let scaleY = Double(outputShape.height) / Double(height)
-    let translateX = Double(-x) * scaleX
-    let translateY = Double(-y) * scaleY
+  public func setCropRect(x: Double, y: Double, width: Double, height: Double) {
+    let scaleX = Double(self.width) / width
+    let scaleY = Double(self.height) / height
+    let translateX = -x * scaleX
+    let translateY = -y * scaleY
     var transform = MPSScaleTransform(scaleX: scaleX,
                                       scaleY: scaleY,
                                       translateX: translateX,
@@ -636,6 +562,13 @@ public class Resize: Layer {
     withUnsafePointer(to: &transform) { ptr in
       lanczos.scaleTransform = ptr
     }
+  }
+
+  public func setCropRect(_ rect: CGRect) {
+    setCropRect(x: Double(rect.origin.x),
+                y: Double(rect.origin.y),
+                width: Double(rect.width),
+                height: Double(rect.height))
   }
 }
 
@@ -697,115 +630,11 @@ public class Custom: Layer {
   }
 
   override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceImage: MPSImage,
-                       destinationImage: MPSImage) {
+                       sourceTensor: Tensor,
+                       destinationTensor: Tensor) {
     custom.encode(commandBuffer: commandBuffer,
-                  sourceImage: sourceImage,
-                  destinationImage: destinationImage)
-  }
-}
-
-/**
-  A group runs several layers in parallel. All layers receive the same input,
-  and their output is depth-concatenated. Useful for making Inception towers.
-  
-  - Note: If you nest a Group inside a Group, then the nested Group will render
-    into the outer Group's destinationImage -- it does not get its own image.
-*/
-public class Group: Layer {
-  let children: [Layer]
-
-  public init(_ layers: [Layer], name: String = "") {
-    self.children = layers
-    super.init(name: name)
-    needsEncoding = false
-  }
-
-  override var typeName: String {
-    return "Group"
-  }
-
-  override func calculateOutputShapesForChildren(compiler: ModelCompiler) throws {
-    for layer in children {
-      layer.inputShape = inputShape
-      try compiler.calculateOutputShapes(for: layer)
-    }
-  }
-
-  override func outputShape(for inputShape: DataShape) -> DataShape {
-    var maxWidth = 0
-    var maxHeight = 0
-    var channels = 0
-
-    for layer in children {
-      let lastLayer = layer.lastLayer
-
-      // The last layers of each of the sequences will be merged into
-      // one big image (which is the image allocated for the group).
-      lastLayer.mergeOffset = channels
-      lastLayer.needsDestinationImage = false
-
-      maxWidth = max(maxWidth, lastLayer.outputShape.width)
-      maxHeight = max(maxHeight, lastLayer.outputShape.height)
-      channels += lastLayer.outputShape.channels
-    }
-    return DataShape(width: maxWidth, height: maxHeight, channels: channels)
-  }
-
-  override func createComputeForChildren(compiler: ModelCompiler) throws {
-    for layer in children {
-      var ptr: Layer? = layer
-      while ptr != nil, let node = ptr {
-        // If this is a nested Group, then its children's merge offsets are
-        // relative to that of the group itself.
-        if node.next == nil {
-          node.mergeOffset += self.mergeOffset
-        }
-
-        try compiler.createComputeForLayer(node)
-        ptr = node.next
-      }
-    }
-  }
-
-  override func encodeChildren(compiler: ModelCompiler,
-                               commandBuffer: MTLCommandBuffer,
-                               sourceImage: MPSImage?,
-                               destinationImage: MPSImage?,
-                               inflightIndex: Int) {
-
-    // This allows us to read multiple times from a temporary image.
-    if let image = sourceImage as? MPSTemporaryImage {
-      image.readCount = children.count
-    }
-
-    for layer in children {
-      var image = sourceImage
-      var ptr: Layer? = layer
-      while ptr != nil, let node = ptr {
-        image = compiler.encode(commandBuffer: commandBuffer,
-                                layer: node,
-                                sourceImage: image,
-                                destinationImage: destinationImage,
-                                inflightIndex: inflightIndex)
-        ptr = node.next
-      }
-    }
-  }
-
-  override func summary(indent: Int) -> (String, Int) {
-    var (text, params) = super.summary(indent: indent)
-
-    for layer in children {
-      var ptr: Layer? = layer
-      while ptr != nil, let node = ptr {
-        let (t, p) = node.summary(indent: indent + 1)
-        text += t
-        params += p
-        ptr = node.next
-      }
-    }
-    return (text, params)
+                  sourceImage: sourceTensor.image!,
+                  destinationImage: destinationTensor.image!)
   }
 }
 
@@ -845,15 +674,13 @@ public class DepthwiseConvolution: Layer {
                     channels: inputShape.channels)
   }
 
-  override var weightCount: Int {
+  override func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return inputShape.channels * kernel.1 * kernel.0
   }
 
-  override var biasCount: Int {
-    return 0
-  }
-
   override func createCompute(device: MTLDevice,
+                              inputShape: DataShape,
+                              outputShape: DataShape,
                               weights: ParameterData?,
                               biases: ParameterData?) throws {
 
@@ -873,11 +700,11 @@ public class DepthwiseConvolution: Layer {
   }
 
   override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceImage: MPSImage,
-                       destinationImage: MPSImage) {
+                       sourceTensor: Tensor,
+                       destinationTensor: Tensor) {
     compute.encode(commandBuffer: commandBuffer,
-                   sourceImage: sourceImage,
-                   destinationImage: destinationImage)
+                   sourceImage: sourceTensor.image!,
+                   destinationImage: destinationTensor.image!)
   }
 }
 
@@ -888,9 +715,9 @@ public class PointwiseConvolution: Convolution {
   */
   public init(channels: Int,
               stride: (Int, Int) = (1, 1),
-              filter: MPSCNNNeuron? = nil,
+              activation: MPSCNNNeuron? = nil,
               name: String = "") {
-    super.init(kernel: (1, 1), channels: channels, filter: filter, name: name)
+    super.init(kernel: (1, 1), channels: channels, activation: activation, name: name)
   }
 
   override var typeName: String {

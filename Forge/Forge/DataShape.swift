@@ -32,7 +32,7 @@ import MetalPerformanceShaders
   since most of the time the dimensions *will* be known and unwrapping just
   makes the code uglier.)
 */
-struct DataShape: Hashable, CustomDebugStringConvertible {
+struct DataShape {
   let width: Int
   let height: Int
   let channels: Int
@@ -47,24 +47,28 @@ struct DataShape: Hashable, CustomDebugStringConvertible {
     return width != -1 && height != -1 && channels != -1
   }
 
-  // Needs to be hashable because we'll create a cache of MPSImageDescriptor
-  // objects. The DataShape is the key they're stored under.
-  var hashValue: Int {
-    return width + height*1000 + channels*1000*1000
-  }
-
   func createImageDescriptor() -> MPSImageDescriptor {
     assert(isFullySpecified)
     return MPSImageDescriptor(channelFormat: .float16, width: width,
                               height: height, featureChannels: channels)
   }
+}
 
+extension DataShape: CustomDebugStringConvertible {
   var debugDescription: String {
     var dims: [String] = []
     if width    != -1 { dims.append("\(width)")    } else { dims.append("?") }
     if height   != -1 { dims.append("\(height)")   } else { dims.append("?") }
     if channels != -1 { dims.append("\(channels)") } else { dims.append("?") }
     return "(" + dims.joined(separator: ", ") + ")"
+  }
+}
+
+extension DataShape: Hashable {
+  // Needs to be hashable because we'll create a cache of MPSImageDescriptor
+  // objects. The DataShape is the key they're stored under.
+  var hashValue: Int {
+    return width + height*1000 + channels*1000*1000
   }
 }
 

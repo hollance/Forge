@@ -30,27 +30,14 @@ import QuartzCore
 */
 
 precedencegroup ChainPrecedence {
-  associativity: right
+  associativity: left
   higherThan: MultiplicationPrecedence
 }
 
 infix operator --> : ChainPrecedence
 
-public func --> (lhs: Layer, rhs: Layer) -> Layer {
-  // This operator goes from right to left. To make this work correctly, we
-  // always add the new layer to the end of the list. This also lets you use
-  // parens, e.g. `model --> (layer1 --> layer2) --> layer3`.
-  lhs.lastLayer.next = rhs
-  return lhs
-}
-
-public func --> (lhs: Model, rhs: Layer) -> Model {
-  // FUTURE: writing `model --> layer` adds the first layer to a dictionary,
-  // using the layer's name as the key. This lets you add multiple inputs to
-  // the model by writing `model --> layer` multiple times. When predicting,
-  // you feed a dictionary of textures into predict().
-  lhs.firstLayer = rhs
-  return lhs
+public func --> (lhs: Tensor, rhs: Layer) -> Tensor {
+  return Tensor(input: lhs, layer: rhs)
 }
 
 public typealias ParameterCallback = (String, Int, ParameterType) -> ParameterData?
@@ -59,215 +46,43 @@ enum ModelError: Error {
   case compileError(message: String)
 }
 
-class ModelCompiler {
-  let device: MTLDevice
-  let parameterCallback: ParameterCallback
-  let inflightBuffers: Int
+/**
+  The top-level object for the neural network.
+  
+  How to build and use the model:
+  
+  1. first create layers and tensors,
+  2. instantiate a `Model` using the input and output tensor,
+  3. call `compile()` to construct all the Metal objects,
+  4. use `summary()` to verify that your model is correct,
+  5. use `encode()` to perform inference.
+*/
+public class Model {
+  let input: Tensor
+  let output: Tensor
 
-  var numLayers = 0
+  var compiled = false
+  var tensors: [Tensor] = []
   var imageDescriptors: [DataShape: MPSImageDescriptor] = [:]
-  var outputImages: [String: [MPSImage]] = [:]
+  var imageDescriptorList: [MPSImageDescriptor] = []
+  var outputImages: [Tensor: [MPSImage]] = [:]
+  var numLayers = 0
+  var totalParams = 0
+
+  // Used during compiling.
+  var device: MTLDevice!
+  var parameterCallback: ParameterCallback!
+  var inflightBuffers = 0
 
   // Only used when the very first layer accepts a texture instead of an image.
   var firstLayerEatsTexture = false
   var firstComputeLayer = true
   var sourceTexture: MTLTexture?
 
-  init(device: MTLDevice, inflightBuffers: Int, parameterCallback: @escaping ParameterCallback) {
-    self.device = device
-    self.inflightBuffers = inflightBuffers
-    self.parameterCallback = parameterCallback
+  public init(input: Tensor, output: Tensor) {
+    self.input = input
+    self.output = output
   }
-
-  /**
-    Goes through the given chain of layers and fills in the output shapes.
-    Also registers MPSImageDescriptors for these shapes.
-  */
-  func calculateOutputShapes(for layer: Layer) throws {
-    var ptr: Layer? = layer
-    while ptr != nil, let node = ptr {
-      numLayers += 1
-
-      if node.name.isEmpty {
-        node.name = "__\(node.typeName)_\(numLayers)__"
-      }
-
-      if !node.inputShape.isFullySpecified && !node.allowsIncompleteShape {
-        throw ModelError.compileError(message: "input shape \(node.inputShape) for layer '\(node)' has unknown dimensions")
-      }
-
-      try node.calculateOutputShapesForChildren(compiler: self)
-
-      let shape = node.outputShape(for: node.inputShape)
-      node.outputShape = shape
-
-      if shape.isFullySpecified {
-        registerImageDescriptor(for: shape)
-      }
-
-      // The passthrough layer is just a trick that lets us optionally add
-      // layers or not. We don't actually want them in the model.
-      if node.next is PassthroughLayer {
-        node.next = node.next!.next
-      }
-
-      ptr = node.next
-      ptr?.inputShape = shape
-    }
-  }
-
-  func registerImageDescriptor(for shape: DataShape) {
-    if imageDescriptors[shape] == nil {
-      imageDescriptors[shape] = shape.createImageDescriptor()
-    }
-  }
-
-  /**
-    Creates MPSCNN objects for the specified layer.
-  */
-  func createComputeForLayer(_ node: Layer) throws {
-    // FUTURE: Sort the layers by largest weights to smallest, in order to
-    // load the largest layers first. This makes it possible to load very
-    // big models on devices with limited memory capacity, since the params
-    // need to be copied into MPSCNN and therefore are in memory twice for
-    // a short while.
-
-    var weightParameters: ParameterData?
-    if node.weightCount > 0 {
-      weightParameters = parameterCallback(node.name, node.weightCount, .weights)
-    }
-
-    var biasParameters: ParameterData?
-    if node.biasCount > 0 {
-      biasParameters = parameterCallback(node.name, node.biasCount, .biases)
-    }
-
-    try node.createComputeForChildren(compiler: self)
-
-    try node.createCompute(device: device,
-                           weights: weightParameters,
-                           biases: biasParameters)
-
-    // Does the first layer take a MTLTexture or an MPSImage?
-    if node.needsEncoding && firstComputeLayer {
-      if node.wantsTextures { firstLayerEatsTexture = true }
-      firstComputeLayer = false
-    }
-
-    // Make an MPSImage for any layer that asks for a real image instead of
-    // a temporary one. We keep track of these in a dictionary.
-    if !node.imageIsTemporary {
-      addOutputImage(for: node)
-    }
-  }
-
-  func addOutputImage(for node: Layer) {
-    guard let imgDesc = imageDescriptors[node.outputShape] else {
-      fatalError("Error: could not find image descriptor for shape \(node.outputShape)")
-    }
-
-    // Since the GPU can be working on several inputs at once, we need to
-    // allocate multiple images.
-    var array: [MPSImage] = []
-    for _ in 0..<inflightBuffers {
-      array.append(MPSImage(device: device, imageDescriptor: imgDesc))
-    }
-    outputImages[node.name] = array
-  }
-
-  /**
-    Creates the GPU commands for a layer and its children (if any).
-    
-    - Parameters:
-      - sourceImage: The MPSImage with the input. Is never nil, except for the
-        very first layer if that layer wants a texture instead of an image.
-      - destinationImage: The MPSImage that should contain the output. This is
-        usually nil, in which case a new destination image will automatically
-        be allocated for the layer. If not nil, the layer will write into the
-        given image (useful for merging multiple layers into the same image).
-  */
-  func encode(commandBuffer: MTLCommandBuffer,
-              layer node: Layer,
-              sourceImage: MPSImage?,
-              destinationImage: MPSImage?,
-              inflightIndex: Int) -> MPSImage? {
-
-    // Create a new destination image or reuse the given one.
-    var destinationImage = destinationImage
-    if node.needsDestinationImage {
-      // If the node has a real MPSImage, use that. Otherwise make a temp one.
-      if let images = outputImages[node.name] {
-        destinationImage = images[inflightIndex]
-      } else {
-        guard let desc = imageDescriptors[node.outputShape] else {
-          fatalError("Error: no image descriptor found for shape \(node.outputShape)")
-        }
-        destinationImage = MPSTemporaryImage(commandBuffer: commandBuffer,
-                                             imageDescriptor: desc)
-      }
-    }
-
-    node.encodeChildren(compiler: self,
-                        commandBuffer: commandBuffer,
-                        sourceImage: sourceImage,
-                        destinationImage: destinationImage,
-                        inflightIndex: inflightIndex)
-
-    if node.needsEncoding {
-      guard let destinationImage = destinationImage else {
-        fatalError("Error: layer '\(node.name)' expected destination image")
-      }
-
-      if node.wantsTextures {
-        let inputTexture: MTLTexture
-        if let sourceImage = sourceImage {
-          inputTexture = sourceImage.texture
-        } else if let sourceTexture = sourceTexture {
-          inputTexture = sourceTexture   // valid only for first layer
-        } else {
-          fatalError("Error: layer '\(node.name)' expected source texture")
-        }
-
-        node.encode(commandBuffer: commandBuffer,
-                    sourceTexture: inputTexture,
-                    destinationTexture: destinationImage.texture)
-
-        if let image = sourceImage as? MPSTemporaryImage {
-          image.readCount -= 1
-        }
-      } else {
-        guard let sourceImage = sourceImage else {
-          fatalError("Error: layer '\(node.name)' expected source image")
-        }
-
-        node.encode(commandBuffer: commandBuffer,
-                    sourceImage: sourceImage,
-                    destinationImage: destinationImage)
-      }
-    }
-
-    // Almost every layer will return a valid destination image. But some
-    // layers, such as Input (with a fully-specified size), will simply pass
-    // through the source image unchanged.
-    return destinationImage ?? sourceImage
-  }
-}
-
-/**
-  The top-level object for the neural network.
-  
-  You first add layers to the model using `-->` and then call `compile()` to
-  construct all the Metal objects.
-*/
-public class Model {
-  var firstLayer: Layer?
-
-  var compiled = false
-  var compiler: ModelCompiler!
-  var imageDescriptorList: [MPSImageDescriptor] = []
-  var lastLayerName = ""
-
-  public init() { }
 
   /**
     Creates all the MPSCNN objects for this graph.
@@ -279,45 +94,26 @@ public class Model {
         whether to load the weights or bias values for the layer.
   */
   public func compile(device: MTLDevice,
-                      inflightBuffers: Int,
+                      inflightBuffers: Int = 3,
                       parameterCallback: @escaping ParameterCallback) -> Bool {
     if compiled {
       print("Compile error: graph has already been compiled")
       return false
     }
 
-    guard let layer = firstLayer else {
-      print("Compile error: model needs at least one layer")
-      return false
-    }
-
     let startTime = CACurrentMediaTime()
 
-    compiler = ModelCompiler(device: device,
-                             inflightBuffers: inflightBuffers,
-                             parameterCallback: parameterCallback)
+    self.device = device
+    self.inflightBuffers = inflightBuffers
+    self.parameterCallback = parameterCallback
 
     do {
-      // First we calculate how large the input shapes and output shapes of all
-      // the layers are (including nested layers). This also fills up the cache
-      // with MPSImageDescriptors.
-      try compiler.calculateOutputShapes(for: layer)
+      tensors = topologicalSort(from: input)
 
-      // Create the compute objects for all the layers.
-      var ptr: Layer? = layer
-      while ptr != nil, let node = ptr {
-        try compiler.createComputeForLayer(node)
+      try completeGraph()
+      try createComputeForAllLayers()
 
-        // Always make an MPSImage for the last layer.
-        if node.next == nil {
-          compiler.addOutputImage(for: node)
-          lastLayerName = node.name
-        }
-
-        ptr = node.next
-      }
-
-      imageDescriptorList = Array(compiler.imageDescriptors.values)
+      imageDescriptorList = Array(imageDescriptors.values)
 
       let elapsed = CACurrentMediaTime() - startTime
       print("Compiling took \(elapsed) seconds")
@@ -328,6 +124,7 @@ public class Model {
     } catch ModelError.compileError(let message) {
       print("Compile error:", message)
       return false
+
     } catch {
       print("Unknown error: \(error)")
       return false
@@ -335,20 +132,168 @@ public class Model {
   }
 
   /**
-    Creates the GPU commands for a forward pass of the neural network.
+    This gives us an array of tensors in an order that is guaranteed to be
+    correct (but possibly is not the order the model was specified in).
+  */
+  func topologicalSort(from source: Tensor) -> [Tensor] {
+    var stack = [Tensor]()
+    var visited = Set<Tensor>()
 
-    - FUTURE: Takes a dict with textures for multiple inputs. The inputs are
-      identified by name.
-              
-    - FUTURE: We want encoding to be as fast as possible, so we could move all
-      the encoding logic into compile(), which then outputs a list of commands.
-      Example:
-          1: use MPS kernel X with the input texture, output to temp image Y
-          2: use MPSCNN kernel X with new temp image of shape Y
-          2: use MPSCNN kernel X with given MPSImage Y
-          3: use custom kernel X with new temp image of shape Y
-          4: ...
-      Then we just go through the list and switch on the command.
+    func depthFirstSearch(_ source: Tensor) {
+      for neighbor in source.next {
+        if !visited.contains(neighbor) {
+          depthFirstSearch(neighbor)
+        }
+      }
+      stack.append(source)
+      visited.insert(source)
+    }
+
+    depthFirstSearch(source)
+    return stack.reversed()
+  }
+
+  /**
+    Makes sure the graph can actually be compiled and fills in any missing
+    information. This also fills up the cache with MPSImageDescriptors.
+  */
+  func completeGraph() throws {
+    for (i, tensor) in tensors.enumerated() {
+      if let layer = tensor.layer {
+        numLayers += 1
+
+        // Assign a name to any layers that don't have one.
+        if layer.name.isEmpty {
+          layer.name = "__\(layer.typeName)_\(i+1)__"
+        }
+
+        // If the layer expects a fully-specified shape but the previous layers
+        // didn't fill in the width/height/depth, then we cannot continue.
+        if let input = tensor.input, !input.shape.isFullySpecified
+                                  && !layer.allowsIncompleteShape {
+          throw ModelError.compileError(message: "input shape \(input.shape) for layer '\(layer)' has unknown dimensions")
+        }
+      }
+
+      if tensor.shape.isFullySpecified {
+        registerImageDescriptor(for: tensor.shape)
+      }
+    }
+  }
+
+  func registerImageDescriptor(for shape: DataShape) {
+    if imageDescriptors[shape] == nil {
+      imageDescriptors[shape] = shape.createImageDescriptor()
+    }
+  }
+
+  /**
+    Creates compute kernels for the layers in the graph. Also allocates any
+    non-temporary MPSImages for tensors that want them.
+  */
+  func createComputeForAllLayers() throws {
+    for tensor in tensors {
+      if let layer = tensor.layer, let input = tensor.input {
+        // Only make the compute once for each layer (important for layers
+        // that get reused).
+        if !layer.createdCompute {
+          try createCompute(for: layer, input: input, output: tensor)
+          layer.createdCompute = true
+        }
+      }
+
+      // Make an MPSImage for any tensor that asks for a real image instead
+      // of a temporary one. We keep track of these in a dictionary.
+      if !tensor.imageIsTemporary {
+        addOutputImage(for: tensor)
+      }
+    }
+
+    // Always make an MPSImage for the last tensor.
+    if let output = tensors.last {
+      addOutputImage(for: output)
+    }
+  }
+
+  /**
+    Creates Metal objects for the specified layer.
+  */
+  func createCompute(for layer: Layer, input: Tensor, output: Tensor) throws {
+    // FUTURE: Sort the layers by largest weights to smallest, in order to
+    // load the largest layers first. This makes it possible to load very
+    // big models on devices with limited memory capacity, since the params
+    // need to be copied into MPSCNN and therefore are in memory twice for
+    // a short while.
+
+    //print("createCompute:", input, "-->", output)
+
+    var weightParameters: ParameterData?
+    let weightCount = layer.weightCount(inputShape: input.shape, outputShape: output.shape)
+    if weightCount > 0 {
+      totalParams += weightCount
+      weightParameters = parameterCallback(layer.name, weightCount, .weights)
+    }
+
+    var biasParameters: ParameterData?
+    let biasCount = layer.biasCount(inputShape: input.shape, outputShape: output.shape)
+    if biasCount > 0 {
+      totalParams += biasCount
+      biasParameters = parameterCallback(layer.name, biasCount, .biases)
+    }
+
+    try layer.createCompute(device: device,
+                            inputShape: input.shape,
+                            outputShape: output.shape,
+                            weights: weightParameters,
+                            biases: biasParameters)
+
+    layer.paramCount = weightCount + biasCount
+
+    // Does the first layer take a MTLTexture or an MPSImage?
+    if firstComputeLayer {
+      if layer.wantsTextures { firstLayerEatsTexture = true }
+      firstComputeLayer = false
+    }
+  }
+
+  func addOutputImage(for tensor: Tensor) {
+    guard let imgDesc = imageDescriptors[tensor.shape] else {
+      fatalError("Error: could not find image descriptor for shape \(tensor.shape)")
+    }
+
+    // Since the GPU can be working on several inputs at once, we need to
+    // allocate multiple images.
+    var array: [MPSImage] = []
+    for _ in 0..<inflightBuffers {
+      array.append(MPSImage(device: device, imageDescriptor: imgDesc))
+    }
+    outputImages[tensor] = array
+  }
+
+  /**
+    Returns a summary of all the layers and tensors in the model, including
+    their types, shapes, and number of parameters. Useful for making sure your
+    model is correct.
+  */
+  public func summary() -> String {
+    guard compiled else { return "(Model is not compiled.)" }
+
+    var s = ""
+    s += "Layer/Tensor                   Type       Output Shape     Parameters\n"
+    s += "---------------------------------------------------------------------\n"
+
+    for tensor in tensors {
+      s += tensor.summary() + "\n"
+    }
+
+    s += "---------------------------------------------------------------------\n"
+    s += "Number of layers: \(numLayers) (tensors: \(tensors.count))\n"
+    s += "Total parameters: \(totalParams)"
+    return s
+  }
+
+  /**
+    Encodes the GPU commands for a forward pass of the neural network.
   */
   public func encode(commandBuffer: MTLCommandBuffer, texture: MTLTexture, inflightIndex: Int) {
     //let startTime = CACurrentMediaTime()
@@ -361,86 +306,110 @@ public class Model {
     MPSTemporaryImage.prefetchStorage(with: commandBuffer,
                                       imageDescriptorList: imageDescriptorList)
 
-    var sourceImage: MPSImage!
-    if compiler.firstLayerEatsTexture {
-      compiler.sourceTexture = texture
+    var sourceImage: MPSImage?
+    if firstLayerEatsTexture {
+      sourceTexture = texture
     } else {
       sourceImage = MPSImage(texture: texture, featureChannels: 3)
     }
 
-    var ptr: Layer? = firstLayer
-    while ptr != nil, let node = ptr {
-      sourceImage = compiler.encode(commandBuffer: commandBuffer,
-                                    layer: node,
-                                    sourceImage: sourceImage,
-                                    destinationImage: nil,
-                                    inflightIndex: inflightIndex)
-      ptr = node.next
+    tensors[0].image = sourceImage
+
+    for tensor in tensors {
+      encode(tensor: tensor, commandBuffer: commandBuffer, inflightIndex: inflightIndex)
     }
 
     //let elapsed = CACurrentMediaTime() - startTime
     //print("Encoding took \(elapsed) seconds")
   }
 
-  /**
-    Returns a summary of all the layers in the model, including their types,
-    shapes, and number of parameters. Useful for making sure your model is
-    correct.
-  */
-  public func summary() -> String {
-    precondition(compiled)
+  func encode(tensor: Tensor, commandBuffer: MTLCommandBuffer, inflightIndex: Int) {
+    // If a tensor does not have a layer (true for Input and Concatenate), then 
+    // pass through the source image unchanged.
+    guard let layer = tensor.layer else { return }
 
-    var s = ""
-    s += "Layer                          Type       Output Shape     Parameters\n"
-    s += "---------------------------------------------------------------------\n"
-
-    var totalParams = 0
-    var ptr: Layer? = firstLayer
-    while ptr != nil, let node = ptr {
-      let (text, params) = node.summary()
-      s += text
-      totalParams += params
-      ptr = node.next
+    // If the tensor has a real MPSImage, use that. Otherwise make a temp one.
+    func createImage(for tensor: Tensor) -> MPSImage {
+      if let images = outputImages[tensor] {
+        return images[inflightIndex]
+      } else {
+        guard let desc = imageDescriptors[tensor.shape] else {
+          fatalError("Error: no image descriptor found for shape \(tensor.shape)")
+        }
+        let image = MPSTemporaryImage(commandBuffer: commandBuffer,
+                                      imageDescriptor: desc)
+        image.readCount = tensor.readCount
+        return image
+      }
     }
 
-    s += "---------------------------------------------------------------------\n"
-    s += "Number of layers: \(compiler.numLayers)\n"
-    s += "Total parameters: \(totalParams)"
-    return s
-  }
-
-  /**
-    Find a layer by name. You can use this before compiling to change the
-    properties of a layer (only some properties can be changed, most notably
-    `imageIsTemporary`).
-    
-    Currently you cannot find layers that are inside Groups. (But for those
-    layers it doesn't make sense to change `imageIsTemporary` anyway, as they
-    write in the Group's image.)
-  */
-  public subscript(name: String) -> Layer? {
-    var ptr: Layer? = firstLayer
-    while ptr != nil, let node = ptr {
-      if node.name == name { return node }
-      ptr = node.next
+    // If this tensor does not use its own image, then grab the one from the
+    // destination tensor. Otherwise, make a new image.
+    if let destTensor = tensor.destinationTensor {
+      if let image = destTensor.image {
+        tensor.image = image
+      } else {
+        destTensor.readCount = destTensor.next.count
+        destTensor.image = createImage(for: destTensor)
+        tensor.image = destTensor.image
+      }
+    } else {
+      tensor.readCount = tensor.next.count
+      tensor.image = createImage(for: tensor)
     }
-    return nil
+
+    guard let inputTensor = tensor.input else {
+      fatalError("Error: missing source tensor")
+    }
+
+    if layer.wantsTextures {
+      let inputTexture: MTLTexture
+      if let sourceImage = inputTensor.image {
+        inputTexture = sourceImage.texture
+      } else if let sourceTexture = sourceTexture {
+        inputTexture = sourceTexture   // valid only for first layer
+      } else {
+        fatalError("Error: layer '\(layer.name)' expected source texture")
+      }
+
+      layer.encode(commandBuffer: commandBuffer,
+                   sourceTensor: inputTensor,
+                   sourceTexture: inputTexture,
+                   destinationTensor: tensor)
+
+      if let image = inputTensor.image as? MPSTemporaryImage {
+        image.readCount -= 1
+      }
+    } else {
+      layer.encode(commandBuffer: commandBuffer,
+                   sourceTensor: inputTensor,
+                   destinationTensor: tensor)
+    }
+
+    // At this point we've used the image from the sourceTensor, and should
+    // decrement its reference count. When it hits 0, we nil out its `image`
+    // property so that a new MPSTemporaryImage will be allocated on the next
+    // pass through the network.
+    inputTensor.readCount -= 1
+    if inputTensor.readCount <= 0 {
+      inputTensor.image = nil
+    }
   }
 
-  func images(forLayer name: String) -> [MPSImage] {
-    return compiler.outputImages[name] ?? []
+  func images(for tensor: Tensor) -> [MPSImage] {
+    return outputImages[tensor] ?? []
   }
 
   /** 
-    Returns the output from the given layer. This layer must have its
+    Returns the output from the given tensor. This tensor must have its
     `imageIsTemporary` property set to false!
   */
-  public func image(forLayer name: String, inflightIndex: Int) -> MPSImage {
-    return images(forLayer: name)[inflightIndex]
+  public func image(for tensor: Tensor, inflightIndex: Int) -> MPSImage {
+    return images(for: tensor)[inflightIndex]
   }
 
-  /** Returns the output from the last layer in the model. */
+  /** Returns the output from the last tensor in the model. */
   public func outputImage(inflightIndex: Int) -> MPSImage {
-    return image(forLayer: lastLayerName, inflightIndex: inflightIndex)
+    return image(for: output, inflightIndex: inflightIndex)
   }
 }

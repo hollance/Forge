@@ -13,149 +13,162 @@ class Inception3: NeuralNetwork {
     let scale = MPSCNNNeuronLinear(device: device, a: 2, b: -1)
     let relu = MPSCNNNeuronReLU(device: device, a: 0)
 
-    model = Model()
+    let input = Input()
+
+    let initial = input
             --> Resize(width: 299, height: 299)
             --> Activation(scale)
-            --> Convolution(kernel: (3, 3), channels: 32, stride: (2, 2), padding: false, filter: relu, name: "conv")
-            --> Convolution(kernel: (3, 3), channels: 32, padding: false, filter: relu, name: "conv_1")
-            --> Convolution(kernel: (3, 3), channels: 64, padding: true, filter: relu, name: "conv_2")
+            --> Convolution(kernel: (3, 3), channels: 32, stride: (2, 2), padding: false, activation: relu, name: "conv")
+            --> Convolution(kernel: (3, 3), channels: 32, padding: false, activation: relu, name: "conv_1")
+            --> Convolution(kernel: (3, 3), channels: 64, padding: true, activation: relu, name: "conv_2")
             --> MaxPooling(kernel: (3, 3), stride: (2, 2))
-            --> Convolution(kernel: (1, 1), channels: 80, padding: false, filter: relu, name: "conv_3")
-            --> Convolution(kernel: (3, 3), channels: 192, padding: false, filter: relu, name: "conv_4")
+            --> Convolution(kernel: (1, 1), channels: 80, padding: false, activation: relu, name: "conv_3")
+            --> Convolution(kernel: (3, 3), channels: 192, padding: false, activation: relu, name: "conv_4")
             --> MaxPooling(kernel: (3, 3), stride: (2, 2))
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_conv"),
-                    Convolution(kernel: (1, 1), channels: 48, filter: relu, name: "mixed_tower_conv")
-                --> Convolution(kernel: (5, 5), channels: 64, filter: relu, name: "mixed_tower_conv_1"),
-                    Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_tower_1_conv")
-                --> Convolution(kernel: (3, 3), channels: 96, filter: relu, name: "mixed_tower_1_conv_1")
-                --> Convolution(kernel: (3, 3), channels: 96, filter: relu, name: "mixed_tower_1_conv_2"),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 32, filter: relu, name: "mixed_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_1_conv"),
-                    Convolution(kernel: (1, 1), channels: 48, filter: relu, name: "mixed_1_tower_conv")
-                --> Convolution(kernel: (5, 5), channels: 64, filter: relu, name: "mixed_1_tower_conv_1"),
-                    Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_1_tower_1_conv")
-                --> Convolution(kernel: (3, 3), channels: 96, filter: relu, name: "mixed_1_tower_1_conv_1")
-                --> Convolution(kernel: (3, 3), channels: 96, filter: relu, name: "mixed_1_tower_1_conv_2"),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_1_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_2_conv"),
-                    Convolution(kernel: (1, 1), channels: 48, filter: relu, name: "mixed_2_tower_conv")
-                --> Convolution(kernel: (5, 5), channels: 64, filter: relu, name: "mixed_2_tower_conv_1"),
-                    Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_2_tower_1_conv")
-                --> Convolution(kernel: (3, 3), channels: 96, filter: relu, name: "mixed_2_tower_1_conv_1")
-                --> Convolution(kernel: (3, 3), channels: 96, filter: relu, name: "mixed_2_tower_1_conv_2"),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_2_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (3, 3), channels: 384, stride: (2, 2), padding: false, filter: relu, name: "mixed_3_conv"),
-                    Convolution(kernel: (1, 1), channels: 64, filter: relu, name: "mixed_3_tower_conv")
-                --> Convolution(kernel: (3, 3), channels: 96, filter: relu, name: "mixed_3_tower_conv_1")
-                --> Convolution(kernel: (3, 3), channels: 96, stride: (2, 2), padding: false, filter: relu, name: "mixed_3_tower_conv_2"),
-                    MaxPooling(kernel: (3, 3), stride: (2, 2))
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_4_conv"),
-                    Convolution(kernel: (1, 1), channels: 128, filter: relu, name: "mixed_4_tower_conv")
-                --> Convolution(kernel: (7, 1), channels: 128, filter: relu, name: "mixed_4_tower_conv_1")
-                --> Convolution(kernel: (1, 7), channels: 192, filter: relu, name: "mixed_4_tower_conv_2"),
-                    Convolution(kernel: (1, 1), channels: 128, filter: relu, name: "mixed_4_tower_1_conv")
-                --> Convolution(kernel: (1, 7), channels: 128, filter: relu, name: "mixed_4_tower_1_conv_1")
-                --> Convolution(kernel: (7, 1), channels: 128, filter: relu, name: "mixed_4_tower_1_conv_2")
-                --> Convolution(kernel: (1, 7), channels: 128, filter: relu, name: "mixed_4_tower_1_conv_3")
-                --> Convolution(kernel: (7, 1), channels: 192, filter: relu, name: "mixed_4_tower_1_conv_4"),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_4_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_5_conv"),
-                    Convolution(kernel: (1, 1), channels: 160, filter: relu, name: "mixed_5_tower_conv")
-                --> Convolution(kernel: (7, 1), channels: 160, filter: relu, name: "mixed_5_tower_conv_1")
-                --> Convolution(kernel: (1, 7), channels: 192, filter: relu, name: "mixed_5_tower_conv_2"),
-                    Convolution(kernel: (1, 1), channels: 160, filter: relu, name: "mixed_5_tower_1_conv")
-                --> Convolution(kernel: (1, 7), channels: 160, filter: relu, name: "mixed_5_tower_1_conv_1")
-                --> Convolution(kernel: (7, 1), channels: 160, filter: relu, name: "mixed_5_tower_1_conv_2")
-                --> Convolution(kernel: (1, 7), channels: 160, filter: relu, name: "mixed_5_tower_1_conv_3")
-                --> Convolution(kernel: (7, 1), channels: 192, filter: relu, name: "mixed_5_tower_1_conv_4"),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_5_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_6_conv"),
-                    Convolution(kernel: (1, 1), channels: 160, filter: relu, name: "mixed_6_tower_conv")
-                --> Convolution(kernel: (7, 1), channels: 160, filter: relu, name: "mixed_6_tower_conv_1")
-                --> Convolution(kernel: (1, 7), channels: 192, filter: relu, name: "mixed_6_tower_conv_2"),
-                    Convolution(kernel: (1, 1), channels: 160, filter: relu, name: "mixed_6_tower_1_conv")
-                --> Convolution(kernel: (1, 7), channels: 160, filter: relu, name: "mixed_6_tower_1_conv_1")
-                --> Convolution(kernel: (7, 1), channels: 160, filter: relu, name: "mixed_6_tower_1_conv_2")
-                --> Convolution(kernel: (1, 7), channels: 160, filter: relu, name: "mixed_6_tower_1_conv_3")
-                --> Convolution(kernel: (7, 1), channels: 192, filter: relu, name: "mixed_6_tower_1_conv_4"),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_6_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_7_conv"),
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_7_tower_conv")
-                --> Convolution(kernel: (7, 1), channels: 192, filter: relu, name: "mixed_7_tower_conv_1")
-                --> Convolution(kernel: (1, 7), channels: 192, filter: relu, name: "mixed_7_tower_conv_2"),
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_7_tower_1_conv")
-                --> Convolution(kernel: (1, 7), channels: 192, filter: relu, name: "mixed_7_tower_1_conv_1")
-                --> Convolution(kernel: (7, 1), channels: 192, filter: relu, name: "mixed_7_tower_1_conv_2")
-                --> Convolution(kernel: (1, 7), channels: 192, filter: relu, name: "mixed_7_tower_1_conv_3")
-                --> Convolution(kernel: (7, 1), channels: 192, filter: relu, name: "mixed_7_tower_1_conv_4"),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_7_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_8_tower_conv")
-                --> Convolution(kernel: (3, 3), channels: 320, stride: (2, 2), padding: false, filter: relu, name: "mixed_8_tower_conv_1"),
-                    Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_8_tower_1_conv")
-                --> Convolution(kernel: (7, 1), channels: 192, filter: relu, name: "mixed_8_tower_1_conv_1")
-                --> Convolution(kernel: (1, 7), channels: 192, filter: relu, name: "mixed_8_tower_1_conv_2")
-                --> Convolution(kernel: (3, 3), channels: 192, stride: (2, 2), padding: false, filter: relu, name: "mixed_8_tower_1_conv_3"),
-                    MaxPooling(kernel: (3, 3), stride: (2, 2))
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 320, filter: relu, name: "mixed_9_conv"),
-                    Convolution(kernel: (1, 1), channels: 384, filter: relu, name: "mixed_9_tower_conv")
-                --> Group([
-                      Convolution(kernel: (3, 1), channels: 384, filter: relu, name: "mixed_9_tower_mixed_conv"),
-                      Convolution(kernel: (1, 3), channels: 384, filter: relu, name: "mixed_9_tower_mixed_conv_1")
-                    ]),
-                    Convolution(kernel: (1, 1), channels: 448, filter: relu, name: "mixed_9_tower_1_conv")
-                --> Convolution(kernel: (3, 3), channels: 384, filter: relu, name: "mixed_9_tower_1_conv_1")
-                --> Group([
-                      Convolution(kernel: (3, 1), channels: 384, filter: relu, name: "mixed_9_tower_1_mixed_conv"),
-                      Convolution(kernel: (1, 3), channels: 384, filter: relu, name: "mixed_9_tower_1_mixed_conv_1")
-                    ]),
-                    AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_9_tower_2_conv")
-            ])
-            --> Group([
-                    Convolution(kernel: (1, 1), channels: 320, filter: relu, name: "mixed_10_conv"),
-                    Convolution(kernel: (1, 1), channels: 384, filter: relu, name: "mixed_10_tower_conv")
-                --> Group([
-                      Convolution(kernel: (3, 1), channels: 384, filter: relu, name: "mixed_10_tower_mixed_conv"),
-                      Convolution(kernel: (1, 3), channels: 384, filter: relu, name: "mixed_10_tower_mixed_conv_1")
-                    ]),
-                    Convolution(kernel: (1, 1), channels: 448, filter: relu, name: "mixed_10_tower_1_conv")
-                --> Convolution(kernel: (3, 3), channels: 384, filter: relu, name: "mixed_10_tower_1_conv_1")
-                --> Group([
-                      Convolution(kernel: (3, 1), channels: 384, filter: relu, name: "mixed_10_tower_1_mixed_conv"),
-                      Convolution(kernel: (1, 3), channels: 384, filter: relu, name: "mixed_10_tower_1_mixed_conv_1")
-                    ]),
-                    MaxPooling(kernel: (3, 3), stride: (1, 1), padding: true)
-                --> Convolution(kernel: (1, 1), channels: 192, filter: relu, name: "mixed_10_tower_2_conv")
-            ])
-            --> AveragePooling(kernel: (8, 8), stride:(4, 4))
-            --> Dense(neurons: 1008, name: "softmax")
-            --> Softmax()
+
+    let avgPool = AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
+
+    let mixed0 = Concatenate([
+      initial --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_conv"),
+      initial --> Convolution(kernel: (1, 1), channels: 48, activation: relu, name: "mixed_tower_conv")
+              --> Convolution(kernel: (5, 5), channels: 64, activation: relu, name: "mixed_tower_conv_1"),
+      initial --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_tower_1_conv")
+              --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_tower_1_conv_1")
+              --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_tower_1_conv_2"),
+      initial --> avgPool
+              --> Convolution(kernel: (1, 1), channels: 32, activation: relu, name: "mixed_tower_2_conv")
+    ])
+
+    let mixed1 = Concatenate([
+      mixed0 --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_1_conv"),
+      mixed0 --> Convolution(kernel: (1, 1), channels: 48, activation: relu, name: "mixed_1_tower_conv")
+             --> Convolution(kernel: (5, 5), channels: 64, activation: relu, name: "mixed_1_tower_conv_1"),
+      mixed0 --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_1_tower_1_conv")
+             --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_1_tower_1_conv_1")
+             --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_1_tower_1_conv_2"),
+      mixed0 --> avgPool
+             --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_1_tower_2_conv")
+    ])
+
+    let mixed2 = Concatenate([
+      mixed1 --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_2_conv"),
+      mixed1 --> Convolution(kernel: (1, 1), channels: 48, activation: relu, name: "mixed_2_tower_conv")
+             --> Convolution(kernel: (5, 5), channels: 64, activation: relu, name: "mixed_2_tower_conv_1"),
+      mixed1 --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_2_tower_1_conv")
+             --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_2_tower_1_conv_1")
+             --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_2_tower_1_conv_2"),
+      mixed1 --> avgPool
+             --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_2_tower_2_conv")
+    ])
+
+    let mixed3 = Concatenate([
+      mixed2 --> Convolution(kernel: (3, 3), channels: 384, stride: (2, 2), padding: false, activation: relu, name: "mixed_3_conv"),
+      mixed2 --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_3_tower_conv")
+             --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_3_tower_conv_1")
+             --> Convolution(kernel: (3, 3), channels: 96, stride: (2, 2), padding: false, activation: relu, name: "mixed_3_tower_conv_2"),
+      mixed2 --> MaxPooling(kernel: (3, 3), stride: (2, 2))
+    ])
+
+    let mixed4 = Concatenate([
+      mixed3 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_4_conv"),
+      mixed3 --> Convolution(kernel: (1, 1), channels: 128, activation: relu, name: "mixed_4_tower_conv")
+             --> Convolution(kernel: (7, 1), channels: 128, activation: relu, name: "mixed_4_tower_conv_1")
+             --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_4_tower_conv_2"),
+      mixed3 --> Convolution(kernel: (1, 1), channels: 128, activation: relu, name: "mixed_4_tower_1_conv")
+             --> Convolution(kernel: (1, 7), channels: 128, activation: relu, name: "mixed_4_tower_1_conv_1")
+             --> Convolution(kernel: (7, 1), channels: 128, activation: relu, name: "mixed_4_tower_1_conv_2")
+             --> Convolution(kernel: (1, 7), channels: 128, activation: relu, name: "mixed_4_tower_1_conv_3")
+             --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_4_tower_1_conv_4"),
+      mixed3 --> avgPool
+             --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_4_tower_2_conv")
+    ])
+
+    let mixed5 = Concatenate([
+      mixed4 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_5_conv"),
+      mixed4 --> Convolution(kernel: (1, 1), channels: 160, activation: relu, name: "mixed_5_tower_conv")
+             --> Convolution(kernel: (7, 1), channels: 160, activation: relu, name: "mixed_5_tower_conv_1")
+             --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_5_tower_conv_2"),
+      mixed4 --> Convolution(kernel: (1, 1), channels: 160, activation: relu, name: "mixed_5_tower_1_conv")
+             --> Convolution(kernel: (1, 7), channels: 160, activation: relu, name: "mixed_5_tower_1_conv_1")
+             --> Convolution(kernel: (7, 1), channels: 160, activation: relu, name: "mixed_5_tower_1_conv_2")
+             --> Convolution(kernel: (1, 7), channels: 160, activation: relu, name: "mixed_5_tower_1_conv_3")
+             --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_5_tower_1_conv_4"),
+      mixed4 --> avgPool
+             --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_5_tower_2_conv")
+    ])
+
+    let mixed6 = Concatenate([
+      mixed5 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_6_conv"),
+      mixed5 --> Convolution(kernel: (1, 1), channels: 160, activation: relu, name: "mixed_6_tower_conv")
+             --> Convolution(kernel: (7, 1), channels: 160, activation: relu, name: "mixed_6_tower_conv_1")
+             --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_6_tower_conv_2"),
+      mixed5 --> Convolution(kernel: (1, 1), channels: 160, activation: relu, name: "mixed_6_tower_1_conv")
+             --> Convolution(kernel: (1, 7), channels: 160, activation: relu, name: "mixed_6_tower_1_conv_1")
+             --> Convolution(kernel: (7, 1), channels: 160, activation: relu, name: "mixed_6_tower_1_conv_2")
+             --> Convolution(kernel: (1, 7), channels: 160, activation: relu, name: "mixed_6_tower_1_conv_3")
+             --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_6_tower_1_conv_4"),
+      mixed5 --> avgPool
+             --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_6_tower_2_conv")
+    ])
+
+    let mixed7 = Concatenate([
+      mixed6 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_7_conv"),
+      mixed6 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_7_tower_conv")
+             --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_7_tower_conv_1")
+             --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_7_tower_conv_2"),
+      mixed6 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_7_tower_1_conv")
+             --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_7_tower_1_conv_1")
+             --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_7_tower_1_conv_2")
+             --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_7_tower_1_conv_3")
+             --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_7_tower_1_conv_4"),
+      mixed6 --> avgPool
+             --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_7_tower_2_conv")
+    ])
+
+    let mixed8 = Concatenate([
+      mixed7 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_8_tower_conv")
+             --> Convolution(kernel: (3, 3), channels: 320, stride: (2, 2), padding: false, activation: relu, name: "mixed_8_tower_conv_1"),
+      mixed7 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_8_tower_1_conv")
+             --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_8_tower_1_conv_1")
+             --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_8_tower_1_conv_2")
+             --> Convolution(kernel: (3, 3), channels: 192, stride: (2, 2), padding: false, activation: relu, name: "mixed_8_tower_1_conv_3"),
+      mixed7 --> MaxPooling(kernel: (3, 3), stride: (2, 2))
+    ])
+
+    let tempA = mixed8 --> Convolution(kernel: (1, 1), channels: 384, activation: relu, name: "mixed_9_tower_conv")
+    let tempB = mixed8 --> Convolution(kernel: (1, 1), channels: 448, activation: relu, name: "mixed_9_tower_1_conv")
+                       --> Convolution(kernel: (3, 3), channels: 384, activation: relu, name: "mixed_9_tower_1_conv_1")
+
+    let mixed9 = Concatenate([
+      mixed8 --> Convolution(kernel: (1, 1), channels: 320, activation: relu, name: "mixed_9_conv"),
+      tempA  --> Convolution(kernel: (3, 1), channels: 384, activation: relu, name: "mixed_9_tower_mixed_conv"),
+      tempA  --> Convolution(kernel: (1, 3), channels: 384, activation: relu, name: "mixed_9_tower_mixed_conv_1"),
+      tempB  --> Convolution(kernel: (3, 1), channels: 384, activation: relu, name: "mixed_9_tower_1_mixed_conv"),
+      tempB  --> Convolution(kernel: (1, 3), channels: 384, activation: relu, name: "mixed_9_tower_1_mixed_conv_1"),
+      mixed8 --> avgPool
+             --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_9_tower_2_conv")
+    ])
+
+    let tempC = mixed9 --> Convolution(kernel: (1, 1), channels: 384, activation: relu, name: "mixed_10_tower_conv")
+    let tempD = mixed9 --> Convolution(kernel: (1, 1), channels: 448, activation: relu, name: "mixed_10_tower_1_conv")
+                       --> Convolution(kernel: (3, 3), channels: 384, activation: relu, name: "mixed_10_tower_1_conv_1")
+
+    let mixed10 = Concatenate([
+      mixed9 --> Convolution(kernel: (1, 1), channels: 320, activation: relu, name: "mixed_10_conv"),
+      tempC  --> Convolution(kernel: (3, 1), channels: 384, activation: relu, name: "mixed_10_tower_mixed_conv"),
+      tempC  --> Convolution(kernel: (1, 3), channels: 384, activation: relu, name: "mixed_10_tower_mixed_conv_1"),
+      tempD  --> Convolution(kernel: (3, 1), channels: 384, activation: relu, name: "mixed_10_tower_1_mixed_conv"),
+      tempD  --> Convolution(kernel: (1, 3), channels: 384, activation: relu, name: "mixed_10_tower_1_mixed_conv_1"),
+      mixed9 --> MaxPooling(kernel: (3, 3), stride: (1, 1), padding: true)
+             --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_10_tower_2_conv")
+    ])
+
+    let output = mixed10
+             --> AveragePooling(kernel: (8, 8), stride:(4, 4))
+             --> Dense(neurons: 1008, name: "softmax")
+             --> Softmax()
+
+    model = Model(input: input, output: output)
 
     let success = model.compile(device: device, inflightBuffers: inflightBuffers) {
       name, count, type in ParameterLoaderBundle(name: name,
