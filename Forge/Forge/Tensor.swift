@@ -106,7 +106,7 @@ public class Tensor {
 
   func summary() -> String {
     let layerName = layer?.name ?? "**\(typeName)**"
-    let layerType = layer?.typeName ?? typeName
+    let layerType = layer?.typeName ?? "Tensor"
     let paramCount = layer?.paramCount ?? 0
 
     let n = layerName.padding(toLength: 30, withPad: " ", startingAt: 0)
