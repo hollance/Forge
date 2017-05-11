@@ -67,14 +67,14 @@ public class DepthwiseConvolutionKernel {
     self.device = device
 
     // Convert the weights to 16-bit floats and copy them into a Metal buffer.
-    // There is 1 output channel for each input channel.
-    weightsBuffer = makeBuffer(device: device,
-                               channelFormat: .float16,
-                               kernelWidth: kernelWidth,
-                               kernelHeight: kernelHeight,
-                               inputFeatureChannels: featureChannels,
-                               outputFeatureChannels: 1,
-                               weights: kernelWeights)
+    let inputSlices = (featureChannels + 3) / 4
+    let paddedInputChannels = inputSlices * 4
+    let count = kernelHeight * kernelWidth * paddedInputChannels
+    weightsBuffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
+
+    copy(weights: kernelWeights, to: weightsBuffer, channelFormat: .float16,
+         kernelWidth: kernelWidth, kernelHeight: kernelHeight,
+         inputFeatureChannels: featureChannels, outputFeatureChannels: 1)
 
     // Specialize the compute function, so that the Metal compiler will build
     // a unique kernel based on the chosen options for stride, etc. We could

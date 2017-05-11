@@ -246,13 +246,13 @@ extension MTLComputeCommandEncoder {
   to insert zero-bytes for the missing channels when copying the weights to the
   MTLBuffer. That's why you need to use this function and not just memcpy().
 */
-func copy(weights: UnsafePointer<Float>,
-          to buffer: MTLBuffer,
-          channelFormat: MPSImageFeatureChannelFormat,
-          kernelWidth: Int,
-          kernelHeight: Int,
-          inputFeatureChannels: Int,
-          outputFeatureChannels: Int) {
+public func copy(weights: UnsafePointer<Float>,
+                 to buffer: MTLBuffer,
+                 channelFormat: MPSImageFeatureChannelFormat,
+                 kernelWidth: Int,
+                 kernelHeight: Int,
+                 inputFeatureChannels: Int,
+                 outputFeatureChannels: Int) {
 
   assert(channelFormat == .float16)
 
@@ -264,6 +264,7 @@ func copy(weights: UnsafePointer<Float>,
   // have to copy over fewer bytes than fit in the MTLBuffer (the remainder of 
   // the buffer will be all zeros in that case).
   let count = outputFeatureChannels * kernelHeight * kernelWidth * paddedInputChannels
+
   assert(buffer.length / MemoryLayout<Float16>.stride >= count)
 
   // If the number of input channels is a multiple of 4, we can do a straight
@@ -288,20 +289,31 @@ func copy(weights: UnsafePointer<Float>,
 
 /**
   Creates an MTLBuffer to hold weights.
+  
+  The weights are assumed to be arranged in memory like so:
+  
+      [outputChannels][kernelHeight][kernelWidth][inputChannels]
+
+  The number of output channels and input channels will be padded to become a
+  multiple of 4. For example, a 3x3 kernel with 2 input channels and 5 output
+  channels actually gets a buffer containing (5+3)*3*3*(2+2) = 288 elements,
+  even though you only specified 5*3*3*2 = 90 weights.
 */
-func makeBuffer(device: MTLDevice,
-                channelFormat: MPSImageFeatureChannelFormat,
-                kernelWidth: Int,
-                kernelHeight: Int,
-                inputFeatureChannels: Int,
-                outputFeatureChannels: Int,
-                weights: UnsafePointer<Float>) -> MTLBuffer {
+public func makeBuffer(device: MTLDevice,
+                       channelFormat: MPSImageFeatureChannelFormat,
+                       kernelWidth: Int,
+                       kernelHeight: Int,
+                       inputFeatureChannels: Int,
+                       outputFeatureChannels: Int,
+                       weights: UnsafePointer<Float>) -> MTLBuffer {
 
   assert(channelFormat == .float16)
 
   let inputSlices = (inputFeatureChannels + 3) / 4
+  let paddedInputChannels = inputSlices * 4
   let outputSlices = (outputFeatureChannels + 3) / 4
-  let count = outputSlices * kernelHeight * kernelWidth * inputSlices * 4
+  let paddedOutputChannels = outputSlices * 4
+  let count = paddedOutputChannels * kernelHeight * kernelWidth * paddedInputChannels
 
   let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
 
@@ -322,10 +334,10 @@ func makeBuffer(device: MTLDevice,
   
   There should be one bias value for each output channel.
 */
-func copy(biasTerms: UnsafePointer<Float>,
-          to buffer: MTLBuffer,
-          channelFormat: MPSImageFeatureChannelFormat,
-          outputFeatureChannels: Int) {
+public func copy(biasTerms: UnsafePointer<Float>,
+                 to buffer: MTLBuffer,
+                 channelFormat: MPSImageFeatureChannelFormat,
+                 outputFeatureChannels: Int) {
 
   assert(channelFormat == .float16)
 
@@ -338,16 +350,18 @@ func copy(biasTerms: UnsafePointer<Float>,
 
 /**
   Creates an MTLBuffer to hold bias values.
+  
+  The number of output channels will be padded to become a multiple of 4.
 */
-func makeBuffer(device: MTLDevice,
-                channelFormat: MPSImageFeatureChannelFormat,
-                outputFeatureChannels: Int,
-                biasTerms: UnsafePointer<Float>) -> MTLBuffer {
+public func makeBuffer(device: MTLDevice,
+                       channelFormat: MPSImageFeatureChannelFormat,
+                       outputFeatureChannels: Int,
+                       biasTerms: UnsafePointer<Float>) -> MTLBuffer {
 
   assert(channelFormat == .float16)
 
   let outputSlices = (outputFeatureChannels + 3) / 4
-  let count = outputSlices
+  let count = outputSlices * 4
   let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
 
   copy(biasTerms: biasTerms, to: buffer, channelFormat: channelFormat,
