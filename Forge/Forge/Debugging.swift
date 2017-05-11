@@ -27,8 +27,8 @@ import MetalPerformanceShaders
   Diagnostic tool for verifying that the neural network works correctly:
   prints out the channels for a given pixel coordinate.
 
-  Writing `printChannelsForPixel(x: 10, y: 10, ...)` is the same as doing
-  `print(layer_output[0, 10, 10, :])` in Python with layer output from Keras.
+  Writing `printChannelsForPixel(x: 5, y: 10, ...)` is the same as doing
+  `print(layer_output[0, 10, 5, :])` in Python with layer output from Keras.
 
   To make sure the layer computes the right thing, feed the exact same image
   through Metal and Keras and compare the layer outputs.
@@ -38,10 +38,13 @@ public func printChannelsForPixel(x: Int, y: Int, image: MPSImage) {
   print("Total size: \(layerOutput.count) floats")
   let w = image.width
   let h = image.height
-  let c = image.featureChannels
-  for i in 0..<(c + 3)/4 {
-    for j in 0..<4 {
-      print(layerOutput[i*h*w*4 + y*w*4 + x*4 + j])
+  let s = (image.featureChannels + 3)/4
+  for b in 0..<image.numberOfImages {
+    for i in 0..<s {
+      print("[batch index \(b), slice \(i) of \(s)]")
+      for j in 0..<4 {
+        print(layerOutput[b*s*h*w*4 + i*h*w*4 + y*w*4 + x*4 + j])
+      }
     }
   }
 }
@@ -60,6 +63,7 @@ public func verifySimilarResults(_ a: [Float], _ b: [Float], printSuspicious: Bo
   }
 
   var countSuspicious = 0
+  var countNonZeroError = 0
   var largestError: Float = 0
   var largestErrorIndex = -1
   var averageError: Float = 0
@@ -68,6 +72,9 @@ public func verifySimilarResults(_ a: [Float], _ b: [Float], printSuspicious: Bo
     if error > largestError {
       largestError = error
       largestErrorIndex = i
+    }
+    if error != 0 {
+      countNonZeroError += 1
     }
     if error > 0.01 {
       countSuspicious += 1
@@ -85,5 +92,6 @@ public func verifySimilarResults(_ a: [Float], _ b: [Float], printSuspicious: Bo
     print("Largest error: \(largestError) at index \(largestErrorIndex)")
     print("Average error: \(averageError)")
     print("Total suspicious entries: \(countSuspicious) out of \(count)")
+    print("Total non-zero errors: \(countNonZeroError)")
   }
 }
