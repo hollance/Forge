@@ -32,12 +32,12 @@ import MetalPerformanceShaders
   since most of the time the dimensions *will* be known and unwrapping just
   makes the code uglier.)
 */
-struct DataShape {
-  let width: Int
-  let height: Int
-  let channels: Int
+public struct DataShape {
+  public let width: Int
+  public let height: Int
+  public let channels: Int
 
-  init(width: Int = -1, height: Int = -1, channels: Int = -1) {
+  public init(width: Int = -1, height: Int = -1, channels: Int = -1) {
     self.width = width
     self.height = height
     self.channels = channels
@@ -55,7 +55,7 @@ struct DataShape {
 }
 
 extension DataShape: CustomDebugStringConvertible {
-  var debugDescription: String {
+  public var debugDescription: String {
     var dims: [String] = []
     if width    != -1 { dims.append("\(width)")    } else { dims.append("?") }
     if height   != -1 { dims.append("\(height)")   } else { dims.append("?") }
@@ -67,12 +67,12 @@ extension DataShape: CustomDebugStringConvertible {
 extension DataShape: Hashable {
   // Needs to be hashable because we'll create a cache of MPSImageDescriptor
   // objects. The DataShape is the key they're stored under.
-  var hashValue: Int {
+  public var hashValue: Int {
     return width + height*1000 + channels*1000*1000
   }
 }
 
-func == (lhs: DataShape, rhs: DataShape) -> Bool {
+public func == (lhs: DataShape, rhs: DataShape) -> Bool {
   return lhs.width    == rhs.width
       && lhs.height   == rhs.height
       && lhs.channels == rhs.channels

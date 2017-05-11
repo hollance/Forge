@@ -25,22 +25,22 @@ import Metal
 import MetalPerformanceShaders
 
 /**
-  The abstract base class for all layers. You cannot create instances of this 
-  class directly.
+  The abstract base class for all layers. You should not create instances of
+  this class directly.
 */
 open class Layer {
-  var name: String
+  internal(set) public var name: String
 
   // Most layers take MPSImages as input but for Resize it's more optimal to
   // work directly on the input texture. That saves making an MPSImage object.
   // Probably a premature optimization. ;-)
-  var wantsTextures = false
+  public var wantsTextures = false
 
   // Most layers require that the complete shape of the input tensor is known.
   // However, some layers (such as Resize and Custom) can handle inputs of any
   // size. If your first layer is a type that must know the size (Convolution)
   // then you need to specify that size to the Input tensor.
-  var allowsIncompleteShape = false
+  public var allowsIncompleteShape = false
 
   // The same layer can be used by multiple tensors, but we should only create
   // its compute just once. Reusing layers is mostly useful for things like
@@ -50,49 +50,49 @@ open class Layer {
   // The parameter count shown in the summary. (Filled in by the compiler.)
   var paramCount = 0
 
-  fileprivate init(name: String = "") {
+  public init(name: String = "") {
     self.name = name
   }
 
   /* Subclasses must implement these methods. */
 
-  var typeName: String {
+  open var typeName: String {
     fatalError("Subclass must implement this function")
   }
 
-  func outputShape(for inputShape: DataShape) -> DataShape {
+  open func outputShape(for inputShape: DataShape) -> DataShape {
     fatalError("Subclass must implement this function")
   }
 
-  func createCompute(device: MTLDevice,
-                     inputShape: DataShape,
-                     outputShape: DataShape,
-                     weights: ParameterData?,
-                     biases: ParameterData?) throws {
+  open func createCompute(device: MTLDevice,
+                          inputShape: DataShape,
+                          outputShape: DataShape,
+                          weights: ParameterData?,
+                          biases: ParameterData?) throws {
     // do nothing
   }
 
-  func encode(commandBuffer: MTLCommandBuffer,
-              sourceTensor: Tensor,
-              destinationTensor: Tensor) {
+  open func encode(commandBuffer: MTLCommandBuffer,
+                   sourceTensor: Tensor,
+                   destinationTensor: Tensor) {
     // Note: sourceTensor.image and destinationTensor.image are guaranteed
     // to be non-nil at this point, so it's OK to force-unwrap them.
   }
 
-  func encode(commandBuffer: MTLCommandBuffer,
-              sourceTensor: Tensor,
-              sourceTexture: MTLTexture,
-              destinationTensor: Tensor) {
+  open func encode(commandBuffer: MTLCommandBuffer,
+                   sourceTensor: Tensor,
+                   sourceTexture: MTLTexture,
+                   destinationTensor: Tensor) {
     // This is a special-case method for layers that prefer to work with
     // textures rather than MPSImages. The output will always be a texture
     // from an MPSImage but this not necessarily true for the input texture.
   }
 
-  func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+  open func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return 0
   }
 
-  func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+  open func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return 0
   }
 }
@@ -109,9 +109,9 @@ extension Layer: CustomDebugStringConvertible {
 public class MPSCNNLayer: Layer {
   var mpscnn: MPSCNNKernel!
 
-  override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceTensor: Tensor,
-                       destinationTensor: Tensor) {
+  override public func encode(commandBuffer: MTLCommandBuffer,
+                              sourceTensor: Tensor,
+                              destinationTensor: Tensor) {
 
     // FUTURE: For a residual connection, where we may want to read from the
     // destination image (and write to that same destination image), we would
@@ -161,11 +161,11 @@ public class Convolution: MPSCNNLayer {
     super.init(name: name)
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "Conv"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     if padding {
       return DataShape(width: inputShape.width  / stride.0,
                       height: inputShape.height / stride.1,
@@ -177,19 +177,19 @@ public class Convolution: MPSCNNLayer {
     }
   }
 
-  override func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+  override public func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return inputShape.channels * kernel.1 * kernel.0 * outputShape.channels
   }
 
-  override func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+  override public func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return outputShape.channels
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
 
     guard let weights = weights, let biases = biases else {
       throw ModelError.compileError(message: "missing parameters for layer '\(name)'")
@@ -212,9 +212,9 @@ public class Convolution: MPSCNNLayer {
     mpscnn = conv
   }
 
-  override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceTensor: Tensor,
-                       destinationTensor: Tensor) {
+  override public func encode(commandBuffer: MTLCommandBuffer,
+                              sourceTensor: Tensor,
+                              destinationTensor: Tensor) {
 
     // We compute the padding at encode-time, so that this layer can be
     // reused on tensors of different sizes. Note that the input and output
@@ -267,7 +267,7 @@ public class Pooling: MPSCNNLayer {
     super.init(name: name)
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     if padding {
       return DataShape(width: inputShape.width  / stride.0,
                       height: inputShape.height / stride.1,
@@ -279,9 +279,9 @@ public class Pooling: MPSCNNLayer {
     }
   }
 
-  override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceTensor: Tensor,
-                       destinationTensor: Tensor) {
+  override public func encode(commandBuffer: MTLCommandBuffer,
+                              sourceTensor: Tensor,
+                              destinationTensor: Tensor) {
 
     // We compute the padding at encode-time, so that this layer can be
     // reused on tensors of different sizes.
@@ -309,15 +309,15 @@ public class Pooling: MPSCNNLayer {
   Max-pooling layer.
 */
 public class MaxPooling: Pooling {
-  override var typeName: String {
+  override public var typeName: String {
     return "MaxPool"
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
 
     pool = MPSCNNPoolingMax(device: device,
                             kernelWidth: kernel.0,
@@ -333,15 +333,15 @@ public class MaxPooling: Pooling {
   Average-pooling layer.
 */
 public class AveragePooling: Pooling {
-  override var typeName: String {
+  override public var typeName: String {
     return "AvgPool"
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
 
     pool = MPSCNNPoolingAverage(device: device,
                                 kernelWidth: kernel.0,
@@ -365,19 +365,19 @@ public class GlobalAveragePooling: MPSCNNLayer {
     super.init(name: name)
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "GlbAvgPool"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     return DataShape(width: 1, height: 1, channels: inputShape.channels)
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
 
     let pool = MPSCNNPoolingAverage(device: device,
                                     kernelWidth: inputShape.width,
@@ -411,27 +411,27 @@ public class Dense: MPSCNNLayer {
     super.init(name: name)
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "Dense"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     return DataShape(width: 1, height: 1, channels: neurons)
   }
 
-  override func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+  override public func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return inputShape.channels * inputShape.height * inputShape.width * neurons
   }
 
-  override func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+  override public func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return neurons
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
 
     guard let weights = weights, let biases = biases else {
       throw ModelError.compileError(message: "missing parameters for layer '\(name)'")
@@ -462,19 +462,19 @@ public class Softmax: MPSCNNLayer {
     super.init(name: name)
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "Softmax"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     return inputShape
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
     mpscnn = MPSCNNSoftMax(device: device)
   }
 }
@@ -488,11 +488,11 @@ public class Activation: MPSCNNLayer {
     self.mpscnn = activation
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "Activation"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     return inputShape
   }
 }
@@ -514,26 +514,26 @@ public class Resize: Layer {
     wantsTextures = true
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "Resize"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     return DataShape(width: width, height: height, channels: 3)
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
     return lanczos = MPSImageLanczosScale(device: device)
   }
 
-  override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceTensor: Tensor,
-                       sourceTexture: MTLTexture,
-                       destinationTensor: Tensor) {
+  override public func encode(commandBuffer: MTLCommandBuffer,
+                              sourceTensor: Tensor,
+                              sourceTexture: MTLTexture,
+                              destinationTensor: Tensor) {
     lanczos.encode(commandBuffer: commandBuffer,
                    sourceTexture: sourceTexture,
                    destinationTexture: destinationTensor.image!.texture)
@@ -619,19 +619,19 @@ public class Custom: Layer {
     }
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "Custom"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
     return DataShape(width: width ?? inputShape.width,
                      height: height ?? inputShape.height,
                      channels: channels ?? inputShape.channels)
   }
 
-  override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceTensor: Tensor,
-                       destinationTensor: Tensor) {
+  override public func encode(commandBuffer: MTLCommandBuffer,
+                              sourceTensor: Tensor,
+                              destinationTensor: Tensor) {
     custom.encode(commandBuffer: commandBuffer,
                   sourceImage: sourceTensor.image!,
                   destinationImage: destinationTensor.image!)
@@ -664,25 +664,25 @@ public class DepthwiseConvolution: Layer {
     super.init(name: name)
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "DepthwConv"
   }
 
-  override func outputShape(for inputShape: DataShape) -> DataShape {
+  override public func outputShape(for inputShape: DataShape) -> DataShape {
       return DataShape(width: inputShape.width  / stride.0,
                       height: inputShape.height / stride.1,
                     channels: inputShape.channels)
   }
 
-  override func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+  override public func weightCount(inputShape: DataShape, outputShape: DataShape) -> Int {
     return inputShape.channels * kernel.1 * kernel.0
   }
 
-  override func createCompute(device: MTLDevice,
-                              inputShape: DataShape,
-                              outputShape: DataShape,
-                              weights: ParameterData?,
-                              biases: ParameterData?) throws {
+  override public func createCompute(device: MTLDevice,
+                                     inputShape: DataShape,
+                                     outputShape: DataShape,
+                                     weights: ParameterData?,
+                                     biases: ParameterData?) throws {
 
     guard let weights = weights else {
       throw ModelError.compileError(message: "missing parameters for layer '\(name)'")
@@ -699,9 +699,9 @@ public class DepthwiseConvolution: Layer {
                                          kernelWeights: weights.pointer)
   }
 
-  override func encode(commandBuffer: MTLCommandBuffer,
-                       sourceTensor: Tensor,
-                       destinationTensor: Tensor) {
+  override public func encode(commandBuffer: MTLCommandBuffer,
+                              sourceTensor: Tensor,
+                              destinationTensor: Tensor) {
     compute.encode(commandBuffer: commandBuffer,
                    sourceImage: sourceTensor.image!,
                    destinationImage: destinationTensor.image!)
@@ -720,7 +720,7 @@ public class PointwiseConvolution: Convolution {
     super.init(kernel: (1, 1), channels: channels, activation: activation, name: name)
   }
 
-  override var typeName: String {
+  override public var typeName: String {
     return "PointwConv"
   }
 }

@@ -42,7 +42,7 @@ public func --> (lhs: Tensor, rhs: Layer) -> Tensor {
 
 public typealias ParameterCallback = (String, Int, ParameterType) -> ParameterData?
 
-enum ModelError: Error {
+public enum ModelError: Error {
   case compileError(message: String)
 }
 

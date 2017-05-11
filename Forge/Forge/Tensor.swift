@@ -74,7 +74,7 @@ public class Tensor {
   // may not be processed in their original order (depending on the topological
   // sort), this is how we keep track of which MPSImage to use where. Note that
   // image may point to the destinationTensor's image.
-  var image: MPSImage?
+  internal(set) public var image: MPSImage?
 
   // Reference count. It is used to set the readCount of the MPSTemporyImage
   // for this tensor, but also tells us when to set the `image` property to nil
