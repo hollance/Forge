@@ -158,10 +158,20 @@ extension MTLComputeCommandEncoder {
   }
 
   /**
-    Dispatches a compute kernel on an MPSImage's texture or texture array.
+    Dispatches a compute kernel on a 3-dimensional image grid.
+    
+    - Parameters:
+      - width: the width of the image in pixels
+      - height: the height of the image in pixels
+      - featureChannels: the number of channels in the image
+      - numberOfImages: the number of images in the batch (default is 1)
   */
-  public func dispatch(pipeline: MTLComputePipelineState, image: MPSImage) {
-    let numSlices = ((image.featureChannels + 3)/4) * image.numberOfImages
+  public func dispatch(pipeline: MTLComputePipelineState,
+                       width: Int,
+                       height: Int,
+                       featureChannels: Int,
+                       numberOfImages: Int = 1) {
+    let slices = ((featureChannels + 3)/4) * numberOfImages
 
     let h = pipeline.threadExecutionWidth
     let w = pipeline.maxTotalThreadsPerThreadgroup / h
@@ -169,12 +179,51 @@ extension MTLComputeCommandEncoder {
     let threadGroupSize = MTLSizeMake(w, h, d)
 
     let threadGroups = MTLSizeMake(
-      (image.width  + threadGroupSize.width  - 1) / threadGroupSize.width,
-      (image.height + threadGroupSize.height - 1) / threadGroupSize.height,
-      (numSlices    + threadGroupSize.depth  - 1) / threadGroupSize.depth)
-    
+      (width  + threadGroupSize.width  - 1) / threadGroupSize.width,
+      (height + threadGroupSize.height - 1) / threadGroupSize.height,
+      (slices + threadGroupSize.depth  - 1) / threadGroupSize.depth)
+
+    //printGrid(threadGroups, threadGroupSize)
+
     setComputePipelineState(pipeline)
     dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
+  }
+
+  func printGrid(_ threadGroups: MTLSize, _ threadGroupSize: MTLSize) {
+    let grid = MTLSizeMake(threadGroups.width  * threadGroupSize.width,
+                           threadGroups.height * threadGroupSize.height,
+                           threadGroups.depth  * threadGroupSize.depth)
+
+    print("threadGroups: \(threadGroups.width)x\(threadGroups.height)x\(threadGroups.depth)"
+        + ", threadsPerGroup: \(threadGroupSize.width)x\(threadGroupSize.height)x\(threadGroupSize.depth)"
+        + ", grid: \(grid.width)x\(grid.height)x\(grid.depth)")
+  }
+
+  /**
+    Dispatches a compute kernel on an MPSImage's texture or texture array.
+  */
+  public func dispatch(pipeline: MTLComputePipelineState, image: MPSImage) {
+    dispatch(pipeline: pipeline,
+             width: image.width,
+             height: image.height,
+             featureChannels: image.featureChannels,
+             numberOfImages: image.numberOfImages)
+  }
+
+  /**
+    Dispatches a compute kernel on an MPSImage's texture or texture array.
+    
+    Use this method if you only want to overwrite a portion of the MPSImage's
+    channels (i.e. when you're using `destinationFeatureChannelOffset`).
+  */
+  public func dispatch(pipeline: MTLComputePipelineState,
+                       image: MPSImage,
+                       featureChannels: Int) {
+    dispatch(pipeline: pipeline,
+             width: image.width,
+             height: image.height,
+             featureChannels: featureChannels,
+             numberOfImages: image.numberOfImages)
   }
 }
 
