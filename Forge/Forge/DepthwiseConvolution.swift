@@ -38,6 +38,7 @@ public class DepthwiseConvolutionKernel {
   let device: MTLDevice
   let pipeline: MTLComputePipelineState
   let weightsBuffer: MTLBuffer
+  let biasBuffer: MTLBuffer
 
   /**
     Creates a new DepthwiseConvolution object.
@@ -59,7 +60,8 @@ public class DepthwiseConvolutionKernel {
               strideInPixelsY: Int = 1,
               channelMultiplier: Int = 1,
               relu: Bool = false,
-              kernelWeights: UnsafePointer<Float>) {
+              kernelWeights: UnsafePointer<Float>,
+              biasTerms: UnsafePointer<Float>?) {
 
     precondition(kernelWidth == 3 && kernelHeight == 3, "Only 3x3 kernels are currently supported")
     precondition(channelMultiplier == 1, "Channel multipliers are not supported yet")
@@ -75,6 +77,17 @@ public class DepthwiseConvolutionKernel {
     copy(weights: kernelWeights, to: weightsBuffer, channelFormat: .float16,
          kernelWidth: kernelWidth, kernelHeight: kernelHeight,
          inputFeatureChannels: featureChannels, outputFeatureChannels: 1)
+
+    if let biasTerms = biasTerms {
+      biasBuffer = makeBuffer(device: device,
+                              channelFormat: .float16,
+                              outputFeatureChannels: featureChannels,
+                              biasTerms: biasTerms)
+    } else {
+      let outputSlices = (featureChannels + 3) / 4
+      let paddedOutputChannels = outputSlices * 4
+      biasBuffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * paddedOutputChannels)
+    }
 
     // Specialize the compute function, so that the Metal compiler will build
     // a unique kernel based on the chosen options for stride, etc. We could
@@ -103,6 +116,7 @@ public class DepthwiseConvolutionKernel {
     encoder.setTexture(sourceImage.texture, at: 0)
     encoder.setTexture(destinationImage.texture, at: 1)
     encoder.setBuffer(weightsBuffer, offset: 0, at: 0)
+    encoder.setBuffer(biasBuffer, offset: 0, at: 1)
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
     encoder.endEncoding()
 

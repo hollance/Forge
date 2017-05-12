@@ -15,6 +15,9 @@ class DepthwiseConvolutionTests {
     var depthwiseWeights = [Float](repeating: 0, count: depthwiseCount)
     Random.uniformRandom(&depthwiseWeights, count: depthwiseCount, scale: 0.1, seed: time(nil))
 
+    var biases = [Float](repeating: 0, count: channels)
+    Random.uniformRandom(&biases, count: channels, scale: 0.3, seed: time(nil))
+
     let imageDesc = MPSImageDescriptor(channelFormat: .float16,
                                        width: imageWidth,
                                        height: imageHeight,
@@ -35,7 +38,8 @@ class DepthwiseConvolutionTests {
                                                    strideInPixelsY: stride,
                                                    channelMultiplier: 1,
                                                    relu: false,
-                                                   kernelWeights: depthwiseWeights)
+                                                   kernelWeights: depthwiseWeights,
+                                                   biasTerms: biases)
 
     let desc = MPSCNNConvolutionDescriptor(kernelWidth: kernelWidth,
                                            kernelHeight: kernelHeight,
@@ -75,8 +79,8 @@ class DepthwiseConvolutionTests {
 
     let conv = MPSCNNConvolution(device: device,
                                  convolutionDescriptor: desc,
-                                 kernelWeights: &convWeights,
-                                 biasTerms: nil,
+                                 kernelWeights: convWeights,
+                                 biasTerms: biases,
                                  flags: .none)
     conv.edgeMode = .zero
 

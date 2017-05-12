@@ -75,6 +75,7 @@ kernel void depthwiseConv3x3(
   texture2d<half, access::sample> inTexture [[texture(0)]],
   texture2d<half, access::write> outTexture [[texture(1)]],
   const device half4* weights [[buffer(0)]],
+  const device half4* biasTerms [[buffer(1)]],
   ushort2 gid [[thread_position_in_grid]])
 {
   if (gid.x >= outTexture.get_width() ||
@@ -109,6 +110,8 @@ kernel void depthwiseConv3x3(
     out += float4(in[t]) * float4(weights[t]);
   }
 
+  out += float4(biasTerms[0]);
+
   // Applying a ReLU in the shader is quicker than creating a new layer for it.
   if (applyReLU) out = fmax(out, 0.0f);
 
@@ -119,6 +122,7 @@ kernel void depthwiseConv3x3_array(
   texture2d_array<half, access::sample> inTexture [[texture(0)]],
   texture2d_array<half, access::write> outTexture [[texture(1)]],
   const device half4* weights [[buffer(0)]],
+  const device half4* biasTerms [[buffer(1)]],
   ushort3 gid [[thread_position_in_grid]])
 {
   if (gid.x >= outTexture.get_width() ||
@@ -146,6 +150,8 @@ kernel void depthwiseConv3x3_array(
   for (ushort t = 0; t < 9; ++t) {
     out += float4(in[t]) * float4(weights[t*slices + slice]);
   }
+
+  out += float4(biasTerms[slice]);
 
   if (applyReLU) out = fmax(out, 0.0f);
 

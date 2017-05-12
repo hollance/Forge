@@ -49,14 +49,22 @@ public func convolution(device: MTLDevice,
                         filter: MPSCNNNeuron,
                         name: String,
                         stride: (Int, Int) = (1, 1),
+                        useBias: Bool = true,
                         mergeOffset: Int = 0) -> MPSCNNConvolution {
 
   let countWeights = inChannels * kernel.1 * kernel.0 * outChannels
   let countBias = outChannels
 
-  guard let weightsData = weightsLoader?(name, countWeights),
-        let biasData = biasLoader?(name, countBias) else {
-    fatalError("Error loading network parameters '\(name)'")
+  guard let weightsData = weightsLoader?(name, countWeights) else {
+    fatalError("Error loading weights '\(name)'")
+  }
+
+  var biasData: ParameterData?
+  if useBias {
+    biasData = biasLoader?(name, countBias)
+    if biasData == nil {
+      fatalError("Error loading bias terms '\(name)'")
+    }
   }
 
   let desc = MPSCNNConvolutionDescriptor(kernelWidth: kernel.0,
@@ -70,7 +78,7 @@ public func convolution(device: MTLDevice,
   let layer = MPSCNNConvolution(device: device,
                                 convolutionDescriptor: desc,
                                 kernelWeights: weightsData.pointer,
-                                biasTerms: biasData.pointer,
+                                biasTerms: biasData?.pointer,
                                 flags: .none)
   layer.edgeMode = .zero
   layer.destinationFeatureChannelOffset = mergeOffset
@@ -129,14 +137,22 @@ public func dense(device: MTLDevice,
                   fanOut: Int,
                   filter: MPSCNNNeuron?,
                   name: String,
+                  useBias: Bool = true,
                   mergeOffset: Int = 0) -> MPSCNNFullyConnected {
 
   let countWeights = inChannels * shape.0 * shape.1 * fanOut
   let countBias = fanOut
 
-  guard let weightsData = weightsLoader?(name, countWeights),
-        let biasData = biasLoader?(name, countBias) else {
-    fatalError("Error loading network parameters '\(name)'")
+  guard let weightsData = weightsLoader?(name, countWeights) else {
+    fatalError("Error loading weights '\(name)'")
+  }
+
+  var biasData: ParameterData?
+  if useBias {
+    biasData = biasLoader?(name, countBias)
+    if biasData == nil {
+      fatalError("Error loading bias terms '\(name)'")
+    }
   }
 
   // A fully-connected layer is a special version of a convolutional layer
@@ -151,7 +167,7 @@ public func dense(device: MTLDevice,
   let layer = MPSCNNFullyConnected(device: device,
                                    convolutionDescriptor: desc,
                                    kernelWeights: weightsData.pointer,
-                                   biasTerms: biasData.pointer,
+                                   biasTerms: biasData?.pointer,
                                    flags: .none)
 
   layer.destinationFeatureChannelOffset = mergeOffset
@@ -212,12 +228,22 @@ public func depthwiseConvolution(device: MTLDevice,
                  kernel: (Int, Int),
                  channels: Int,
                  name: String,
-                 stride: (Int, Int) = (1, 1)) -> DepthwiseConvolutionKernel {
+                 stride: (Int, Int) = (1, 1),
+                 useBias: Bool) -> DepthwiseConvolutionKernel {
 
   let countWeights = channels * kernel.1 * kernel.0
+  let countBias = channels
 
   guard let weightsData = weightsLoader?(name, countWeights) else {
-    fatalError("Error loading network parameters '\(name)'")
+    fatalError("Error loading weights '\(name)'")
+  }
+
+  var biasData: ParameterData?
+  if useBias {
+    biasData = biasLoader?(name, countBias)
+    if biasData == nil {
+      fatalError("Error loading bias terms '\(name)'")
+    }
   }
 
   return DepthwiseConvolutionKernel(device: device,
@@ -226,7 +252,8 @@ public func depthwiseConvolution(device: MTLDevice,
                                     featureChannels: channels,
                                     strideInPixelsX: stride.0,
                                     strideInPixelsY: stride.1,
-                                    kernelWeights: weightsData.pointer)
+                                    kernelWeights: weightsData.pointer,
+                                    biasTerms: biasData?.pointer)
 }
 
 /**

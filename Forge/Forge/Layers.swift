@@ -34,13 +34,16 @@ open class Layer {
   // Most layers take MPSImages as input but for Resize it's more optimal to
   // work directly on the input texture. That saves making an MPSImage object.
   // Probably a premature optimization. ;-)
-  public var wantsTextures = false
+  internal(set) public var wantsTextures: Bool
 
   // Most layers require that the complete shape of the input tensor is known.
   // However, some layers (such as Resize and Custom) can handle inputs of any
   // size. If your first layer is a type that must know the size (Convolution)
   // then you need to specify that size to the Input tensor.
-  public var allowsIncompleteShape = false
+  internal(set) public var allowsIncompleteShape: Bool
+
+  /* Whether this layer uses bias terms in addition to weights. */
+  internal(set) public var useBias: Bool
 
   // The same layer can be used by multiple tensors, but we should only create
   // its compute just once. Reusing layers is mostly useful for things like
@@ -50,8 +53,14 @@ open class Layer {
   // The parameter count shown in the summary. (Filled in by the compiler.)
   var paramCount = 0
 
-  public init(name: String = "") {
+  public init(name: String = "",
+              useBias: Bool = true,
+              wantsTextures: Bool = false,
+              allowsIncompleteShape: Bool = false) {
     self.name = name
+    self.useBias = useBias
+    self.wantsTextures = wantsTextures
+    self.allowsIncompleteShape = allowsIncompleteShape
   }
 
   /* Subclasses must implement these methods. */
@@ -145,6 +154,7 @@ public class Convolution: MPSCNNLayer {
       - stride: `(x, y)`
       - padding: If true, the output width and height are the same as the
         input width and height. (This uses zero padding.)
+      - useBias: whether this layer uses bias terms in addition to the weights
       - name: The name is used to load the layer's parameters.
   */
   public init(kernel: (Int, Int),
@@ -152,13 +162,14 @@ public class Convolution: MPSCNNLayer {
               stride: (Int, Int) = (1, 1),
               padding: Bool = true,
               activation: MPSCNNNeuron? = nil,
+              useBias: Bool = true,
               name: String = "") {
     self.kernel = kernel
     self.channels = channels
     self.stride = stride
     self.padding = padding
     self.activation = activation
-    super.init(name: name)
+    super.init(name: name, useBias: useBias)
   }
 
   override public var typeName: String {
@@ -182,7 +193,7 @@ public class Convolution: MPSCNNLayer {
   }
 
   override public func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
-    return outputShape.channels
+    return useBias ? outputShape.channels : 0
   }
 
   override public func createCompute(device: MTLDevice,
@@ -191,8 +202,11 @@ public class Convolution: MPSCNNLayer {
                                      weights: ParameterData?,
                                      biases: ParameterData?) throws {
 
-    guard let weights = weights, let biases = biases else {
-      throw ModelError.compileError(message: "missing parameters for layer '\(name)'")
+    guard let weights = weights else {
+      throw ModelError.compileError(message: "missing weights for layer '\(name)'")
+    }
+    if useBias && biases == nil {
+      throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
     }
 
     let desc = MPSCNNConvolutionDescriptor(kernelWidth: kernel.0,
@@ -206,7 +220,7 @@ public class Convolution: MPSCNNLayer {
     conv = MPSCNNConvolution(device: device,
                              convolutionDescriptor: desc,
                              kernelWeights: weights.pointer,
-                             biasTerms: biases.pointer,
+                             biasTerms: biases?.pointer,
                              flags: .none)
     conv.edgeMode = .zero
     mpscnn = conv
@@ -361,10 +375,6 @@ public class AveragePooling: Pooling {
   across the width and height, and outputs a 1x1xC image.
 */
 public class GlobalAveragePooling: MPSCNNLayer {
-  public override init(name: String = "") {
-    super.init(name: name)
-  }
-
   override public var typeName: String {
     return "GlbAvgPool"
   }
@@ -405,10 +415,13 @@ public class Dense: MPSCNNLayer {
       - neurons: The number of neurons in this layer.
       - name: The name is used to load the layer's parameters.
   */
-  public init(neurons: Int, activation: MPSCNNNeuron? = nil, name: String = "") {
+  public init(neurons: Int,
+              activation: MPSCNNNeuron? = nil,
+              useBias: Bool = true,
+              name: String = "") {
     self.neurons = neurons
     self.activation = activation
-    super.init(name: name)
+    super.init(name: name, useBias: useBias)
   }
 
   override public var typeName: String {
@@ -424,7 +437,7 @@ public class Dense: MPSCNNLayer {
   }
 
   override public func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
-    return neurons
+    return useBias ? neurons : 0
   }
 
   override public func createCompute(device: MTLDevice,
@@ -433,8 +446,8 @@ public class Dense: MPSCNNLayer {
                                      weights: ParameterData?,
                                      biases: ParameterData?) throws {
 
-    guard let weights = weights, let biases = biases else {
-      throw ModelError.compileError(message: "missing parameters for layer '\(name)'")
+    guard let weights = weights else {
+      throw ModelError.compileError(message: "missing weights for layer '\(name)'")
     }
 
     // A fully-connected layer is a special version of a convolutional layer
@@ -446,11 +459,26 @@ public class Dense: MPSCNNLayer {
                                            outputFeatureChannels: neurons,
                                            neuronFilter: activation)
 
-    mpscnn = MPSCNNFullyConnected(device: device,
-                                  convolutionDescriptor: desc,
-                                  kernelWeights: weights.pointer,
-                                  biasTerms: biases.pointer,
-                                  flags: .none)
+    if useBias {
+      // NOTE: For some reason MPSCNNFullyConnected crashes when we write
+      // biases?.pointer, which makes no sense at all since it works fine
+      // for MPSCNNConvolution. We have to unwrap biases and make a special
+      // case for when useBias = false.
+      guard let biases = biases else {
+        throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
+      }
+      mpscnn = MPSCNNFullyConnected(device: device,
+                                    convolutionDescriptor: desc,
+                                    kernelWeights: weights.pointer,
+                                    biasTerms: biases.pointer,
+                                    flags: .none)
+    } else {
+      mpscnn = MPSCNNFullyConnected(device: device,
+                                    convolutionDescriptor: desc,
+                                    kernelWeights: weights.pointer,
+                                    biasTerms: nil,
+                                    flags: .none)
+    }
   }
 }
 
@@ -458,10 +486,6 @@ public class Dense: MPSCNNLayer {
   Softmax layer.
 */
 public class Softmax: MPSCNNLayer {
-  public override init(name: String = "") {
-    super.init(name: name)
-  }
-
   override public var typeName: String {
     return "Softmax"
   }
@@ -657,11 +681,12 @@ public class DepthwiseConvolution: Layer {
   public init(kernel: (Int, Int),
               stride: (Int, Int) = (1, 1),
               useReLU: Bool = true,
+              useBias: Bool = true,
               name: String = "") {
     self.kernel = kernel
     self.stride = stride
     self.useReLU = useReLU
-    super.init(name: name)
+    super.init(name: name, useBias: useBias)
   }
 
   override public var typeName: String {
@@ -678,6 +703,10 @@ public class DepthwiseConvolution: Layer {
     return inputShape.channels * kernel.1 * kernel.0
   }
 
+  public override func biasCount(inputShape: DataShape, outputShape: DataShape) -> Int {
+    return useBias ? outputShape.channels : 0
+  }
+
   override public func createCompute(device: MTLDevice,
                                      inputShape: DataShape,
                                      outputShape: DataShape,
@@ -685,7 +714,10 @@ public class DepthwiseConvolution: Layer {
                                      biases: ParameterData?) throws {
 
     guard let weights = weights else {
-      throw ModelError.compileError(message: "missing parameters for layer '\(name)'")
+      throw ModelError.compileError(message: "missing weights for layer '\(name)'")
+    }
+    if useBias && biases == nil {
+      throw ModelError.compileError(message: "missing biases for layer '\(name)'")
     }
 
     compute = DepthwiseConvolutionKernel(device: device,
@@ -696,7 +728,8 @@ public class DepthwiseConvolution: Layer {
                                          strideInPixelsY: stride.1,
                                          channelMultiplier: 1,
                                          relu: useReLU,
-                                         kernelWeights: weights.pointer)
+                                         kernelWeights: weights.pointer,
+                                         biasTerms: biases?.pointer)
   }
 
   override public func encode(commandBuffer: MTLCommandBuffer,
@@ -716,8 +749,10 @@ public class PointwiseConvolution: Convolution {
   public init(channels: Int,
               stride: (Int, Int) = (1, 1),
               activation: MPSCNNNeuron? = nil,
+              useBias: Bool = true,
               name: String = "") {
-    super.init(kernel: (1, 1), channels: channels, activation: activation, name: name)
+    super.init(kernel: (1, 1), channels: channels, activation: activation,
+               useBias: useBias, name: name)
   }
 
   override public var typeName: String {
