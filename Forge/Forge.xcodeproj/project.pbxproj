@@ -18,8 +18,6 @@
 		7B8236C81EAA7CBF00127F0C /* Parameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236C71EAA7CBF00127F0C /* Parameters.swift */; };
 		7B8236CA1EAA7DE900127F0C /* DataShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236C91EAA7DE900127F0C /* DataShape.swift */; };
 		7B8237001EABD42000127F0C /* DepthwiseConvolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236FF1EABD42000127F0C /* DepthwiseConvolution.swift */; };
-		7BA395C81EA8C24100F4C4D6 /* Forge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA395BE1EA8C24100F4C4D6 /* Forge.framework */; };
-		7BA395CD1EA8C24100F4C4D6 /* ArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA395CC1EA8C24100F4C4D6 /* ArrayTests.swift */; };
 		7BA395CF1EA8C24100F4C4D6 /* Forge.h in Headers */ = {isa = PBXBuildFile; fileRef = 7BA395C11EA8C24100F4C4D6 /* Forge.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7BA396531EA8C58A00F4C4D6 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396471EA8C58A00F4C4D6 /* Array+Extensions.swift */; };
 		7BA396541EA8C58A00F4C4D6 /* ComputeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA396481EA8C58A00F4C4D6 /* ComputeHelpers.swift */; };
@@ -39,16 +37,6 @@
 		7BD4249A1EB216B700451777 /* TransposeChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD424991EB216B700451777 /* TransposeChannels.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		7BA395C91EA8C24100F4C4D6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7BA395B51EA8C24100F4C4D6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7BA395BD1EA8C24100F4C4D6;
-			remoteInfo = Forge;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		7B3DA4E71EBB36D100BD3F06 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		7B3DA4E91EBBB45D00BD3F06 /* Tensor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tensor.swift; sourceTree = "<group>"; };
@@ -64,9 +52,6 @@
 		7BA395BE1EA8C24100F4C4D6 /* Forge.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Forge.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BA395C11EA8C24100F4C4D6 /* Forge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Forge.h; sourceTree = "<group>"; };
 		7BA395C21EA8C24100F4C4D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7BA395C71EA8C24100F4C4D6 /* ForgeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ForgeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7BA395CC1EA8C24100F4C4D6 /* ArrayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayTests.swift; sourceTree = "<group>"; };
-		7BA395CE1EA8C24100F4C4D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7BA396471EA8C58A00F4C4D6 /* Array+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		7BA396481EA8C58A00F4C4D6 /* ComputeHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComputeHelpers.swift; sourceTree = "<group>"; };
 		7BA396491EA8C58A00F4C4D6 /* Float16.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Float16.swift; sourceTree = "<group>"; };
@@ -93,14 +78,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7BA395C41EA8C24100F4C4D6 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7BA395C81EA8C24100F4C4D6 /* Forge.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -120,7 +97,6 @@
 			isa = PBXGroup;
 			children = (
 				7BA395C01EA8C24100F4C4D6 /* Forge */,
-				7BA395CB1EA8C24100F4C4D6 /* Tests */,
 				7BA395BF1EA8C24100F4C4D6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -129,7 +105,6 @@
 			isa = PBXGroup;
 			children = (
 				7BA395BE1EA8C24100F4C4D6 /* Forge.framework */,
-				7BA395C71EA8C24100F4C4D6 /* ForgeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -148,25 +123,15 @@
 			path = Forge;
 			sourceTree = "<group>";
 		};
-		7BA395CB1EA8C24100F4C4D6 /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				7BA395CC1EA8C24100F4C4D6 /* ArrayTests.swift */,
-				7BA395CE1EA8C24100F4C4D6 /* Info.plist */,
-			);
-			name = Tests;
-			path = ForgeTests;
-			sourceTree = "<group>";
-		};
 		7BA396681EA938C900F4C4D6 /* Layers */ = {
 			isa = PBXGroup;
 			children = (
 				7B8236FF1EABD42000127F0C /* DepthwiseConvolution.swift */,
 				7B8236C41EAA5BFC00127F0C /* RGB2BGR.swift */,
 				7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */,
-				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
 				7B8236C21EAA5AF300127F0C /* SubtractMeanColor.swift */,
 				7BD424991EB216B700451777 /* TransposeChannels.swift */,
+				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
 			);
 			name = Layers;
 			sourceTree = "<group>";
@@ -248,24 +213,6 @@
 			productReference = 7BA395BE1EA8C24100F4C4D6 /* Forge.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		7BA395C61EA8C24100F4C4D6 /* ForgeTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7BA395D51EA8C24100F4C4D6 /* Build configuration list for PBXNativeTarget "ForgeTests" */;
-			buildPhases = (
-				7BA395C31EA8C24100F4C4D6 /* Sources */,
-				7BA395C41EA8C24100F4C4D6 /* Frameworks */,
-				7BA395C51EA8C24100F4C4D6 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				7BA395CA1EA8C24100F4C4D6 /* PBXTargetDependency */,
-			);
-			name = ForgeTests;
-			productName = ForgeTests;
-			productReference = 7BA395C71EA8C24100F4C4D6 /* ForgeTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -280,11 +227,6 @@
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = MGCEKGP4Y4;
 						LastSwiftMigration = 0830;
-						ProvisioningStyle = Automatic;
-					};
-					7BA395C61EA8C24100F4C4D6 = {
-						CreatedOnToolsVersion = 8.3;
-						DevelopmentTeam = MGCEKGP4Y4;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -302,20 +244,12 @@
 			projectRoot = "";
 			targets = (
 				7BA395BD1EA8C24100F4C4D6 /* Forge */,
-				7BA395C61EA8C24100F4C4D6 /* ForgeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		7BA395BC1EA8C24100F4C4D6 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7BA395C51EA8C24100F4C4D6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -359,23 +293,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7BA395C31EA8C24100F4C4D6 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7BA395CD1EA8C24100F4C4D6 /* ArrayTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		7BA395CA1EA8C24100F4C4D6 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7BA395BD1EA8C24100F4C4D6 /* Forge */;
-			targetProxy = 7BA395C91EA8C24100F4C4D6 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		7BA395D01EA8C24100F4C4D6 /* Debug */ = {
@@ -409,7 +327,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -425,7 +342,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -471,7 +387,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -489,7 +404,6 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_OPTIMIZATION_LEVEL = s;
 				INFOPLIST_FILE = Forge/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -512,7 +426,6 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_OPTIMIZATION_LEVEL = s;
 				INFOPLIST_FILE = Forge/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -522,32 +435,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 3.0;
 				VALID_ARCHS = arm64;
-			};
-			name = Release;
-		};
-		7BA395D61EA8C24100F4C4D6 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				DEVELOPMENT_TEAM = MGCEKGP4Y4;
-				INFOPLIST_FILE = ForgeTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = net.machinethink.ForgeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-			};
-			name = Debug;
-		};
-		7BA395D71EA8C24100F4C4D6 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				DEVELOPMENT_TEAM = MGCEKGP4Y4;
-				INFOPLIST_FILE = ForgeTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = net.machinethink.ForgeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -568,15 +455,6 @@
 			buildConfigurations = (
 				7BA395D31EA8C24100F4C4D6 /* Debug */,
 				7BA395D41EA8C24100F4C4D6 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7BA395D51EA8C24100F4C4D6 /* Build configuration list for PBXNativeTarget "ForgeTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7BA395D61EA8C24100F4C4D6 /* Debug */,
-				7BA395D71EA8C24100F4C4D6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

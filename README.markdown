@@ -78,6 +78,12 @@ NOTE: You cannot build for the simulator, only for "Generic iOS Device" or an ac
 - [Creating a model with Forge](Docs/DSL.markdown)
 - [Importing a model from Keras, TensorFlow, Caffe, etc](Docs/Importing.markdown)
 
+## Where are the unit tests?
+
+Run the **ForgeTests** app on a device.
+
+The reason the tests are in a separate app is that Metal does not work on the simulator and Xcode can't run logic tests on the device. Catch-22.
+
 ## TODO
 
 Forge is under active development. Here is the [list of bugs and upcoming features](Docs/TODO.markdown).

@@ -71,7 +71,7 @@ kernel void subtractMeanColor(
 
 // MARK: - Depth-wise convolution
 
-kernel void depthwiseConv3x3_half(
+kernel void depthwiseConv3x3(
   texture2d<half, access::sample> inTexture [[texture(0)]],
   texture2d<half, access::write> outTexture [[texture(1)]],
   const device half4* weights [[buffer(0)]],
@@ -103,18 +103,19 @@ kernel void depthwiseConv3x3_half(
   in[8] = inTexture.sample(s, float2(pos.x + 1, pos.y + 1));
 
   // Multiply by the weights and put the weighted sum in the output pixel.
-  half4 out = half4(0.0h);
+  // Do these calculations as 32-bit float or we lose too much precision.
+  float4 out = float4(0.0h);
   for (ushort t = 0; t < 9; ++t) {
-    out += in[t] * weights[t];
+    out += float4(in[t]) * float4(weights[t]);
   }
 
   // Applying a ReLU in the shader is quicker than creating a new layer for it.
-  if (applyReLU) out = fmax(out, 0.0h);
+  if (applyReLU) out = fmax(out, 0.0f);
 
-  outTexture.write(out, gid);
+  outTexture.write(half4(out), gid);
 }
 
-kernel void depthwiseConv3x3_half_array(
+kernel void depthwiseConv3x3_array(
   texture2d_array<half, access::sample> inTexture [[texture(0)]],
   texture2d_array<half, access::write> outTexture [[texture(1)]],
   const device half4* weights [[buffer(0)]],
@@ -141,19 +142,19 @@ kernel void depthwiseConv3x3_half_array(
   in[7] = inTexture.sample(s, float2(pos.x    , pos.y + 1), slice);
   in[8] = inTexture.sample(s, float2(pos.x + 1, pos.y + 1), slice);
 
-  half4 out = half4(0.0h);
+  float4 out = float4(0.0h);
   for (ushort t = 0; t < 9; ++t) {
-    out += in[t] * weights[t*slices + slice];
+    out += float4(in[t]) * float4(weights[t*slices + slice]);
   }
 
-  if (applyReLU) out = fmax(out, 0.0h);
+  if (applyReLU) out = fmax(out, 0.0f);
 
-  outTexture.write(half4(slices, slice, 0.0h, 0.0h), gid.xy, gid.z);
+  outTexture.write(half4(out), gid.xy, gid.z);
 }
 
 // MARK: - Transpose channels
 
-kernel void transposeChannels_half(
+kernel void transposeChannels(
   texture2d<half, access::read> inTexture [[texture(0)]],
   texture2d<half, access::write> outTexture [[texture(1)]],
   const device ushort* permute [[buffer(0)]],
@@ -167,7 +168,7 @@ kernel void transposeChannels_half(
   outTexture.write(out, gid);
 }
 
-kernel void transposeChannels_half_array(
+kernel void transposeChannels_array(
   texture2d_array<half, access::read> inTexture [[texture(0)]],
   texture2d_array<half, access::write> outTexture [[texture(1)]],
   const device ushort* permute [[buffer(0)]],

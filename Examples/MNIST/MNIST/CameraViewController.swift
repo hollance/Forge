@@ -115,7 +115,7 @@ class CameraViewController: UIViewController {
   func createNeuralNetwork(completion: @escaping () -> Void) {
     // Make sure the current device supports MetalPerformanceShaders.
     guard MPSSupportsMTLDevice(device) else {
-      print("Error: Metal Performance Shaders not supported on this device")
+      print("Error: this device does not support Metal Performance Shaders")
       return
     }
 

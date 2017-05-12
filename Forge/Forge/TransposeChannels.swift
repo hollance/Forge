@@ -55,9 +55,9 @@ public class TransposeChannelsKernel {
     // kernel that uses texture2d_array objects.
     let functionName: String
     if featureChannels <= 4 {
-      functionName = "transposeChannels_half"
+      functionName = "transposeChannels"
     } else {
-      functionName = "transposeChannels_half_array"
+      functionName = "transposeChannels_array"
     }
     pipeline = makeFunction(device: device, name: functionName, useForgeLibrary: true)
   }

@@ -5,6 +5,9 @@
       location = "group:Forge/Forge.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:ForgeTests/ForgeTests.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:Examples/MNIST/MNIST.xcodeproj">
    </FileRef>
    <FileRef

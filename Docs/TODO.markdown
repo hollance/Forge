@@ -4,16 +4,10 @@
 
 - Improve API documentation
 - Add package manager support of some kind
-- Add unit tests
-- Add more layer types
+- Add more unit tests
+- Add more layer types and compute kernels
 - Add more examples
 - Make a nice logo (use as icon for example apps)
-
-### Where are the unit tests?
-
-Sorry, Metal does not work on the simulator and Xcode can't run logic tests on the device. Catch-22.
-
-Currently the only way to add unit tests is to run them as a separate app, not as a test target. I haven't gotten around to setting that up yet.
 
 ### DSL
 

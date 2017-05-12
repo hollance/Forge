@@ -90,9 +90,9 @@ public class DepthwiseConvolutionKernel {
     // kernel that uses texture2d_array objects.
     let functionName: String
     if featureChannels <= 4 {
-      functionName = "depthwiseConv3x3_half"
+      functionName = "depthwiseConv3x3"
     } else {
-      functionName = "depthwiseConv3x3_half_array"
+      functionName = "depthwiseConv3x3_array"
     }
     pipeline = makeFunction(device: device, name: functionName, constantValues: values, useForgeLibrary: true)
   }
