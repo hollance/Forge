@@ -80,12 +80,12 @@ public class MNIST: NeuralNetwork {
     weightsLoader = { name, count in ParameterLoaderBundle(name: name, count: count, suffix: "_W", ext: "bin") }
     biasLoader = { name, count in ParameterLoaderBundle(name: name, count: count, suffix: "_b", ext: "bin") }
 
-    conv1 = convolution(device: device, kernel: (5, 5), inChannels: 1, outChannels: 20, filter: relu, name: "conv1")
+    conv1 = convolution(device: device, kernel: (5, 5), inChannels: 1, outChannels: 20, activation: relu, name: "conv1")
     pool1 = maxPooling(device: device, kernel: (2, 2), stride: (2, 2))
-    conv2 = convolution(device: device, kernel: (5, 5), inChannels: 20, outChannels: 50, filter: relu, name: "conv2")
+    conv2 = convolution(device: device, kernel: (5, 5), inChannels: 20, outChannels: 50, activation: relu, name: "conv2")
     pool2 = maxPooling(device: device, kernel: (2, 2), stride: (2, 2))
-    fc1 = dense(device: device, shape: (7, 7), inChannels: 50, fanOut: 320, filter: relu, name: "fc1")
-    fc2 = dense(device: device, fanIn: 320, fanOut: 10, filter: nil, name: "fc2")
+    fc1 = dense(device: device, shape: (7, 7), inChannels: 50, fanOut: 320, activation: relu, name: "fc1")
+    fc2 = dense(device: device, fanIn: 320, fanOut: 10, activation: nil, name: "fc2")
 
     // I want to show the output of the preprocessing shader on the screen for
     // debugging, so store its results in a real MSPImage, not a temporary one.

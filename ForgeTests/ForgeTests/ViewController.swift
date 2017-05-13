@@ -45,8 +45,11 @@ class ViewController: UIViewController {
     let arrayTests = ArrayTests()
     arrayTests.testArgmax()
 
+    let basicConvTests = BasicConvolutionTests()
+    basicConvTests.testCorrectness()
+
     let depthwiseConvTests = DepthwiseConvolutionTests()
-    depthwiseConvTests.test()
+    depthwiseConvTests.testCorrectness()
 
     print("All tests successful!")
   }

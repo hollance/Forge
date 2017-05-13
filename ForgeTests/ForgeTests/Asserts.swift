@@ -23,6 +23,6 @@ func assertEqual(_ a: [Float], _ b: [Float], tolerance: Float) {
     totalDiff += diff
   }
   if verbose {
-    print("\tLargest difference: \(largestDiff), average: \(totalDiff/Float(a.count))")
+    print("    largest difference: \(largestDiff), average: \(totalDiff/Float(a.count))")
   }
 }

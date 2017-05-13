@@ -16,6 +16,7 @@
 		7B3DA55D1EC5E0FA00BD3F06 /* Asserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DA55C1EC5E0FA00BD3F06 /* Asserts.swift */; };
 		7B3DA5601EC5E14100BD3F06 /* Forge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3DA55F1EC5E14100BD3F06 /* Forge.framework */; };
 		7B3DA5611EC5E14100BD3F06 /* Forge.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3DA55F1EC5E14100BD3F06 /* Forge.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7B711C741EC7533F001CB7C2 /* BasicConvolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711C731EC7533F001CB7C2 /* BasicConvolutionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -43,6 +44,7 @@
 		7B3DA55A1EC4E88B00BD3F06 /* DepthwiseConvolutionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DepthwiseConvolutionTests.swift; sourceTree = "<group>"; };
 		7B3DA55C1EC5E0FA00BD3F06 /* Asserts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Asserts.swift; sourceTree = "<group>"; };
 		7B3DA55F1EC5E14100BD3F06 /* Forge.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Forge.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B711C731EC7533F001CB7C2 /* BasicConvolutionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicConvolutionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				7B3DA5581EC4E81600BD3F06 /* ArrayTests.swift */,
+				7B711C731EC7533F001CB7C2 /* BasicConvolutionTests.swift */,
 				7B3DA55A1EC4E88B00BD3F06 /* DepthwiseConvolutionTests.swift */,
 			);
 			name = "Test Cases";
@@ -175,6 +178,7 @@
 				7B3DA5491EC4E67200BD3F06 /* ViewController.swift in Sources */,
 				7B3DA55B1EC4E88B00BD3F06 /* DepthwiseConvolutionTests.swift in Sources */,
 				7B3DA5471EC4E67200BD3F06 /* AppDelegate.swift in Sources */,
+				7B711C741EC7533F001CB7C2 /* BasicConvolutionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

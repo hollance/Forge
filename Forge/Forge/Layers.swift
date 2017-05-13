@@ -665,7 +665,7 @@ public class Custom: Layer {
 public class DepthwiseConvolution: Layer {
   let kernel: (Int, Int)
   let stride: (Int, Int)
-  let useReLU: Bool
+  let activation: MPSCNNNeuron?
   var compute: DepthwiseConvolutionKernel!
 
   /**
@@ -680,12 +680,12 @@ public class DepthwiseConvolution: Layer {
   */
   public init(kernel: (Int, Int),
               stride: (Int, Int) = (1, 1),
-              useReLU: Bool = true,
+              activation: MPSCNNNeuron? = nil,
               useBias: Bool = true,
               name: String = "") {
     self.kernel = kernel
     self.stride = stride
-    self.useReLU = useReLU
+    self.activation = activation
     super.init(name: name, useBias: useBias)
   }
 
@@ -727,7 +727,7 @@ public class DepthwiseConvolution: Layer {
                                          strideInPixelsX: stride.0,
                                          strideInPixelsY: stride.1,
                                          channelMultiplier: 1,
-                                         relu: useReLU,
+                                         neuronFilter: activation,
                                          kernelWeights: weights.pointer,
                                          biasTerms: biases?.pointer)
   }

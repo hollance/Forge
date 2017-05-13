@@ -46,7 +46,7 @@ public func convolution(device: MTLDevice,
                         kernel: (Int, Int),
                         inChannels: Int,
                         outChannels: Int,
-                        filter: MPSCNNNeuron,
+                        activation: MPSCNNNeuron?,
                         name: String,
                         stride: (Int, Int) = (1, 1),
                         useBias: Bool = true,
@@ -71,7 +71,7 @@ public func convolution(device: MTLDevice,
                                          kernelHeight: kernel.1,
                                          inputFeatureChannels: inChannels,
                                          outputFeatureChannels: outChannels,
-                                         neuronFilter: filter)
+                                         neuronFilter: activation)
   desc.strideInPixelsX = stride.0
   desc.strideInPixelsY = stride.1
 
@@ -135,7 +135,7 @@ public func dense(device: MTLDevice,
                   shape: (Int, Int),
                   inChannels: Int,
                   fanOut: Int,
-                  filter: MPSCNNNeuron?,
+                  activation: MPSCNNNeuron?,
                   name: String,
                   useBias: Bool = true,
                   mergeOffset: Int = 0) -> MPSCNNFullyConnected {
@@ -162,7 +162,7 @@ public func dense(device: MTLDevice,
                                          kernelHeight: shape.1,
                                          inputFeatureChannels: inChannels,
                                          outputFeatureChannels: fanOut,
-                                         neuronFilter: filter)
+                                         neuronFilter: activation)
 
   let layer = MPSCNNFullyConnected(device: device,
                                    convolutionDescriptor: desc,
@@ -185,10 +185,11 @@ public func dense(device: MTLDevice,
 public func dense(device: MTLDevice,
                   fanIn: Int,
                   fanOut: Int,
-                  filter: MPSCNNNeuron?,
+                  activation: MPSCNNNeuron?,
                   name: String) -> MPSCNNFullyConnected {
 
-  return dense(device: device, shape: (1, 1), inChannels: fanIn, fanOut: fanOut, filter: filter, name: name)
+  return dense(device: device, shape: (1, 1), inChannels: fanIn,
+               fanOut: fanOut, activation: activation, name: name)
 }
 
 public enum PaddingType {
@@ -227,6 +228,7 @@ extension MPSCNNConvolution {
 public func depthwiseConvolution(device: MTLDevice,
                  kernel: (Int, Int),
                  channels: Int,
+                 activation: MPSCNNNeuron?,
                  name: String,
                  stride: (Int, Int) = (1, 1),
                  useBias: Bool) -> DepthwiseConvolutionKernel {
@@ -252,6 +254,7 @@ public func depthwiseConvolution(device: MTLDevice,
                                     featureChannels: channels,
                                     strideInPixelsX: stride.0,
                                     strideInPixelsY: stride.1,
+                                    neuronFilter: activation,
                                     kernelWeights: weightsData.pointer,
                                     biasTerms: biasData?.pointer)
 }
@@ -262,7 +265,7 @@ public func depthwiseConvolution(device: MTLDevice,
 public func pointwiseConvolution(device: MTLDevice,
                                  inChannels: Int,
                                  outChannels: Int,
-                                 filter: MPSCNNNeuron,
+                                 activation: MPSCNNNeuron?,
                                  name: String,
                                  stride: (Int, Int) = (1, 1),
                                  mergeOffset: Int = 0) -> MPSCNNConvolution {
@@ -271,6 +274,6 @@ public func pointwiseConvolution(device: MTLDevice,
                      kernel: (1, 1),
                      inChannels: inChannels,
                      outChannels: outChannels,
-                     filter: filter,
+                     activation: activation,
                      name: name)
 }

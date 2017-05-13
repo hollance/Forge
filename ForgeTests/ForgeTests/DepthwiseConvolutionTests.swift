@@ -3,8 +3,8 @@ import MetalPerformanceShaders
 import Forge
 
 class DepthwiseConvolutionTests {
-  func runTest(channels: Int, stride: Int) {
-    print("\tchannels: \(channels), stride: \(stride)")
+  func runTest(channels: Int, stride: Int, filter: MPSCNNNeuron?) {
+    print("  channels: \(channels), stride: \(stride)")
 
     let kernelWidth = 3
     let kernelHeight = 3
@@ -18,14 +18,14 @@ class DepthwiseConvolutionTests {
     var biases = [Float](repeating: 0, count: channels)
     Random.uniformRandom(&biases, count: channels, scale: 0.3, seed: time(nil))
 
+    let inputImage = randomImage(device: device, width: imageWidth,
+                                 height: imageHeight, channels: channels,
+                                 seed: time(nil))
+
     let imageDesc = MPSImageDescriptor(channelFormat: .float16,
                                        width: imageWidth,
                                        height: imageHeight,
                                        featureChannels: channels)
-
-    let inputImage = randomImage(device: device, width: imageWidth,
-                                 height: imageHeight, channels: channels,
-                                 seed: time(nil))
 
     let outputImage1 = MPSImage(device: device, imageDescriptor: imageDesc)
     let outputImage2 = MPSImage(device: device, imageDescriptor: imageDesc)
@@ -37,7 +37,7 @@ class DepthwiseConvolutionTests {
                                                    strideInPixelsX: stride,
                                                    strideInPixelsY: stride,
                                                    channelMultiplier: 1,
-                                                   relu: false,
+                                                   neuronFilter: filter,
                                                    kernelWeights: depthwiseWeights,
                                                    biasTerms: biases)
 
@@ -45,7 +45,7 @@ class DepthwiseConvolutionTests {
                                            kernelHeight: kernelHeight,
                                            inputFeatureChannels: channels,
                                            outputFeatureChannels: channels,
-                                           neuronFilter: nil)
+                                           neuronFilter: filter)
     desc.strideInPixelsX = stride
     desc.strideInPixelsY = stride
 
@@ -103,12 +103,17 @@ class DepthwiseConvolutionTests {
     assertEqual(output1, output2, tolerance: 1e-3)
   }
 
-  func test() {
+  func testCorrectness() {
     print("\(self)")
+
+    let relu = MPSCNNNeuronReLU(device: device, a: 0)
+    let sigmoid = MPSCNNNeuronSigmoid(device: device)
 
     for c in [61, 13, 8, 4, 3, 2, 1] {
       for s in [1, 2, 3] {
-        runTest(channels: c, stride: s)
+        for f in [ relu, sigmoid, nil ] {
+          runTest(channels: c, stride: s, filter: f)
+        }
       }
     }
   }
