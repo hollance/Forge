@@ -63,7 +63,7 @@ struct KernelParams {
 // a new layer for it.
 inline float4 applyNeuron(float4 x, float a, float b) {
   if (neuronType == NeuronTypeReLU)
-    return fmax(x, 0.0f) + fmin(x * a, 0.0f);
+    return fmax(x, 0.0f) + a*fmin(x, 0.0f);
   if (neuronType == NeuronTypeLinear)
     return a*x + b;
   if (neuronType == NeuronTypeSigmoid)
