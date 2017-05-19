@@ -47,7 +47,7 @@ class CameraViewController: UIViewController {
   var device: MTLDevice!
   var commandQueue: MTLCommandQueue!
   var runner: Runner!
-  var network: NeuralNetwork!
+  var network: MobileNet!
 
   var startupGroup = DispatchGroup()
 
@@ -160,7 +160,7 @@ class CameraViewController: UIViewController {
     }
   }
 
-  private func show(predictions: [Prediction]) {
+  private func show(predictions: [MobileNet.Prediction]) {
     let p = predictions[0]
     if p.probability > 0.9 {
       predictionLabel.text = p.label

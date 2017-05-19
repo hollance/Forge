@@ -30,12 +30,14 @@ import Forge
   Implements the LeNet-5 MNIST neural network using the DSL. This code is
   a lot shorter and easier to read!
 */
-public class MNIST: NeuralNetwork {
+class MNIST: NeuralNetwork {
+  typealias Prediction = (label: String, probability: Float)
+
   let model: Model
   let resizeLayer: Resize
   let grayscale: Tensor
 
-  public init(device: MTLDevice, inflightBuffers: Int) {
+  init(device: MTLDevice, inflightBuffers: Int) {
     let relu = MPSCNNNeuronReLU(device: device, a: 0)
 
     let input = Input()
@@ -74,7 +76,7 @@ public class MNIST: NeuralNetwork {
     }
   }
 
-  public func encode(commandBuffer: MTLCommandBuffer, texture inputTexture: MTLTexture, inflightIndex: Int) {
+  func encode(commandBuffer: MTLCommandBuffer, texture inputTexture: MTLTexture, inflightIndex: Int) {
     // This is how you can dynamically crop the input texture before resizing
     // (this crops the input image to the center square).
     resizeLayer.setCropRect(x: 0, y: 60, width: 360, height: 360)
@@ -82,7 +84,7 @@ public class MNIST: NeuralNetwork {
     model.encode(commandBuffer: commandBuffer, texture: inputTexture, inflightIndex: inflightIndex)
   }
 
-  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult {
+  func fetchResult(inflightIndex: Int) -> NeuralNetworkResult<Prediction> {
     // Convert the MTLTexture from outputImage into something we can use
     // from Swift and then find the class with the highest probability.
     let probabilities = model.outputImage(inflightIndex: inflightIndex).toFloatArray()
@@ -93,7 +95,7 @@ public class MNIST: NeuralNetwork {
 
     let (maxIndex, maxValue) = probabilities.argmax()
 
-    var result = NeuralNetworkResult()
+    var result = NeuralNetworkResult<Prediction>()
     result.predictions.append((label: "\(maxIndex)", probability: maxValue))
 
     // Enable this to see the output of the preprocessing shader.

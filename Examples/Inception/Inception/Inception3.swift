@@ -5,6 +5,8 @@ import Forge
   The Inception v3 network.
 */
 class Inception3: NeuralNetwork {
+  typealias Prediction = (label: String, probability: Float)
+
   let model: Model
 
   public init(device: MTLDevice, inflightBuffers: Int) {
@@ -186,11 +188,11 @@ class Inception3: NeuralNetwork {
     model.encode(commandBuffer: commandBuffer, texture: sourceTexture, inflightIndex: inflightIndex)
   }
 
-  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult {
+  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult<Prediction> {
     let probabilities = model.outputImage(inflightIndex: inflightIndex).toFloatArray()
     assert(probabilities.count == 1008)
 
-    var result = NeuralNetworkResult()
+    var result = NeuralNetworkResult<Prediction>()
     result.predictions = probabilities.top(k: 5).map { x -> Prediction in (self.labels[x.0], x.1) }
     return result
   }

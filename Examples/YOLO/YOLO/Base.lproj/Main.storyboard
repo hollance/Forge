@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_0" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Camera View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="CameraViewController" customModule="YOLO" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="4iA-b4-NHG"/>
+                        <viewControllerLayoutGuide type="bottom" id="JLZ-UN-cej"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bCL-P6-Xzi" userLabel="Video Preview">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="orI-nu-P9h" userLabel="Results">
+                                <rect key="frame" x="0.0" y="534" width="320" height="34"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Elapsed time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z1n-zk-6Ap">
+                                        <rect key="frame" x="20" y="10" width="280" height="14"/>
+                                        <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="12"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.5" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="Z1n-zk-6Ap" secondAttribute="trailing" constant="20" id="4Br-Rq-LqJ"/>
+                                    <constraint firstItem="Z1n-zk-6Ap" firstAttribute="top" secondItem="orI-nu-P9h" secondAttribute="top" constant="10" id="lsb-Wc-S7h"/>
+                                    <constraint firstAttribute="bottom" secondItem="Z1n-zk-6Ap" secondAttribute="bottom" constant="10" id="ltb-ij-tUX"/>
+                                    <constraint firstItem="Z1n-zk-6Ap" firstAttribute="leading" secondItem="orI-nu-P9h" secondAttribute="leading" constant="20" id="t1f-jw-ZyR"/>
+                                </constraints>
+                            </view>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RUc-kC-0Vd">
+                                <rect key="frame" x="-4" y="0.0" width="208" height="208"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="208" id="l4d-Zw-XZ9"/>
+                                    <constraint firstAttribute="height" constant="208" id="rIJ-5U-gvS"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" red="0.078431372549019607" green="0.11764705882352941" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="RUc-kC-0Vd" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="Fpc-PT-0Cd"/>
+                            <constraint firstItem="RUc-kC-0Vd" firstAttribute="top" secondItem="4iA-b4-NHG" secondAttribute="bottom" constant="-20" id="XFx-EN-q87"/>
+                            <constraint firstItem="JLZ-UN-cej" firstAttribute="top" secondItem="bCL-P6-Xzi" secondAttribute="bottom" id="aFe-O2-aUZ"/>
+                            <constraint firstItem="bCL-P6-Xzi" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="e7s-hY-zDH"/>
+                            <constraint firstItem="orI-nu-P9h" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="eWH-Zu-YEX"/>
+                            <constraint firstAttribute="trailing" secondItem="orI-nu-P9h" secondAttribute="trailing" id="iQW-sJ-6HM"/>
+                            <constraint firstItem="bCL-P6-Xzi" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="sC5-sg-Czw"/>
+                            <constraint firstItem="JLZ-UN-cej" firstAttribute="top" secondItem="orI-nu-P9h" secondAttribute="bottom" id="umg-vt-Zr9"/>
+                            <constraint firstAttribute="trailing" secondItem="bCL-P6-Xzi" secondAttribute="trailing" id="zBc-3I-dYS"/>
+                        </constraints>
+                    </view>
+                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
+                    <connections>
+                        <outlet property="debugImageView" destination="RUc-kC-0Vd" id="vpu-er-0aD"/>
+                        <outlet property="timeLabel" destination="Z1n-zk-6Ap" id="Uip-Qq-CIm"/>
+                        <outlet property="videoPreview" destination="bCL-P6-Xzi" id="16P-At-I63"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="83" y="262"/>
+        </scene>
+    </scenes>
+    <simulatedMetricsContainer key="defaultSimulatedMetrics">
+        <simulatedStatusBarMetrics key="statusBar"/>
+        <simulatedOrientationMetrics key="orientation"/>
+        <simulatedScreenMetrics key="destination" type="retina4_0.fullscreen"/>
+    </simulatedMetricsContainer>
+</document>

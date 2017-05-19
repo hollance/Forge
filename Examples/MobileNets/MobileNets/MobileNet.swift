@@ -12,7 +12,9 @@ import Forge
   trained on anything yet*, so the predictions don't make any sense at all! 
   I just wanted to see how fast/slow this network architecture is on iPhone.
 */
-public class MobileNet: NeuralNetwork {
+class MobileNet: NeuralNetwork {
+  typealias Prediction = (label: String, probability: Float)
+
   let classes: Int
   let model: Model
 
@@ -97,12 +99,12 @@ public class MobileNet: NeuralNetwork {
     model.encode(commandBuffer: commandBuffer, texture: inputTexture, inflightIndex: inflightIndex)
   }
 
-  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult {
+  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult<Prediction> {
     let probabilities = model.outputImage(inflightIndex: inflightIndex).toFloatArray()
     assert(probabilities.count == (self.classes / 4) * 4)
     let (maxIndex, maxValue) = probabilities.argmax()
 
-    var result = NeuralNetworkResult()
+    var result = NeuralNetworkResult<Prediction>()
     result.predictions.append((label: "\(maxIndex)", probability: maxValue))
     return result
   }

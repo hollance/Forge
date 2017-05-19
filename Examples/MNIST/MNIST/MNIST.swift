@@ -39,7 +39,9 @@ import Forge
   - Fully-connected 320 units, ReLU
   - Fully-connected 10 units, softmax
 */
-public class MNIST: NeuralNetwork {
+class MNIST: NeuralNetwork {
+  typealias Prediction = (label: String, probability: Float)
+
   var outputImage: [MPSImage] = []
 
   let lanczos: MPSImageLanczosScale
@@ -133,7 +135,7 @@ public class MNIST: NeuralNetwork {
     softmax.encode(commandBuffer: commandBuffer, sourceImage: fc2Img, destinationImage: outputImage[inflightIndex])
   }
 
-  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult {
+  public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult<Prediction> {
     // Convert the MTLTexture from outputImage into something we can use
     // from Swift and then find the class with the highest probability.
     // Note: there are only 10 classes but the number of channels in the 
@@ -142,7 +144,7 @@ public class MNIST: NeuralNetwork {
     assert(probabilities.count == 12)
     let (maxIndex, maxValue) = probabilities.argmax()
 
-    var result = NeuralNetworkResult()
+    var result = NeuralNetworkResult<Prediction>()
     result.predictions.append((label: "\(maxIndex)", probability: maxValue))
 
     // Enable this to see the output of the preprocessing shader.

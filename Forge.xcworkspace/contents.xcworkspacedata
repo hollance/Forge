@@ -16,4 +16,7 @@
    <FileRef
       location = "group:Forge/Forge/../../Examples/MobileNets/MobileNets.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:Examples/YOLO/YOLO.xcodeproj">
+   </FileRef>
 </Workspace>

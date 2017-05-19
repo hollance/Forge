@@ -53,23 +53,24 @@ public class VideoCapture: NSObject {
     super.init()
   }
 
-  public func setUp(completion: @escaping (Bool) -> Void) {
+  public func setUp(sessionPreset: String = AVCaptureSessionPresetMedium,
+                    completion: @escaping (Bool) -> Void) {
     queue.async {
-      let success = self.setUpCamera()
+      let success = self.setUpCamera(sessionPreset: sessionPreset)
       DispatchQueue.main.async {
         completion(success)
       }
     }
   }
 
-  func setUpCamera() -> Bool {
+  func setUpCamera(sessionPreset: String) -> Bool {
     guard CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, device, nil, &textureCache) == kCVReturnSuccess else {
       print("Error: could not create a texture cache")
       return false
     }
 
     captureSession.beginConfiguration()
-    captureSession.sessionPreset = AVCaptureSessionPresetMedium
+    captureSession.sessionPreset = sessionPreset
 
     guard let captureDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo) else {
       print("Error: no video devices available")

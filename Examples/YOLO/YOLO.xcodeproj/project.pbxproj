@@ -1,0 +1,430 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7B711C871ECC8B13001CB7C2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B711C851ECC8B13001CB7C2 /* Main.storyboard */; };
+		7B711C891ECC8B13001CB7C2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B711C881ECC8B13001CB7C2 /* Assets.xcassets */; };
+		7B711C961ECC8B33001CB7C2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711C941ECC8B33001CB7C2 /* AppDelegate.swift */; };
+		7B711C971ECC8B33001CB7C2 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711C951ECC8B33001CB7C2 /* VideoCapture.swift */; };
+		7B711C9D1ECC8BBD001CB7C2 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711C9B1ECC8BBD001CB7C2 /* CameraViewController.swift */; };
+		7B711C9E1ECC8BBD001CB7C2 /* YOLO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711C9C1ECC8BBD001CB7C2 /* YOLO.swift */; };
+		7B711CA01ECC8BF9001CB7C2 /* Forge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B711C9F1ECC8BF9001CB7C2 /* Forge.framework */; };
+		7B711CA11ECC8BF9001CB7C2 /* Forge.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B711C9F1ECC8BF9001CB7C2 /* Forge.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7B711CD91ECCA8A3001CB7C2 /* conv1_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CC71ECCA8A3001CB7C2 /* conv1_b.bin */; };
+		7B711CDA1ECCA8A3001CB7C2 /* conv1_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CC81ECCA8A3001CB7C2 /* conv1_W.bin */; };
+		7B711CDB1ECCA8A3001CB7C2 /* conv2_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CC91ECCA8A3001CB7C2 /* conv2_b.bin */; };
+		7B711CDC1ECCA8A3001CB7C2 /* conv2_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CCA1ECCA8A3001CB7C2 /* conv2_W.bin */; };
+		7B711CDD1ECCA8A3001CB7C2 /* conv3_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CCB1ECCA8A3001CB7C2 /* conv3_b.bin */; };
+		7B711CDE1ECCA8A3001CB7C2 /* conv3_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CCC1ECCA8A3001CB7C2 /* conv3_W.bin */; };
+		7B711CDF1ECCA8A3001CB7C2 /* conv4_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CCD1ECCA8A3001CB7C2 /* conv4_b.bin */; };
+		7B711CE01ECCA8A3001CB7C2 /* conv4_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CCE1ECCA8A3001CB7C2 /* conv4_W.bin */; };
+		7B711CE11ECCA8A3001CB7C2 /* conv5_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CCF1ECCA8A3001CB7C2 /* conv5_b.bin */; };
+		7B711CE21ECCA8A3001CB7C2 /* conv5_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD01ECCA8A3001CB7C2 /* conv5_W.bin */; };
+		7B711CE31ECCA8A3001CB7C2 /* conv6_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD11ECCA8A3001CB7C2 /* conv6_b.bin */; };
+		7B711CE41ECCA8A3001CB7C2 /* conv6_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD21ECCA8A3001CB7C2 /* conv6_W.bin */; };
+		7B711CE51ECCA8A3001CB7C2 /* conv7_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD31ECCA8A3001CB7C2 /* conv7_b.bin */; };
+		7B711CE61ECCA8A3001CB7C2 /* conv7_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD41ECCA8A3001CB7C2 /* conv7_W.bin */; };
+		7B711CE71ECCA8A3001CB7C2 /* conv8_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD51ECCA8A3001CB7C2 /* conv8_b.bin */; };
+		7B711CE81ECCA8A3001CB7C2 /* conv8_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD61ECCA8A3001CB7C2 /* conv8_W.bin */; };
+		7B711CE91ECCA8A3001CB7C2 /* conv9_b.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD71ECCA8A3001CB7C2 /* conv9_b.bin */; };
+		7B711CEA1ECCA8A3001CB7C2 /* conv9_W.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7B711CD81ECCA8A3001CB7C2 /* conv9_W.bin */; };
+		7B711CF31ECDA2D4001CB7C2 /* BoundingBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711CF21ECDA2D4001CB7C2 /* BoundingBox.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7B711CA21ECC8BF9001CB7C2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				7B711CA11ECC8BF9001CB7C2 /* Forge.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		7B711C7E1ECC8B13001CB7C2 /* YOLO.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YOLO.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B711C861ECC8B13001CB7C2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		7B711C881ECC8B13001CB7C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7B711C8D1ECC8B13001CB7C2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7B711C941ECC8B33001CB7C2 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		7B711C951ECC8B33001CB7C2 /* VideoCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
+		7B711C9B1ECC8BBD001CB7C2 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		7B711C9C1ECC8BBD001CB7C2 /* YOLO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YOLO.swift; sourceTree = "<group>"; };
+		7B711C9F1ECC8BF9001CB7C2 /* Forge.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Forge.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B711CC71ECCA8A3001CB7C2 /* conv1_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv1_b.bin; path = Parameters/conv1_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CC81ECCA8A3001CB7C2 /* conv1_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv1_W.bin; path = Parameters/conv1_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CC91ECCA8A3001CB7C2 /* conv2_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv2_b.bin; path = Parameters/conv2_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CCA1ECCA8A3001CB7C2 /* conv2_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv2_W.bin; path = Parameters/conv2_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CCB1ECCA8A3001CB7C2 /* conv3_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv3_b.bin; path = Parameters/conv3_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CCC1ECCA8A3001CB7C2 /* conv3_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv3_W.bin; path = Parameters/conv3_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CCD1ECCA8A3001CB7C2 /* conv4_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv4_b.bin; path = Parameters/conv4_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CCE1ECCA8A3001CB7C2 /* conv4_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv4_W.bin; path = Parameters/conv4_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CCF1ECCA8A3001CB7C2 /* conv5_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv5_b.bin; path = Parameters/conv5_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD01ECCA8A3001CB7C2 /* conv5_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv5_W.bin; path = Parameters/conv5_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD11ECCA8A3001CB7C2 /* conv6_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv6_b.bin; path = Parameters/conv6_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD21ECCA8A3001CB7C2 /* conv6_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv6_W.bin; path = Parameters/conv6_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD31ECCA8A3001CB7C2 /* conv7_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv7_b.bin; path = Parameters/conv7_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD41ECCA8A3001CB7C2 /* conv7_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv7_W.bin; path = Parameters/conv7_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD51ECCA8A3001CB7C2 /* conv8_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv8_b.bin; path = Parameters/conv8_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD61ECCA8A3001CB7C2 /* conv8_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv8_W.bin; path = Parameters/conv8_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD71ECCA8A3001CB7C2 /* conv9_b.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv9_b.bin; path = Parameters/conv9_b.bin; sourceTree = SOURCE_ROOT; };
+		7B711CD81ECCA8A3001CB7C2 /* conv9_W.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; name = conv9_W.bin; path = Parameters/conv9_W.bin; sourceTree = SOURCE_ROOT; };
+		7B711CF21ECDA2D4001CB7C2 /* BoundingBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoundingBox.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7B711C7B1ECC8B13001CB7C2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B711CA01ECC8BF9001CB7C2 /* Forge.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7B711C751ECC8B13001CB7C2 = {
+			isa = PBXGroup;
+			children = (
+				7B711C801ECC8B13001CB7C2 /* YOLO */,
+				7B711C7F1ECC8B13001CB7C2 /* Products */,
+				7B711C9F1ECC8BF9001CB7C2 /* Forge.framework */,
+			);
+			sourceTree = "<group>";
+		};
+		7B711C7F1ECC8B13001CB7C2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7B711C7E1ECC8B13001CB7C2 /* YOLO.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7B711C801ECC8B13001CB7C2 /* YOLO */ = {
+			isa = PBXGroup;
+			children = (
+				7B711C931ECC8B33001CB7C2 /* Common */,
+				7B711C981ECC8B37001CB7C2 /* Sources */,
+				7B711C991ECC8B44001CB7C2 /* Parameters */,
+				7B711C851ECC8B13001CB7C2 /* Main.storyboard */,
+				7B711C881ECC8B13001CB7C2 /* Assets.xcassets */,
+				7B711C8D1ECC8B13001CB7C2 /* Info.plist */,
+			);
+			path = YOLO;
+			sourceTree = "<group>";
+		};
+		7B711C931ECC8B33001CB7C2 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				7B711C941ECC8B33001CB7C2 /* AppDelegate.swift */,
+				7B711C951ECC8B33001CB7C2 /* VideoCapture.swift */,
+			);
+			name = Common;
+			path = ../../Common;
+			sourceTree = "<group>";
+		};
+		7B711C981ECC8B37001CB7C2 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				7B711C9B1ECC8BBD001CB7C2 /* CameraViewController.swift */,
+				7B711CF21ECDA2D4001CB7C2 /* BoundingBox.swift */,
+				7B711C9C1ECC8BBD001CB7C2 /* YOLO.swift */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		7B711C991ECC8B44001CB7C2 /* Parameters */ = {
+			isa = PBXGroup;
+			children = (
+				7B711CC71ECCA8A3001CB7C2 /* conv1_b.bin */,
+				7B711CC81ECCA8A3001CB7C2 /* conv1_W.bin */,
+				7B711CC91ECCA8A3001CB7C2 /* conv2_b.bin */,
+				7B711CCA1ECCA8A3001CB7C2 /* conv2_W.bin */,
+				7B711CCB1ECCA8A3001CB7C2 /* conv3_b.bin */,
+				7B711CCC1ECCA8A3001CB7C2 /* conv3_W.bin */,
+				7B711CCD1ECCA8A3001CB7C2 /* conv4_b.bin */,
+				7B711CCE1ECCA8A3001CB7C2 /* conv4_W.bin */,
+				7B711CCF1ECCA8A3001CB7C2 /* conv5_b.bin */,
+				7B711CD01ECCA8A3001CB7C2 /* conv5_W.bin */,
+				7B711CD11ECCA8A3001CB7C2 /* conv6_b.bin */,
+				7B711CD21ECCA8A3001CB7C2 /* conv6_W.bin */,
+				7B711CD31ECCA8A3001CB7C2 /* conv7_b.bin */,
+				7B711CD41ECCA8A3001CB7C2 /* conv7_W.bin */,
+				7B711CD51ECCA8A3001CB7C2 /* conv8_b.bin */,
+				7B711CD61ECCA8A3001CB7C2 /* conv8_W.bin */,
+				7B711CD71ECCA8A3001CB7C2 /* conv9_b.bin */,
+				7B711CD81ECCA8A3001CB7C2 /* conv9_W.bin */,
+			);
+			name = Parameters;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7B711C7D1ECC8B13001CB7C2 /* YOLO */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7B711C901ECC8B13001CB7C2 /* Build configuration list for PBXNativeTarget "YOLO" */;
+			buildPhases = (
+				7B711C7A1ECC8B13001CB7C2 /* Sources */,
+				7B711C7B1ECC8B13001CB7C2 /* Frameworks */,
+				7B711C7C1ECC8B13001CB7C2 /* Resources */,
+				7B711CA21ECC8BF9001CB7C2 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YOLO;
+			productName = YOLO;
+			productReference = 7B711C7E1ECC8B13001CB7C2 /* YOLO.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7B711C761ECC8B13001CB7C2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0830;
+				LastUpgradeCheck = 0830;
+				ORGANIZATIONNAME = MachineThink;
+				TargetAttributes = {
+					7B711C7D1ECC8B13001CB7C2 = {
+						CreatedOnToolsVersion = 8.3;
+						DevelopmentTeam = MGCEKGP4Y4;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 7B711C791ECC8B13001CB7C2 /* Build configuration list for PBXProject "YOLO" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 7B711C751ECC8B13001CB7C2;
+			productRefGroup = 7B711C7F1ECC8B13001CB7C2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7B711C7D1ECC8B13001CB7C2 /* YOLO */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7B711C7C1ECC8B13001CB7C2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B711C891ECC8B13001CB7C2 /* Assets.xcassets in Resources */,
+				7B711CE91ECCA8A3001CB7C2 /* conv9_b.bin in Resources */,
+				7B711CDE1ECCA8A3001CB7C2 /* conv3_W.bin in Resources */,
+				7B711CEA1ECCA8A3001CB7C2 /* conv9_W.bin in Resources */,
+				7B711CDB1ECCA8A3001CB7C2 /* conv2_b.bin in Resources */,
+				7B711CDD1ECCA8A3001CB7C2 /* conv3_b.bin in Resources */,
+				7B711CE31ECCA8A3001CB7C2 /* conv6_b.bin in Resources */,
+				7B711CE61ECCA8A3001CB7C2 /* conv7_W.bin in Resources */,
+				7B711CE01ECCA8A3001CB7C2 /* conv4_W.bin in Resources */,
+				7B711CDC1ECCA8A3001CB7C2 /* conv2_W.bin in Resources */,
+				7B711CE11ECCA8A3001CB7C2 /* conv5_b.bin in Resources */,
+				7B711CDF1ECCA8A3001CB7C2 /* conv4_b.bin in Resources */,
+				7B711CE81ECCA8A3001CB7C2 /* conv8_W.bin in Resources */,
+				7B711CE71ECCA8A3001CB7C2 /* conv8_b.bin in Resources */,
+				7B711C871ECC8B13001CB7C2 /* Main.storyboard in Resources */,
+				7B711CE51ECCA8A3001CB7C2 /* conv7_b.bin in Resources */,
+				7B711CE41ECCA8A3001CB7C2 /* conv6_W.bin in Resources */,
+				7B711CD91ECCA8A3001CB7C2 /* conv1_b.bin in Resources */,
+				7B711CDA1ECCA8A3001CB7C2 /* conv1_W.bin in Resources */,
+				7B711CE21ECCA8A3001CB7C2 /* conv5_W.bin in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7B711C7A1ECC8B13001CB7C2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B711CF31ECDA2D4001CB7C2 /* BoundingBox.swift in Sources */,
+				7B711C971ECC8B33001CB7C2 /* VideoCapture.swift in Sources */,
+				7B711C9D1ECC8BBD001CB7C2 /* CameraViewController.swift in Sources */,
+				7B711C961ECC8B33001CB7C2 /* AppDelegate.swift in Sources */,
+				7B711C9E1ECC8BBD001CB7C2 /* YOLO.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		7B711C851ECC8B13001CB7C2 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7B711C861ECC8B13001CB7C2 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		7B711C8E1ECC8B13001CB7C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7B711C8F1ECC8B13001CB7C2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7B711C911ECC8B13001CB7C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = MGCEKGP4Y4;
+				INFOPLIST_FILE = YOLO/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = net.machinethink.YOLO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				VALID_ARCHS = arm64;
+			};
+			name = Debug;
+		};
+		7B711C921ECC8B13001CB7C2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = MGCEKGP4Y4;
+				INFOPLIST_FILE = YOLO/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = net.machinethink.YOLO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				VALID_ARCHS = arm64;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7B711C791ECC8B13001CB7C2 /* Build configuration list for PBXProject "YOLO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7B711C8E1ECC8B13001CB7C2 /* Debug */,
+				7B711C8F1ECC8B13001CB7C2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7B711C901ECC8B13001CB7C2 /* Build configuration list for PBXNativeTarget "YOLO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7B711C911ECC8B13001CB7C2 /* Debug */,
+				7B711C921ECC8B13001CB7C2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7B711C761ECC8B13001CB7C2 /* Project object */;
+}

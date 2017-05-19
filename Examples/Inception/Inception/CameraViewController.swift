@@ -27,7 +27,7 @@ class CameraViewController: UIViewController {
   var device: MTLDevice!
   var commandQueue: MTLCommandQueue!
   var runner: Runner!
-  var network: NeuralNetwork!
+  var network: Inception3!
 
   var startupGroup = DispatchGroup()
 
@@ -136,7 +136,7 @@ class CameraViewController: UIViewController {
     }
   }
 
-  private func show(predictions: [Prediction]) {
+  private func show(predictions: [Inception3.Prediction]) {
     var s: [String] = []
     for pred in predictions {
       s.append(String(format: "%@ %2.1f%%", pred.label, pred.probability * 100))

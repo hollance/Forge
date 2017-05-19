@@ -50,19 +50,56 @@ let model = Model(input: input, output: output)
 
 > **Note:** A lot of the code in this library is still *experimental* and subject to change. Use at your own risk!
 
-## Run the demo!
+## Run the examples!
 
-To see a demo of Forge in action, open **Forge.xcworkspace** in Xcode and run the **Inception** app on your device.
+To see a demo of Forge in action, open **Forge.xcworkspace** in Xcode and run one of the example apps on your device.
 
 You need at least Xcode 8.3 and a device with an A8 processor (iPhone 6 or better) running iOS 10 or later. You cannot build for the simulator as it does not support Metal.
 
-Also try out the other demo apps:
+The included examples are:
+
+### MNIST
+
+This example implements a very basic LeNet5-type neural network, trained on the MNIST dataset for handwritten digit recognition.
+
+Run the app and point the camera at a handwritten digit (there are some images in the `Test Images` folder you can use for this) and the app will tell you what digit it is, and how sure it is of this prediction.
+
+![MNIST example](Examples/MNIST/MNIST.jpg)
+
+The small image in the top-left corner shows what the network sees (this is the output of the preprocessing shader that attempts to increase the contrast between black and white).
+
+There are two targets in this project: 
 
 - MNIST
-- MNIST-DSL (same as MNIST but using a lot less code)
-- MobileNets
+- MNIST-DSL
 
-## How to install Forge
+They do the exact same thing, except the first one is written with straight MPSCNN code and the second one uses the Forge DSL and is therefore much easier to read.
+
+### Inception-v3
+
+Google's famous [Inception network](https://arxiv.org/pdf/1512.00567v3.pdf) for image classification. Point your phone at some object and the app will give you its top-5 predictions:
+
+![Inception example](Examples/Inception/Inception.jpg)
+
+The Inception example app is based on [Apple's sample code](https://developer.apple.com/library/content/samplecode/MetalImageRecognition/Introduction/Intro.html) but completely rewritten using the DSL. We use their learned parameters. Thanks, Apple!
+
+### YOLO
+
+YOLO is an object detection network. It can detect multiple objects in an image and will even tell you where they are!
+
+![YOLO example](Examples/YOLO/YOLO.jpg)
+
+The example app implements the Tiny YOLO network, which is not as accurate as the full version of [YOLO9000](https://pjreddie.com/darknet/yolo/) and can detect only 20 different kinds of objects.
+
+[YOLO9000: Better, Faster, Stronger](https://arxiv.org/abs/1612.08242) by Joseph Redmon and Ali Farhadi (2016).
+
+### MobileNets
+
+The **MobileNets** example app is an implementation of the network architecture from the paper [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861v1).
+
+NOTE: At the moment no pretrained model for MobileNets is available, so the app only outputs random nonsense. However, it's useful to get an idea of the runtime speed of this neural network.
+
+## How to add Forge to your own project
 
 Use Xcode 8.3 or better.
 
@@ -91,8 +128,3 @@ Forge is under active development. Here is the [list of bugs and upcoming featur
 ## License and credits
 
 Forge is copyright 2016-2017 Matthijs Hollemans and is licensed under the terms of the [MIT license](LICENSE.txt).
-
-The **Inception** example app is based on [Apple's Inception-v3 sample code](https://developer.apple.com/library/content/samplecode/MetalImageRecognition/Introduction/Intro.html) but completely rewritten using the DSL. We use their learned parameters. Thanks, Apple!
-
-The **MobileNets** example app is an implementation of the network architecture from the paper [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861v1).
-

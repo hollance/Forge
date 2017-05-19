@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7B3DA4EF1EBE1A6D00BD3F06 /* Inception3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970C1EAA2DB100F4C4D6 /* Inception3.swift */; };
+		7B711CF11ECD9F4B001CB7C2 /* Inception3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970C1EAA2DB100F4C4D6 /* Inception3.swift */; };
 		7BA396FF1EAA2D8100F4C4D6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396FD1EAA2D8100F4C4D6 /* Main.storyboard */; };
 		7BA397011EAA2D8100F4C4D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA397001EAA2D8100F4C4D6 /* Assets.xcassets */; };
 		7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970B1EAA2DB100F4C4D6 /* CameraViewController.swift */; };
-		7BA397101EAA2DB100F4C4D6 /* SlimMPSCNN.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970D1EAA2DB100F4C4D6 /* SlimMPSCNN.swift */; };
 		7BA397141EAA2DBB00F4C4D6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA397121EAA2DBB00F4C4D6 /* AppDelegate.swift */; };
 		7BA397151EAA2DBB00F4C4D6 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA397131EAA2DBB00F4C4D6 /* VideoCapture.swift */; };
 		7BA397E11EAA2DD100F4C4D6 /* bias_conv.dat in Resources */ = {isa = PBXBuildFile; fileRef = 7BA397181EAA2DD000F4C4D6 /* bias_conv.dat */; };
@@ -237,7 +236,6 @@
 		7BA397051EAA2D8100F4C4D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7BA3970B1EAA2DB100F4C4D6 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 		7BA3970C1EAA2DB100F4C4D6 /* Inception3.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Inception3.swift; sourceTree = "<group>"; };
-		7BA3970D1EAA2DB100F4C4D6 /* SlimMPSCNN.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SlimMPSCNN.swift; sourceTree = "<group>"; };
 		7BA397121EAA2DBB00F4C4D6 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7BA397131EAA2DBB00F4C4D6 /* VideoCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
 		7BA397181EAA2DD000F4C4D6 /* bias_conv.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = bias_conv.dat; sourceTree = "<group>"; };
@@ -499,7 +497,6 @@
 			children = (
 				7BA3970B1EAA2DB100F4C4D6 /* CameraViewController.swift */,
 				7BA3970C1EAA2DB100F4C4D6 /* Inception3.swift */,
-				7BA3970D1EAA2DB100F4C4D6 /* SlimMPSCNN.swift */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -990,8 +987,7 @@
 				7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */,
 				7BA397141EAA2DBB00F4C4D6 /* AppDelegate.swift in Sources */,
 				7BA397151EAA2DBB00F4C4D6 /* VideoCapture.swift in Sources */,
-				7BA397101EAA2DB100F4C4D6 /* SlimMPSCNN.swift in Sources */,
-				7B3DA4EF1EBE1A6D00BD3F06 /* Inception3.swift in Sources */,
+				7B711CF11ECD9F4B001CB7C2 /* Inception3.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -36,6 +36,8 @@ import MetalPerformanceShaders
   network, but not for MPSTemporaryImages.)
 */
 public protocol NeuralNetwork {
+  associatedtype PredictionType
+
   /**
     Encodes the commands for the GPU.
 
@@ -49,17 +51,15 @@ public protocol NeuralNetwork {
     Converts the output MPSImage into an array of predictions.
     This is called from a background thread.
   */
-  func fetchResult(inflightIndex: Int) -> NeuralNetworkResult
+  func fetchResult(inflightIndex: Int) -> NeuralNetworkResult<PredictionType>
 }
-
-public typealias Prediction = (label: String, probability: Float)
 
 /**
   This object is passed back to the UI thread after the neural network has
   made a new prediction.
 */
-public struct NeuralNetworkResult {
-  public var predictions: [Prediction] = []
+public struct NeuralNetworkResult<PredictionType> {
+  public var predictions: [PredictionType] = []
 
   // For debugging purposes it can be useful to look at the output from
   // intermediate layers. To do so, make the layer write to a real MPSImage
@@ -112,10 +112,11 @@ public class Runner {
       again! You should call it from a background thread -- it's OK to use the
       VideoCapture queue for this.
   */
-  public func predict(network: NeuralNetwork,
+  public func predict<NeuralNetworkType: NeuralNetwork>(
+                      network: NeuralNetworkType,
                       texture inputTexture: MTLTexture,
                       queue: DispatchQueue,
-                      completion: @escaping (NeuralNetworkResult) -> Void) {
+                      completion: @escaping (NeuralNetworkResult<NeuralNetworkType.PredictionType>) -> Void) {
 
     // Block until the next GPU buffer is available.
     inflightSemaphore.wait()

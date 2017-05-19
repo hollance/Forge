@@ -260,6 +260,7 @@ public class Pooling: MPSCNNLayer {
   let kernel: (Int, Int)
   let stride: (Int, Int)
   let padding: Bool
+  let edgeMode: MPSImageEdgeMode
   var pool: MPSCNNPooling!
 
   /**
@@ -274,10 +275,12 @@ public class Pooling: MPSCNNLayer {
   public init(kernel: (Int, Int),
               stride: (Int, Int),
               padding: Bool = false,
+              edgeMode: MPSImageEdgeMode = .clamp,
               name: String = "") {
     self.kernel = kernel
     self.stride = stride
     self.padding = padding
+    self.edgeMode = edgeMode
     super.init(name: name)
   }
 
@@ -310,9 +313,18 @@ public class Pooling: MPSCNNLayer {
   func calculatePadding(inputShape: DataShape,
                         outputShape: DataShape) -> MPSOffset {
     if padding {
-      let padH = (outputShape.height - 1) * pool.strideInPixelsY + pool.kernelHeight - inputShape.height
-      let padW = (outputShape.width  - 1) * pool.strideInPixelsX + pool.kernelWidth  - inputShape.width
-      return MPSOffset(x: (pool.kernelWidth - padW)/2, y: (pool.kernelHeight - padH)/2, z: 0)
+      var offset = MPSOffset(x: 0, y: 0, z: 0)
+      if pool.kernelWidth % 2 == 0 {
+        offset.x += (((inputShape.width - 1) % pool.strideInPixelsX) / 2) + 1
+      } else {
+        offset.x += (((inputShape.width - 1) % pool.strideInPixelsX) + 1) / 2
+      }
+      if pool.kernelHeight % 2 == 0 {
+        offset.y += (((inputShape.height - 1) % pool.strideInPixelsY) / 2) + 1
+      } else {
+        offset.y += (((inputShape.height - 1) % pool.strideInPixelsY) + 1) / 2
+      }
+      return offset
     } else {
       return MPSOffset(x: pool.kernelWidth/2, y: pool.kernelHeight/2, z: 0)
     }
@@ -338,7 +350,7 @@ public class MaxPooling: Pooling {
                             kernelHeight: kernel.1,
                             strideInPixelsX: stride.0,
                             strideInPixelsY: stride.1)
-    pool.edgeMode = .clamp
+    pool.edgeMode = edgeMode
     mpscnn = pool
   }
 }
@@ -362,7 +374,7 @@ public class AveragePooling: Pooling {
                                 kernelHeight: kernel.1,
                                 strideInPixelsX: stride.0,
                                 strideInPixelsY: stride.1)
-    pool.edgeMode = .clamp
+    pool.edgeMode = edgeMode
     mpscnn = pool
   }
 }
