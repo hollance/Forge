@@ -47,7 +47,8 @@ public class TransposeChannelsKernel {
 
     self.device = device
 
-    buffer = device.makeBuffer(length: MemoryLayout<UInt16>.stride * featureChannels)
+    let slices = (featureChannels + 3) / 4
+    buffer = device.makeBuffer(length: MemoryLayout<UInt16>.stride * slices * 4)
     memcpy(buffer.contents(), permute, MemoryLayout<UInt16>.stride * featureChannels)
 
     // If there's more than one texture slice in the image, we have to use a
