@@ -8,6 +8,17 @@ func assertEqual<T>(_ a: T, _ b: T) where T:Equatable {
   }
 }
 
+func assertEqual<T>(_ a: [T], _ b: [T]) where T:Equatable {
+  if a.count != b.count {
+    fatalError("Assertion failed: array sizes not the same")
+  }
+  for i in 0..<a.count {
+    if a[i] != b[i] {
+      fatalError("Assertion failed: \(a[i]) not equal to \(b[i])")
+    }
+  }
+}
+
 func assertEqual(_ a: [Float], _ b: [Float], tolerance: Float) {
   if a.count != b.count {
     fatalError("Assertion failed: array sizes not the same")

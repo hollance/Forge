@@ -57,4 +57,20 @@ extension Array where Element: Comparable {
     }
     return (maxIndex, maxValue)
   }
+
+  /**
+    Returns the indices of the array's elements in sorted order.
+  */
+  public func argsort(by areInIncreasingOrder: (Element, Element) -> Bool) -> [Array.Index] {
+    return self.indices.sorted { areInIncreasingOrder(self[$0], self[$1]) }
+  }
+
+  /**
+    Returns an array containing the elements at the specified indices.
+  */
+  public func gather(indices: [Array.Index]) -> [Element] {
+    var a = [Element]()
+    for i in indices { a.append(self[i]) }
+    return a
+  }
 }

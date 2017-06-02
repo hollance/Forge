@@ -44,6 +44,8 @@ class ViewController: UIViewController {
 
     let arrayTests = ArrayTests()
     arrayTests.testArgmax()
+    arrayTests.testArgsort()
+    arrayTests.testGather()
 
     let basicConvTests = BasicConvolutionTests()
     basicConvTests.testCorrectness()
