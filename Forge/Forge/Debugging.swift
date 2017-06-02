@@ -29,6 +29,7 @@ import MetalPerformanceShaders
 
   Writing `printChannelsForPixel(x: 5, y: 10, ...)` is the same as doing
   `print(layer_output[0, 10, 5, :])` in Python with layer output from Keras.
+  Note that x and y are swapped in the Python code!
 
   To make sure the layer computes the right thing, feed the exact same image
   through Metal and Keras and compare the layer outputs.
@@ -67,6 +68,7 @@ public func verifySimilarResults(_ a: [Float], _ b: [Float], printSuspicious: Bo
   var largestError: Float = 0
   var largestErrorIndex = -1
   var averageError: Float = 0
+
   for i in 0..<count {
     let error = abs(a[i] - b[i])
     if error > largestError {

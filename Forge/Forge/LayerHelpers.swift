@@ -26,7 +26,8 @@ import MetalKit
 import MetalPerformanceShaders
 
 /* 
-  Helper functions for creating the layers.
+  Helper functions for creating neural network layers. Not as awesome as using
+  the DSL but should save some work if you want to do things the hard way. ;-)
 
   The name of the layer is used to load its weights and bias values. You need
   to assign loader functions to weightsLoader and biasLoader.

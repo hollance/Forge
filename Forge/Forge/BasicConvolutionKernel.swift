@@ -80,12 +80,14 @@ public class BasicConvolutionKernel: ForgeKernel {
     } else {
       functionName = "conv3x3_array"
     }
-    pipeline = makeFunction(device: device, name: functionName, constantValues: constants, useForgeLibrary: true)
+    pipeline = makeFunction(device: device, name: functionName,
+                            constantValues: constants, useForgeLibrary: true)
 
     super.init(device: device, neuron: neuronFilter, params: params)
   }
 
-  public override func encode(commandBuffer: MTLCommandBuffer, sourceImage: MPSImage, destinationImage: MPSImage) {
+  public override func encode(commandBuffer: MTLCommandBuffer,
+                              sourceImage: MPSImage, destinationImage: MPSImage) {
     // TODO: set the KernelParams based on offset, clipRect, destinationFeatureChannelOffset, edgeMode
 
     let encoder = commandBuffer.makeComputeCommandEncoder()

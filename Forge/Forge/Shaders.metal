@@ -36,7 +36,6 @@ constant ushort kernelWidth [[ function_constant(0) ]];
 constant ushort kernelHeight [[ function_constant(1) ]];
 constant ushort2 stride [[ function_constant(2) ]];
 constant ushort neuronType [[ function_constant(3) ]];
-constant ushort rate [[ function_constant(4) ]];
 
 struct KernelParams {
   ushort inputWidth;
@@ -68,6 +67,20 @@ inline float4 applyNeuron(float4 x, float a, float b) {
     return a*x + b;
   if (neuronType == NeuronTypeSigmoid)
     return 1.0f / (1.0f + exp(-x));
+  if (neuronType == NeuronTypeTanH)
+    return a * tanh(b * x);
+  if (neuronType == NeuronTypeAbsolute)
+    return fabs(x);
+  return x;
+}
+
+inline half4 applyNeuron(half4 x, half a, half b) {
+  if (neuronType == NeuronTypeReLU)
+    return fmax(x, 0.0h) + a*fmin(x, 0.0h);
+  if (neuronType == NeuronTypeLinear)
+    return a*x + b;
+  if (neuronType == NeuronTypeSigmoid)
+    return 1.0h / (1.0h + exp(-x));
   if (neuronType == NeuronTypeTanH)
     return a * tanh(b * x);
   if (neuronType == NeuronTypeAbsolute)
@@ -145,7 +158,7 @@ kernel void conv3x3(
   const ushort2 pos = gid.xy;
 
   // Note: If we use half4, then we lose too much precision.
-  float4 out = float4(0.0h);
+  float4 out = float4(0.0f);
 
   half4 in[9];
   in[0] = inTexture.sample(s, float2(pos.x - 1, pos.y - 1));
@@ -199,7 +212,7 @@ kernel void conv3x3_array(
   const ushort inSlices = inTexture.get_array_size();
   const ushort outSlice = gid.z;
 
-  float4 out = float4(0.0h);
+  float4 out = float4(0.0f);
 
   for (ushort inSlice = 0; inSlice < inSlices; ++inSlice) {
     half4 in[9];
@@ -271,7 +284,7 @@ kernel void depthwiseConv3x3(
 
   // Multiply by the weights and put the weighted sum in the output pixel.
   // Do these calculations as 32-bit float or we lose too much precision.
-  float4 out = float4(0.0h);
+  float4 out = float4(0.0f);
   for (ushort t = 0; t < 9; ++t) {
     out += float4(in[t]) * float4(weights[t]);
   }
@@ -312,7 +325,7 @@ kernel void depthwiseConv3x3_array(
   in[7] = inTexture.sample(s, float2(pos.x    , pos.y + 1), slice);
   in[8] = inTexture.sample(s, float2(pos.x + 1, pos.y + 1), slice);
 
-  float4 out = float4(0.0h);
+  float4 out = float4(0.0f);
   for (ushort t = 0; t < 9; ++t) {
     out += float4(in[t]) * float4(weights[t*slices + slice]);
   }

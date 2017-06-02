@@ -30,10 +30,11 @@ import MetalPerformanceShaders
   
   For optimal throughput we don't want the CPU to wait for the GPU, or vice
   versa. This means the GPU can be working on several inputs at once. Runner
-  takes care of the synchronization for you. However, the NeuralNetwork must
-  allocate multiple output images so that each independent GPU pass gets its
-  own MPSImage. (You need to do this for all MPSImages stored by the neural
-  network, but not for MPSTemporaryImages.)
+  takes care of the synchronization for you.
+  
+  However, the NeuralNetwork must allocate multiple output images so that each 
+  independent GPU pass gets its own MPSImage. (You need to do this for all 
+  MPSImages stored by the neural network, but not for MPSTemporaryImages.)
 */
 public protocol NeuralNetwork {
   associatedtype PredictionType
@@ -63,7 +64,7 @@ public struct NeuralNetworkResult<PredictionType> {
 
   // For debugging purposes it can be useful to look at the output from
   // intermediate layers. To do so, make the layer write to a real MPSImage
-  // object (not MPSTemporaryImage), and fill in the debugTexture property.
+  // object (not MPSTemporaryImage) and fill in the debugTexture property.
   // The UI thread can then display this texture as a UIImage.
   public var debugTexture: MTLTexture?
   public var debugScale: Float = 1       // for scaling down float images
@@ -81,8 +82,8 @@ public struct NeuralNetworkResult<PredictionType> {
   free to just do neural network stuff.
 */
 public class Runner {
-  let device: MTLDevice
-  let commandQueue: MTLCommandQueue
+  public let device: MTLDevice
+  public let commandQueue: MTLCommandQueue
 
   let inflightSemaphore: DispatchSemaphore
   let inflightBuffers: Int

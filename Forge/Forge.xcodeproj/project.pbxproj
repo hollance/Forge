@@ -136,7 +136,6 @@
 				7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */,
 				7B8236C21EAA5AF300127F0C /* SubtractMeanColor.swift */,
 				7BD424991EB216B700451777 /* TransposeChannels.swift */,
-				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
 			);
 			name = Layers;
 			sourceTree = "<group>";
@@ -158,6 +157,7 @@
 		7BA3966A1EA938F100F4C4D6 /* Compute Kernels */ = {
 			isa = PBXGroup;
 			children = (
+				7B8236B71EAA4F4700127F0C /* Shaders.metal */,
 				7BA396481EA8C58A00F4C4D6 /* ComputeHelpers.swift */,
 				7B8236BA1EAA4F9F00127F0C /* SimpleKernel.swift */,
 				7B711C6F1EC73F97001CB7C2 /* ForgeKernel.swift */,

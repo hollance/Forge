@@ -24,7 +24,10 @@ import Foundation
 import Accelerate
 
 public enum Math {
-  /* Returns a number between 0 and count, using the probabilities in x. */
+
+  /**
+    Returns a number between 0 and count, using the probabilities in x.
+  */
   public static func randomlySample(_ x: UnsafeMutablePointer<Float>, _ count: Int) -> Int {
     // Compute the cumulative sum of the probabilities.
     var cumsum = [Float](repeating: 0, count: count)

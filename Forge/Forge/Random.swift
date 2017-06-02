@@ -37,7 +37,8 @@ public enum Random {
     Fills up the given array with uniformly random values between -scale
     and +scale.
   */
-  public static func uniformRandom(_ x: UnsafeMutablePointer<Float>, count: Int, scale: Float) {
+  public static func uniformRandom(_ x: UnsafeMutablePointer<Float>,
+                                   count: Int, scale: Float) {
     for i in 0..<count {
       x[i] = (random()*2 - 1) * scale
     }
@@ -48,7 +49,8 @@ public enum Random {
     and +scale. You can seed the random generator to create reproducible
     results.
   */
-  public static func uniformRandom(_ x: UnsafeMutablePointer<Float>, count: Int, scale: Float, seed: Int) {
+  public static func uniformRandom(_ x: UnsafeMutablePointer<Float>,
+                                   count: Int, scale: Float, seed: Int) {
     srand48(seed)
     for i in 0..<count {
       x[i] = Float(drand48()*2 - 1) * scale

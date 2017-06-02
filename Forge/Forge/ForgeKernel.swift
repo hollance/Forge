@@ -85,7 +85,9 @@ open class ForgeKernel: CustomKernel {
   }
 }
 
-func configureNeuronType(filter: MPSCNNNeuron?, constants: MTLFunctionConstantValues, params: inout KernelParams) {
+func configureNeuronType(filter: MPSCNNNeuron?,
+                                constants: MTLFunctionConstantValues,
+                                params: inout KernelParams) {
   var neuronType: UInt16 = 0
   if let filter = filter as? MPSCNNNeuronReLU {
     neuronType = 1

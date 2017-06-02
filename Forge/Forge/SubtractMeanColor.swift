@@ -52,7 +52,8 @@ public class SubtractMeanColor {
     pipeline = makeFunction(device: device, name: "subtractMeanColor", useForgeLibrary: true)
   }
 
-  public func encode(commandBuffer: MTLCommandBuffer, sourceImage: MPSImage, destinationImage: MPSImage) {
+  public func encode(commandBuffer: MTLCommandBuffer,
+                     sourceImage: MPSImage, destinationImage: MPSImage) {
 
     let encoder = commandBuffer.makeComputeCommandEncoder()
     encoder.setComputePipelineState(pipeline)
