@@ -74,16 +74,10 @@ public class DepthwiseConvolutionKernel: ForgeKernel {
          kernelWidth: kernelWidth, kernelHeight: kernelHeight,
          inputFeatureChannels: featureChannels, outputFeatureChannels: 1)
 
-    if let biasTerms = biasTerms {
-      biasBuffer = makeBuffer(device: device,
-                              channelFormat: .float16,
-                              outputFeatureChannels: featureChannels,
-                              biasTerms: biasTerms)
-    } else {
-      let outputSlices = (featureChannels + 3) / 4
-      let paddedOutputChannels = outputSlices * 4
-      biasBuffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * paddedOutputChannels)
-    }
+    biasBuffer = makeBuffer(device: device,
+                            channelFormat: .float16,
+                            outputFeatureChannels: featureChannels,
+                            biasTerms: biasTerms)
 
     var params = KernelParams()
     let constants = MTLFunctionConstantValues()

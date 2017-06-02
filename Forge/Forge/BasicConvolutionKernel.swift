@@ -56,16 +56,10 @@ public class BasicConvolutionKernel: ForgeKernel {
                                outputFeatureChannels: outputFeatureChannels,
                                weights: kernelWeights)
 
-    if let biasTerms = biasTerms {
-      biasBuffer = makeBuffer(device: device,
-                              channelFormat: .float16,
-                              outputFeatureChannels: outputFeatureChannels,
-                              biasTerms: biasTerms)
-    } else {
-      let outputSlices = (outputFeatureChannels + 3) / 4
-      let paddedOutputChannels = outputSlices * 4
-      biasBuffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * paddedOutputChannels)
-    }
+    biasBuffer = makeBuffer(device: device,
+                            channelFormat: .float16,
+                            outputFeatureChannels: outputFeatureChannels,
+                            biasTerms: biasTerms)
 
     // Specialize the compute function, so that the Metal compiler will build
     // a unique kernel based on the chosen options for stride, etc. We could

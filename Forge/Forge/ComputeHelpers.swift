@@ -356,7 +356,7 @@ public func copy(biasTerms: UnsafePointer<Float>,
 public func makeBuffer(device: MTLDevice,
                        channelFormat: MPSImageFeatureChannelFormat,
                        outputFeatureChannels: Int,
-                       biasTerms: UnsafePointer<Float>) -> MTLBuffer {
+                       biasTerms: UnsafePointer<Float>?) -> MTLBuffer {
 
   assert(channelFormat == .float16)
 
@@ -364,8 +364,12 @@ public func makeBuffer(device: MTLDevice,
   let count = outputSlices * 4
   let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
 
-  copy(biasTerms: biasTerms, to: buffer, channelFormat: channelFormat,
-       outputFeatureChannels: outputFeatureChannels)
+  // The bias terms are often optional. If biasTerms is nil, just allocate a 
+  // buffer containing zeros, otherwise copy the biases into the buffer.
+  if let biasTerms = biasTerms {
+    copy(biasTerms: biasTerms, to: buffer, channelFormat: channelFormat,
+         outputFeatureChannels: outputFeatureChannels)
+  }
 
   return buffer
 }
