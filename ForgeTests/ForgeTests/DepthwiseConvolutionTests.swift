@@ -19,7 +19,7 @@ class DepthwiseConvolutionTests {
     Random.uniformRandom(&biases, count: channels, scale: 0.3, seed: time(nil))
 
     let inputImage = randomImage(device: device, width: imageWidth,
-                                 height: imageHeight, channels: channels,
+                                 height: imageHeight, featureChannels: channels,
                                  seed: time(nil))
 
     let imageDesc = MPSImageDescriptor(channelFormat: .float16,

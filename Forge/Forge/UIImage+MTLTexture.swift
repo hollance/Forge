@@ -67,7 +67,7 @@ extension UIImage {
     let h = texture.height
 
     // First get the bytes from the texture.
-    var outputFloat16 = texture.toArray(width: w, height: h, channels: 4, initial: Float16(0))
+    var outputFloat16 = texture.toFloat16Array(width: w, height: h, featureChannels: 4)
 
     // Convert 16-bit floats to 32-bit floats.
     let outputFloat32 = float16to32(&outputFloat16, count: w * h * 4)
@@ -93,7 +93,7 @@ extension UIImage {
     let w = texture.width
     let h = texture.height
 
-    var outputFloat16 = texture.toArray(width: w, height: h, channels: 1, initial: Float16(0))
+    var outputFloat16 = texture.toFloat16Array(width: w, height: h, featureChannels: 1)
     let outputFloat32 = float16to32(&outputFloat16, count: w * h)
 
     var outputRGBA = [UInt8](repeating: 0, count: w * h * 4)
@@ -114,7 +114,7 @@ extension UIImage {
 
     let w = texture.width
     let h = texture.height
-    var bytes = texture.toArray(width: w, height: h, channels: 4, initial: UInt8(0))
+    var bytes = texture.toUInt8Array(width: w, height: h, featureChannels: 4)
     return UIImage.fromByteArray(&bytes, width: w, height: h)
   }
 
@@ -123,7 +123,7 @@ extension UIImage {
 
     let w = texture.width
     let h = texture.height
-    var bytes = texture.toArray(width: w, height: h, channels: 4, initial: UInt8(0))
+    var bytes = texture.toUInt8Array(width: w, height: h, featureChannels: 4)
 
     for i in 0..<bytes.count/4 {
       swap(&bytes[i*4 + 0], &bytes[i*4 + 2])
@@ -137,7 +137,7 @@ extension UIImage {
 
     let w = texture.width
     let h = texture.height
-    var bytes = texture.toArray(width: w, height: h, channels: 1, initial: UInt8(0))
+    var bytes = texture.toUInt8Array(width: w, height: h, featureChannels: 1)
 
     var rgbaBytes = [UInt8](repeating: 0, count: w * h * 4)
     for i in 0..<bytes.count {

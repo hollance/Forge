@@ -112,14 +112,59 @@ extension MPSImage {
   }
 }
 
+extension MPSImage {
+  /**
+    Creates an MPSImage from an array of Floats.
+    
+    The data must be arranged as follows: for each image in the batch, first 
+    must be channels 0-3 for all pixels, followed by channels 4-7, followed by
+    channels 8-11, etc. This is so we can copy the data into the MTLTextures
+    slice-by-slice.
+
+    NOTE: If the number of channels is not a multiple of 4, you need to add
+    padding bytes. So if you want to make an image with only 3 channels, you
+    still need to provide 4 channels of data.
+  */
+  public convenience init(device: MTLDevice,
+                          numberOfImages: Int = 1,
+                          width: Int,
+                          height: Int,
+                          featureChannels: Int,
+                          array: UnsafeMutablePointer<Float>,
+                          count: Int) {
+    let imageDesc = MPSImageDescriptor(channelFormat: .float16,
+                                       width: width,
+                                       height: height,
+                                       featureChannels: featureChannels,
+                                       numberOfImages: numberOfImages,
+                                       usage: [.shaderRead, .shaderWrite])
+
+    self.init(device: device, imageDescriptor: imageDesc)
+
+    let float16Input = float32to16(array, count: count)
+    float16Input.withUnsafeBytes { buf in
+      // We copy 4 channels worth of data at a time
+      let bytesPerRow = width * 4 * MemoryLayout<Float16>.stride
+      let slices = ((featureChannels + 3) / 4) * numberOfImages
+      var ptr = buf.baseAddress!
+      for s in 0..<slices {
+        texture.replace(region: MTLRegionMake2D(0, 0, width, height),
+                        mipmapLevel: 0,
+                        slice: s,
+                        withBytes: ptr,
+                        bytesPerRow: bytesPerRow,
+                        bytesPerImage: 0)
+        ptr += height * bytesPerRow
+      }
+    }
+  }
+}
+
 /**
-  Creates an MPSImage from a file containing binary 32-floats.
+  Creates an MPSImage from a file containing binary 32-floats. Useful for
+  debugging.
   
-  The data must be arranged as follows:
-  
-  - For each image in the batch, first there must be channels 0-3 for all 
-    pixels, followed by channels 4-7, followed by channels 8-11, etc.
-    This is so we can copy the data into the MTLTextures slice-by-slice.
+  The pixel data must be arranged in slices of 4 channels.
 
   In Python, given an image of shape `(batchSize, height, width, channels)` 
   you can convert it as follows to the expected format:
@@ -133,80 +178,49 @@ extension MPSImage {
       X_metal = np.concatenate(slices, axis=0)
       X_metal.tofile("X.bin")
 */
-public func loadImage(device: MTLDevice,
-                      url: URL,
-                      batchSize: Int = 1,
-                      width: Int,
-                      height: Int,
-                      channels: Int) -> MPSImage {
+public func loadBinaryFloatImage(device: MTLDevice,
+                                 url: URL,
+                                 numberOfImages: Int = 1,
+                                 width: Int,
+                                 height: Int,
+                                 featureChannels: Int) -> MPSImage {
   let data = try! Data(contentsOf: url)
-  let inputSize = batchSize * height * width * channels
+  let inputSize = numberOfImages * height * width * featureChannels
   var float32Input = [Float](repeating: 0, count: inputSize)
   _ = float32Input.withUnsafeMutableBufferPointer { ptr in
     data.copyBytes(to: ptr)
   }
 
-  return imageFromArray(device: device,
-                        batchSize: batchSize,
-                        width: width,
-                        height: height,
-                        channels: channels,
-                        array: &float32Input,
-                        count: inputSize)
+  return MPSImage(device: device,
+                  numberOfImages: numberOfImages,
+                  width: width,
+                  height: height,
+                  featureChannels: featureChannels,
+                  array: &float32Input,
+                  count: inputSize)
 }
 
+/**
+  Creates an image with random pixel values between 0 and 1. Useful for testing
+  and debugging.
+*/
 public func randomImage(device: MTLDevice,
-                        batchSize: Int = 1,
+                        numberOfImages: Int = 1,
                         width: Int,
                         height: Int,
-                        channels: Int,
+                        featureChannels: Int,
                         seed: Int) -> MPSImage {
 
-  let slices = (channels + 3) / 4
-  let inputSize = batchSize * height * width * slices * 4
+  let slices = (featureChannels + 3) / 4
+  let inputSize = numberOfImages * height * width * slices * 4
   var float32Input = [Float](repeating: 0, count: inputSize)
   Random.uniformRandom(&float32Input, count: inputSize, scale: 1.0, seed: seed)
 
-  return imageFromArray(device: device,
-                        batchSize: batchSize,
-                        width: width,
-                        height: height,
-                        channels: channels,
-                        array: &float32Input,
-                        count: inputSize)
-}
-
-public func imageFromArray(device: MTLDevice,
-                           batchSize: Int = 1,
-                           width: Int,
-                           height: Int,
-                           channels: Int,
-                           array: UnsafeMutablePointer<Float>,
-                           count: Int) -> MPSImage {
-  let imageDesc = MPSImageDescriptor(channelFormat: .float16,
-                                     width: width,
-                                     height: height,
-                                     featureChannels: channels,
-                                     numberOfImages: batchSize,
-                                     usage: [.shaderRead, .shaderWrite])
-  let image = MPSImage(device: device, imageDescriptor: imageDesc)
-
-  let float16Input = float32to16(array, count: count)
-  float16Input.withUnsafeBytes { buf in
-    // We copy 4 channels worth of data at a time
-    let bytesPerRow = width * 4 * MemoryLayout<Float16>.stride
-    let slices = ((channels + 3) / 4) * batchSize
-    var ptr = buf.baseAddress!
-    for s in 0..<slices {
-      image.texture.replace(region: MTLRegionMake2D(0, 0, width, height),
-                            mipmapLevel: 0,
-                            slice: s,
-                            withBytes: ptr,
-                            bytesPerRow: bytesPerRow,
-                            bytesPerImage: 0)
-      ptr += height * bytesPerRow
-    }
-  }
-
-  return image
+  return MPSImage(device: device,
+                  numberOfImages: numberOfImages,
+                  width: width,
+                  height: height,
+                  featureChannels: featureChannels,
+                  array: &float32Input,
+                  count: inputSize)
 }

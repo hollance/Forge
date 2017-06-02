@@ -22,7 +22,7 @@ class BasicConvolutionTests {
     Random.uniformRandom(&biases, count: outputChannels, scale: 0.3, seed: time(nil))
 
     let inputImage = randomImage(device: device, width: imageWidth,
-                                 height: imageHeight, channels: inputChannels,
+                                 height: imageHeight, featureChannels: inputChannels,
                                  seed: time(nil))
 
     let outputImageDesc = MPSImageDescriptor(channelFormat: .float16,
