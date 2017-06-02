@@ -53,7 +53,7 @@ func loadForgeMetalLibrary(device: MTLDevice) -> MTLLibrary {
 }
 
 /**
-  Creates a pipeline for a compute kernel.
+  Helper function that creates a pipeline for a compute kernel.
 */
 public func makeFunction(device: MTLDevice, name: String,
                          constantValues: MTLFunctionConstantValues? = nil,
@@ -140,18 +140,18 @@ extension MTLComputeCommandEncoder {
     Dispatches a compute kernel on a 2-dimensional grid.
     
     - Parameters:
-      - rows: the first dimension
-      - columns: the second dimension
+      - width: the first dimension
+      - height: the second dimension
   */
-  public func dispatch(pipeline: MTLComputePipelineState, rows: Int, columns: Int) {
-    let h = pipeline.threadExecutionWidth
-    let w = pipeline.maxTotalThreadsPerThreadgroup / h
+  public func dispatch(pipeline: MTLComputePipelineState, width: Int, height: Int) {
+    let w = pipeline.threadExecutionWidth
+    let h = pipeline.maxTotalThreadsPerThreadgroup / w
 
     let threadGroupSize = MTLSizeMake(w, h, 1)
 
     let threadGroups = MTLSizeMake(
-      (rows    + threadGroupSize.width  - 1) / threadGroupSize.width,
-      (columns + threadGroupSize.height - 1) / threadGroupSize.height, 1)
+      (width  + threadGroupSize.width  - 1) / threadGroupSize.width,
+      (height + threadGroupSize.height - 1) / threadGroupSize.height, 1)
 
     setComputePipelineState(pipeline)
     dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
@@ -173,8 +173,8 @@ extension MTLComputeCommandEncoder {
                        numberOfImages: Int = 1) {
     let slices = ((featureChannels + 3)/4) * numberOfImages
 
-    let h = pipeline.threadExecutionWidth
-    let w = pipeline.maxTotalThreadsPerThreadgroup / h
+    let w = pipeline.threadExecutionWidth
+    let h = pipeline.maxTotalThreadsPerThreadgroup / w
     let d = 1
     let threadGroupSize = MTLSizeMake(w, h, d)
 
@@ -183,19 +183,24 @@ extension MTLComputeCommandEncoder {
       (height + threadGroupSize.height - 1) / threadGroupSize.height,
       (slices + threadGroupSize.depth  - 1) / threadGroupSize.depth)
 
-    //printGrid(threadGroups, threadGroupSize)
+    //printGrid(threadgroups: threadGroups, threadsPerThreadgroup: threadGroupSize)
 
     setComputePipelineState(pipeline)
     dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
   }
 
-  func printGrid(_ threadGroups: MTLSize, _ threadGroupSize: MTLSize) {
-    let grid = MTLSizeMake(threadGroups.width  * threadGroupSize.width,
-                           threadGroups.height * threadGroupSize.height,
-                           threadGroups.depth  * threadGroupSize.depth)
+  /**
+    For debugging the threadgroup sizes.
+  */
+  public func printGrid(threadGroups: MTLSize, threadsPerThreadgroup: MTLSize) {
+    let groups = threadGroups
+    let threads = threadsPerThreadgroup
+    let grid = MTLSizeMake(groups.width  * threads.width,
+                           groups.height * threads.height,
+                           groups.depth  * threads.depth)
 
-    print("threadGroups: \(threadGroups.width)x\(threadGroups.height)x\(threadGroups.depth)"
-        + ", threadsPerGroup: \(threadGroupSize.width)x\(threadGroupSize.height)x\(threadGroupSize.depth)"
+    print("threadGroups: \(groups.width)x\(groups.height)x\(groups.depth)"
+        + ", threadsPerThreadgroup: \(threads.width)x\(threads.height)x\(threads.depth)"
         + ", grid: \(grid.width)x\(grid.height)x\(grid.depth)")
   }
 
