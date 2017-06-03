@@ -178,8 +178,8 @@ public class Convolution: MPSCNNLayer {
 
   override public func outputShape(for inputShape: DataShape) -> DataShape {
     if padding {
-      return DataShape(width: inputShape.width  / stride.0,
-                      height: inputShape.height / stride.1,
+      return DataShape(width: (inputShape.width - 1)  / stride.0 + 1,
+                      height: (inputShape.height - 1) / stride.1 + 1,
                     channels: channels)
     } else {
       return DataShape(width: (inputShape.width  - kernel.0) / stride.0 + 1,
@@ -286,8 +286,8 @@ public class Pooling: MPSCNNLayer {
 
   override public func outputShape(for inputShape: DataShape) -> DataShape {
     if padding {
-      return DataShape(width: inputShape.width  / stride.0,
-                      height: inputShape.height / stride.1,
+      return DataShape(width: (inputShape.width - 1)  / stride.0 + 1,
+                      height: (inputShape.height - 1) / stride.1 + 1,
                     channels: inputShape.channels)
     } else {
       return DataShape(width: (inputShape.width  - kernel.0) / stride.0 + 1,
@@ -706,8 +706,8 @@ public class DepthwiseConvolution: Layer {
   }
 
   override public func outputShape(for inputShape: DataShape) -> DataShape {
-      return DataShape(width: inputShape.width  / stride.0,
-                      height: inputShape.height / stride.1,
+      return DataShape(width: (inputShape.width - 1)  / stride.0 + 1,
+                      height: (inputShape.height - 1) / stride.1 + 1,
                     channels: inputShape.channels)
   }
 
