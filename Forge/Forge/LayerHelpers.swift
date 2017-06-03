@@ -219,6 +219,32 @@ extension MPSCNNConvolution {
   }
 }
 
+extension MPSCNNPooling {
+  /**
+    Computes the padding for a pooling layer. You need to call this just
+    before `poolLayer.encode(...)` because it changes the layer's `offset`
+    property.
+  */
+  @nonobjc public func applyPadding(type: PaddingType, sourceImage: MPSImage, destinationImage: MPSImage) {
+    if type == .same {
+      var offset = MPSOffset(x: 0, y: 0, z: 0)
+      if self.kernelWidth % 2 == 0 {
+        offset.x += (((sourceImage.width - 1) % self.strideInPixelsX) / 2) + 1
+      } else {
+        offset.x += (((sourceImage.width - 1) % self.strideInPixelsX) + 1) / 2
+      }
+      if self.kernelHeight % 2 == 0 {
+        offset.y += (((sourceImage.height - 1) % self.strideInPixelsY) / 2) + 1
+      } else {
+        offset.y += (((sourceImage.height - 1) % self.strideInPixelsY) + 1) / 2
+      }
+      self.offset = offset
+    } else {
+      self.offset = MPSOffset(x: self.kernelWidth/2, y: self.kernelHeight/2, z: 0)
+    }
+  }
+}
+
 /**
   Creates a depth-wise convolution layer.
   
