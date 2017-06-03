@@ -24,6 +24,54 @@ import Foundation
 import Metal
 import MetalPerformanceShaders
 
+public enum PaddingType {
+  case same    // add zero padding
+  case valid   // don't add padding
+}
+
+func offsetForConvolution(padding: PaddingType,
+                          sourceWidth: Int,
+                          sourceHeight: Int,
+                          destinationWidth: Int,
+                          destinationHeight: Int,
+                          kernelWidth: Int,
+                          kernelHeight: Int,
+                          strideInPixelsX: Int,
+                          strideInPixelsY: Int) -> MPSOffset {
+  if padding == .same {
+    let padH = (destinationHeight - 1) * strideInPixelsY + kernelHeight - sourceHeight
+    let padW = (destinationWidth  - 1) * strideInPixelsX + kernelWidth  - sourceWidth
+    return MPSOffset(x: (kernelWidth - padW)/2, y: (kernelHeight - padH)/2, z: 0)
+  } else {
+    return MPSOffset(x: kernelWidth/2, y: kernelHeight/2, z: 0)
+  }
+}
+
+func offsetForPooling(padding: PaddingType,
+                      sourceWidth: Int,
+                      sourceHeight: Int,
+                      kernelWidth: Int,
+                      kernelHeight: Int,
+                      strideInPixelsX: Int,
+                      strideInPixelsY: Int) -> MPSOffset {
+  if padding == .same {
+    var offset = MPSOffset(x: 0, y: 0, z: 0)
+    if kernelWidth % 2 == 0 {
+      offset.x += (((sourceWidth - 1) % strideInPixelsX) / 2) + 1
+    } else {
+      offset.x += (((sourceWidth - 1) % strideInPixelsX) + 1) / 2
+    }
+    if kernelHeight % 2 == 0 {
+      offset.y += (((sourceHeight - 1) % strideInPixelsY) / 2) + 1
+    } else {
+      offset.y += (((sourceHeight - 1) % strideInPixelsY) + 1) / 2
+    }
+    return offset
+  } else {
+    return MPSOffset(x: kernelWidth/2, y: kernelHeight/2, z: 0)
+  }
+}
+
 /**
   The abstract base class for all layers. You should not create instances of
   this class directly.
@@ -141,7 +189,7 @@ public class Convolution: MPSCNNLayer {
   let kernel: (Int, Int)
   let channels: Int
   let stride: (Int, Int)
-  let padding: Bool
+  let padding: PaddingType
   let activation: MPSCNNNeuron?
   var conv: MPSCNNConvolution!
 
@@ -152,7 +200,7 @@ public class Convolution: MPSCNNLayer {
       - kernel: `(width, height)`
       - channels: Number of output channels.
       - stride: `(x, y)`
-      - padding: If true, the output width and height are the same as the
+      - padding: If .same, the output width and height are the same as the
         input width and height. (This uses zero padding.)
       - useBias: whether this layer uses bias terms in addition to the weights
       - name: The name is used to load the layer's parameters.
@@ -160,7 +208,7 @@ public class Convolution: MPSCNNLayer {
   public init(kernel: (Int, Int),
               channels: Int,
               stride: (Int, Int) = (1, 1),
-              padding: Bool = true,
+              padding: PaddingType = .same,
               activation: MPSCNNNeuron? = nil,
               useBias: Bool = true,
               name: String = "") {
@@ -177,7 +225,7 @@ public class Convolution: MPSCNNLayer {
   }
 
   override public func outputShape(for inputShape: DataShape) -> DataShape {
-    if padding {
+    if padding == .same {
       return DataShape(width: (inputShape.width - 1)  / stride.0 + 1,
                       height: (inputShape.height - 1) / stride.1 + 1,
                     channels: channels)
@@ -233,23 +281,19 @@ public class Convolution: MPSCNNLayer {
     // We compute the padding at encode-time, so that this layer can be
     // reused on tensors of different sizes. Note that the input and output
     // depth must not vary, only the width and height may be different.
-    conv.offset = calculatePadding(inputShape: sourceTensor.shape,
-                                   outputShape: destinationTensor.shape)
+    conv.offset = offsetForConvolution(padding: padding,
+                                       sourceWidth: sourceTensor.shape.width,
+                                       sourceHeight: sourceTensor.shape.height,
+                                       destinationWidth: destinationTensor.shape.width,
+                                       destinationHeight: destinationTensor.shape.height,
+                                       kernelWidth: kernel.0,
+                                       kernelHeight: kernel.1,
+                                       strideInPixelsX: stride.0,
+                                       strideInPixelsY: stride.1)
 
     super.encode(commandBuffer: commandBuffer,
                  sourceTensor: sourceTensor,
                  destinationTensor: destinationTensor)
-  }
-
-  func calculatePadding(inputShape: DataShape,
-                        outputShape: DataShape) -> MPSOffset {
-    if padding {
-      let padH = (outputShape.height - 1) * conv.strideInPixelsY + conv.kernelHeight - inputShape.height
-      let padW = (outputShape.width  - 1) * conv.strideInPixelsX + conv.kernelWidth  - inputShape.width
-      return MPSOffset(x: (conv.kernelWidth - padW)/2, y: (conv.kernelHeight - padH)/2, z: 0)
-    } else {
-      return MPSOffset(x: conv.kernelWidth/2, y: conv.kernelHeight/2, z: 0)
-    }
   }
 }
 
@@ -259,7 +303,7 @@ public class Convolution: MPSCNNLayer {
 public class Pooling: MPSCNNLayer {
   let kernel: (Int, Int)
   let stride: (Int, Int)
-  let padding: Bool
+  let padding: PaddingType
   let edgeMode: MPSImageEdgeMode
   var pool: MPSCNNPooling!
 
@@ -269,12 +313,12 @@ public class Pooling: MPSCNNLayer {
     - Parameters:
       - kernel: `(width, height)`
       - stride: `(x, y)`
-      - padding: If true, the output width and height are the same as the
-        input width and height. (This uses "clamp" padding.)
+      - padding: Whether to add padding around the input image. (This uses 
+                 "clamp" padding.)
   */
   public init(kernel: (Int, Int),
               stride: (Int, Int),
-              padding: Bool = false,
+              padding: PaddingType = .valid,
               edgeMode: MPSImageEdgeMode = .clamp,
               name: String = "") {
     self.kernel = kernel
@@ -285,7 +329,7 @@ public class Pooling: MPSCNNLayer {
   }
 
   override public func outputShape(for inputShape: DataShape) -> DataShape {
-    if padding {
+    if padding == .same {
       return DataShape(width: (inputShape.width - 1)  / stride.0 + 1,
                       height: (inputShape.height - 1) / stride.1 + 1,
                     channels: inputShape.channels)
@@ -302,32 +346,17 @@ public class Pooling: MPSCNNLayer {
 
     // We compute the padding at encode-time, so that this layer can be
     // reused on tensors of different sizes.
-    pool.offset = calculatePadding(inputShape: sourceTensor.shape,
-                                   outputShape: destinationTensor.shape)
+    pool.offset = offsetForPooling(padding: padding,
+                                   sourceWidth: sourceTensor.shape.width,
+                                   sourceHeight: sourceTensor.shape.height,
+                                   kernelWidth: kernel.0,
+                                   kernelHeight: kernel.1,
+                                   strideInPixelsX: stride.0,
+                                   strideInPixelsY: stride.1)
 
     super.encode(commandBuffer: commandBuffer,
                  sourceTensor: sourceTensor,
                  destinationTensor: destinationTensor)
-  }
-
-  func calculatePadding(inputShape: DataShape,
-                        outputShape: DataShape) -> MPSOffset {
-    if padding {
-      var offset = MPSOffset(x: 0, y: 0, z: 0)
-      if pool.kernelWidth % 2 == 0 {
-        offset.x += (((inputShape.width - 1) % pool.strideInPixelsX) / 2) + 1
-      } else {
-        offset.x += (((inputShape.width - 1) % pool.strideInPixelsX) + 1) / 2
-      }
-      if pool.kernelHeight % 2 == 0 {
-        offset.y += (((inputShape.height - 1) % pool.strideInPixelsY) / 2) + 1
-      } else {
-        offset.y += (((inputShape.height - 1) % pool.strideInPixelsY) + 1) / 2
-      }
-      return offset
-    } else {
-      return MPSOffset(x: pool.kernelWidth/2, y: pool.kernelHeight/2, z: 0)
-    }
   }
 }
 
@@ -682,6 +711,8 @@ public class DepthwiseConvolution: Layer {
 
   /**
     Creates a depth-wise convolution layer.
+    
+    Currently only supports .same padding.
   
     - Parameters:
       - kernel: `(width, height)`
@@ -747,6 +778,17 @@ public class DepthwiseConvolution: Layer {
   override public func encode(commandBuffer: MTLCommandBuffer,
                               sourceTensor: Tensor,
                               destinationTensor: Tensor) {
+
+    compute.offset = offsetForConvolution(padding: .same,
+                                          sourceWidth: sourceTensor.shape.width,
+                                          sourceHeight: sourceTensor.shape.height,
+                                          destinationWidth: destinationTensor.shape.width,
+                                          destinationHeight: destinationTensor.shape.height,
+                                          kernelWidth: kernel.0,
+                                          kernelHeight: kernel.1,
+                                          strideInPixelsX: stride.0,
+                                          strideInPixelsY: stride.1)
+
     compute.encode(commandBuffer: commandBuffer,
                    sourceImage: sourceTensor.image!,
                    destinationImage: destinationTensor.image!)

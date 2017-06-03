@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7B711CF11ECD9F4B001CB7C2 /* Inception3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970C1EAA2DB100F4C4D6 /* Inception3.swift */; };
 		7BA396FF1EAA2D8100F4C4D6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396FD1EAA2D8100F4C4D6 /* Main.storyboard */; };
 		7BA397011EAA2D8100F4C4D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA397001EAA2D8100F4C4D6 /* Assets.xcassets */; };
 		7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970B1EAA2DB100F4C4D6 /* CameraViewController.swift */; };
@@ -213,6 +212,7 @@
 		7BA398A71EAA2DD100F4C4D6 /* final7.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7BA397E01EAA2DD100F4C4D6 /* final7.jpg */; };
 		7BA398A91EAA2DF300F4C4D6 /* Forge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA398A81EAA2DF300F4C4D6 /* Forge.framework */; };
 		7BA398AA1EAA2DF300F4C4D6 /* Forge.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA398A81EAA2DF300F4C4D6 /* Forge.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7BCF75E41EE3065E00EC1D70 /* Inception3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970C1EAA2DB100F4C4D6 /* Inception3.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -987,7 +987,7 @@
 				7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */,
 				7BA397141EAA2DBB00F4C4D6 /* AppDelegate.swift in Sources */,
 				7BA397151EAA2DBB00F4C4D6 /* VideoCapture.swift in Sources */,
-				7B711CF11ECD9F4B001CB7C2 /* Inception3.swift in Sources */,
+				7BCF75E41EE3065E00EC1D70 /* Inception3.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

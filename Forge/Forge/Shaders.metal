@@ -155,7 +155,7 @@ kernel void conv3x3(
   const ushort kW = 3;
   const ushort kH = 3;
 
-  const ushort2 pos = gid.xy;
+  const ushort2 pos = gid.xy * stride + ushort2(params.inputOffsetX, params.inputOffsetY);
 
   // Note: If we use half4, then we lose too much precision.
   float4 out = float4(0.0f);
@@ -208,7 +208,7 @@ kernel void conv3x3_array(
   const ushort kW = 3;
   const ushort kH = 3;
 
-  const ushort2 pos = gid.xy;
+  const ushort2 pos = gid.xy * stride + ushort2(params.inputOffsetX, params.inputOffsetY);
   const ushort inSlices = inTexture.get_array_size();
   const ushort outSlice = gid.z;
 
@@ -267,7 +267,7 @@ kernel void depthwiseConv3x3(
 
   // Seen from the destination image, the stride is how far apart the pixels
   // are in the source image.
-  const ushort2 pos = gid * stride;
+  const ushort2 pos = gid * stride + ushort2(params.inputOffsetX, params.inputOffsetY);
 
   // Read the 3x3 pixels surrounding the source pixel.
   // By processing the pixels as half4 values we do up to 4 channels at a time.
@@ -310,7 +310,7 @@ kernel void depthwiseConv3x3_array(
 
   constexpr sampler s(coord::pixel, filter::nearest, address::clamp_to_zero);
 
-  const ushort2 pos = gid.xy * stride;
+  const ushort2 pos = gid.xy * stride + ushort2(params.inputOffsetX, params.inputOffsetY);
   const ushort slices = outTexture.get_array_size();
   const ushort slice = gid.z;
 

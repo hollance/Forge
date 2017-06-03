@@ -3,13 +3,13 @@ import MetalPerformanceShaders
 import Forge
 
 class DepthwiseConvolutionTests {
-  func runTest(channels: Int, stride: Int, filter: MPSCNNNeuron?) {
+  func runTest(imageSize: (Int, Int), channels: Int, stride: Int, filter: MPSCNNNeuron?) {
     print("  channels: \(channels), stride: \(stride)")
 
     let kernelWidth = 3
     let kernelHeight = 3
-    let imageWidth = 480
-    let imageHeight = 360
+    let imageWidth = imageSize.0
+    let imageHeight = imageSize.0
 
     let depthwiseCount = kernelWidth * kernelHeight * channels
     var depthwiseWeights = [Float](repeating: 0, count: depthwiseCount)
@@ -22,13 +22,19 @@ class DepthwiseConvolutionTests {
                                  height: imageHeight, featureChannels: channels,
                                  seed: time(nil))
 
-    let imageDesc = MPSImageDescriptor(channelFormat: .float16,
-                                       width: imageWidth,
-                                       height: imageHeight,
+    let paddingX = (kernelWidth - 1)/2
+    let paddingY = (kernelHeight - 1)/2
+    let outputWidth = (imageWidth + 2*paddingX - kernelWidth) / stride + 1
+    let outputHeight = (imageHeight + 2*paddingY - kernelHeight) / stride + 1
+    //print(imageWidth, imageHeight, outputWidth, outputHeight)
+
+    let outputImageDesc = MPSImageDescriptor(channelFormat: .float16,
+                                       width: outputWidth,
+                                       height: outputHeight,
                                        featureChannels: channels)
 
-    let outputImage1 = MPSImage(device: device, imageDescriptor: imageDesc)
-    let outputImage2 = MPSImage(device: device, imageDescriptor: imageDesc)
+    let outputImage1 = MPSImage(device: device, imageDescriptor: outputImageDesc)
+    let outputImage2 = MPSImage(device: device, imageDescriptor: outputImageDesc)
 
     let depthwiseConv = DepthwiseConvolutionKernel(device: device,
                                                    kernelWidth: kernelWidth,
@@ -86,6 +92,10 @@ class DepthwiseConvolutionTests {
 
     let commandBuffer = commandQueue.makeCommandBuffer()
 
+    conv.applyPadding(type: .same, sourceImage: inputImage, destinationImage: outputImage2)
+    depthwiseConv.offset = conv.offset
+    print(conv.offset)
+
     depthwiseConv.encode(commandBuffer: commandBuffer,
                          sourceImage: inputImage,
                          destinationImage: outputImage1)
@@ -109,10 +119,12 @@ class DepthwiseConvolutionTests {
     let relu = MPSCNNNeuronReLU(device: device, a: 0)
     let sigmoid = MPSCNNNeuronSigmoid(device: device)
 
-    for c in [61, 13, 8, 4, 3, 2, 1] {
-      for s in [1, 2, 3] {
-        for f in [ relu, sigmoid, nil ] {
-          runTest(channels: c, stride: s, filter: f)
+    for i in [480, 97] {
+      for c in [61, 13, 8, 4, 3, 2, 1] {
+        for s in [1, 2, 3] {
+          for f in [ relu, sigmoid, nil ] {
+            runTest(imageSize: (i, i), channels: c, stride: s, filter: f)
+          }
         }
       }
     }

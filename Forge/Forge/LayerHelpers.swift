@@ -193,11 +193,6 @@ public func dense(device: MTLDevice,
                fanOut: fanOut, activation: activation, name: name)
 }
 
-public enum PaddingType {
-  case same    // add zero padding
-  case valid   // don't add padding
-}
-
 extension MPSCNNConvolution {
   /**
     Computes the padding for a convolutional layer. You need to call this just
@@ -209,13 +204,16 @@ extension MPSCNNConvolution {
       of `(0, 0, 0)` for `self.offset` is sufficient. 
   */
   @nonobjc public func applyPadding(type: PaddingType, sourceImage: MPSImage, destinationImage: MPSImage) {
-    if type == .same {
-      let padH = (destinationImage.height - 1) * self.strideInPixelsY + self.kernelHeight - sourceImage.height
-      let padW = (destinationImage.width  - 1) * self.strideInPixelsX + self.kernelWidth  - sourceImage.width
-      self.offset = MPSOffset(x: (self.kernelWidth - padW)/2, y: (self.kernelHeight - padH)/2, z: 0)
-    } else {
-      self.offset = MPSOffset(x: self.kernelWidth/2, y: self.kernelHeight/2, z: 0)
-    }
+    self.offset = offsetForConvolution(padding: type,
+                                       sourceWidth: sourceImage.width,
+                                       sourceHeight: sourceImage.height,
+                                       destinationWidth: destinationImage.width,
+                                       destinationHeight: destinationImage.height,
+                                       kernelWidth: self.kernelWidth,
+                                       kernelHeight: self.kernelHeight,
+                                       strideInPixelsX: self.strideInPixelsX,
+                                       strideInPixelsY: self.strideInPixelsY)
+
   }
 }
 
@@ -226,22 +224,13 @@ extension MPSCNNPooling {
     property.
   */
   @nonobjc public func applyPadding(type: PaddingType, sourceImage: MPSImage, destinationImage: MPSImage) {
-    if type == .same {
-      var offset = MPSOffset(x: 0, y: 0, z: 0)
-      if self.kernelWidth % 2 == 0 {
-        offset.x += (((sourceImage.width - 1) % self.strideInPixelsX) / 2) + 1
-      } else {
-        offset.x += (((sourceImage.width - 1) % self.strideInPixelsX) + 1) / 2
-      }
-      if self.kernelHeight % 2 == 0 {
-        offset.y += (((sourceImage.height - 1) % self.strideInPixelsY) / 2) + 1
-      } else {
-        offset.y += (((sourceImage.height - 1) % self.strideInPixelsY) + 1) / 2
-      }
-      self.offset = offset
-    } else {
-      self.offset = MPSOffset(x: self.kernelWidth/2, y: self.kernelHeight/2, z: 0)
-    }
+    self.offset = offsetForPooling(padding: type,
+                                   sourceWidth: sourceImage.width,
+                                   sourceHeight: sourceImage.height,
+                                   kernelWidth: self.kernelWidth,
+                                   kernelHeight: self.kernelHeight,
+                                   strideInPixelsX: self.strideInPixelsX,
+                                   strideInPixelsY: self.strideInPixelsY)
   }
 }
 

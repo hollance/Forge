@@ -3,16 +3,18 @@ import MetalPerformanceShaders
 import Forge
 
 class BasicConvolutionTests {
-  func runTest(kernelWidth: Int,
-               kernelHeight: Int,
+  func runTest(kernel: (Int, Int),
+               imageSize: (Int, Int),
                inputChannels: Int,
                outputChannels: Int,
                stride: Int,
                filter: MPSCNNNeuron?) {
-    print("  kernel: \(kernelWidth)x\(kernelHeight), channels: in \(inputChannels) out \(outputChannels), stride: \(stride)")
 
-    let imageWidth = 480
-    let imageHeight = 360
+    let kernelWidth = kernel.0
+    let kernelHeight = kernel.1
+    let imageWidth = imageSize.0
+    let imageHeight = imageSize.1
+    print("  kernel: \(kernelWidth)x\(kernelHeight), channels: in \(inputChannels) out \(outputChannels), stride: \(stride)")
 
     let count = outputChannels * kernelWidth * kernelHeight * inputChannels
     var weights = [Float](repeating: 0, count: count)
@@ -25,9 +27,15 @@ class BasicConvolutionTests {
                                  height: imageHeight, featureChannels: inputChannels,
                                  seed: time(nil))
 
+    let paddingX = (kernelWidth - 1)/2
+    let paddingY = (kernelHeight - 1)/2
+    let outputWidth = (imageWidth + 2*paddingX - kernelWidth) / stride + 1
+    let outputHeight = (imageHeight + 2*paddingY - kernelHeight) / stride + 1
+    //print(imageWidth, imageHeight, outputWidth, outputHeight)
+
     let outputImageDesc = MPSImageDescriptor(channelFormat: .float16,
-                                             width: imageWidth,
-                                             height: imageHeight,
+                                             width: outputWidth,
+                                             height: outputHeight,
                                              featureChannels: outputChannels)
 
     let outputImage1 = MPSImage(device: device, imageDescriptor: outputImageDesc)
@@ -62,6 +70,9 @@ class BasicConvolutionTests {
 
     let commandBuffer = commandQueue.makeCommandBuffer()
 
+    conv2.applyPadding(type: .same, sourceImage: inputImage, destinationImage: outputImage2)
+    conv1.offset = conv2.offset
+
     conv1.encode(commandBuffer: commandBuffer,
                  sourceImage: inputImage,
                  destinationImage: outputImage1)
@@ -84,12 +95,20 @@ class BasicConvolutionTests {
 
     var filter: MPSCNNNeuron?
     filter = MPSCNNNeuronReLU(device: device, a: 0.1)
-//    filter = MPSCNNNeuronLinear(device: device, a: 0.5, b: -2)
-//    filter = MPSCNNNeuronSigmoid(device: device)
-//    filter = MPSCNNNeuronTanH(device: device, a: 0.5, b: -2)
-//    filter = MPSCNNNeuronAbsolute(device: device)
+    //filter = MPSCNNNeuronLinear(device: device, a: 0.5, b: -2)
+    //filter = MPSCNNNeuronSigmoid(device: device)
+    //filter = MPSCNNNeuronTanH(device: device, a: 0.5, b: -2)
+    //filter = MPSCNNNeuronAbsolute(device: device)
 
-    runTest(kernelWidth: 3, kernelHeight: 3, inputChannels: 2, outputChannels: 4, stride: 1, filter: filter)
-    runTest(kernelWidth: 3, kernelHeight: 3, inputChannels: 8, outputChannels: 8, stride: 1, filter: filter)
+    runTest(kernel: (3, 3), imageSize: (480, 360), inputChannels: 2, outputChannels: 4, stride: 1, filter: filter)
+    runTest(kernel: (3, 3), imageSize: (480, 360), inputChannels: 8, outputChannels: 8, stride: 1, filter: filter)
+
+    // Stride
+    runTest(kernel: (3, 3), imageSize: (480, 360), inputChannels: 2, outputChannels: 4, stride: 2, filter: filter)
+    runTest(kernel: (3, 3), imageSize: (480, 360), inputChannels: 8, outputChannels: 8, stride: 2, filter: filter)
+
+    // Stride with odd image size
+    runTest(kernel: (3, 3), imageSize: (99, 15), inputChannels: 2, outputChannels: 4, stride: 2, filter: filter)
+    runTest(kernel: (3, 3), imageSize: (99, 15), inputChannels: 8, outputChannels: 8, stride: 2, filter: filter)
   }
 }

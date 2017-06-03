@@ -18,6 +18,8 @@ var device: MTLDevice!
 var commandQueue: MTLCommandQueue!
 
 class ViewController: UIViewController {
+  @IBOutlet weak var button: UIButton!
+
   override func viewDidLoad() {
     super.viewDidLoad()
 
@@ -41,6 +43,7 @@ class ViewController: UIViewController {
   @IBAction func runTests() {
     print("\n-----Running Tests-----")
     verbose = true
+    button.isEnabled = false
 
     let arrayTests = ArrayTests()
     arrayTests.testArgmax()
@@ -54,5 +57,6 @@ class ViewController: UIViewController {
     depthwiseConvTests.testCorrectness()
 
     print("All tests successful!")
+    button.isEnabled = true
   }
 }

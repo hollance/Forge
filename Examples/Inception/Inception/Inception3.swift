@@ -20,15 +20,15 @@ class Inception3: NeuralNetwork {
     let initial = input
             --> Resize(width: 299, height: 299)
             --> Activation(scale)
-            --> Convolution(kernel: (3, 3), channels: 32, stride: (2, 2), padding: false, activation: relu, name: "conv")
-            --> Convolution(kernel: (3, 3), channels: 32, padding: false, activation: relu, name: "conv_1")
-            --> Convolution(kernel: (3, 3), channels: 64, padding: true, activation: relu, name: "conv_2")
+            --> Convolution(kernel: (3, 3), channels: 32, stride: (2, 2), padding: .valid, activation: relu, name: "conv")
+            --> Convolution(kernel: (3, 3), channels: 32, padding: .valid, activation: relu, name: "conv_1")
+            --> Convolution(kernel: (3, 3), channels: 64, padding: .same, activation: relu, name: "conv_2")
             --> MaxPooling(kernel: (3, 3), stride: (2, 2))
-            --> Convolution(kernel: (1, 1), channels: 80, padding: false, activation: relu, name: "conv_3")
-            --> Convolution(kernel: (3, 3), channels: 192, padding: false, activation: relu, name: "conv_4")
+            --> Convolution(kernel: (1, 1), channels: 80, padding: .valid, activation: relu, name: "conv_3")
+            --> Convolution(kernel: (3, 3), channels: 192, padding: .valid, activation: relu, name: "conv_4")
             --> MaxPooling(kernel: (3, 3), stride: (2, 2))
 
-    let avgPool = AveragePooling(kernel: (3, 3), stride: (1, 1), padding: true)
+    let avgPool = AveragePooling(kernel: (3, 3), stride: (1, 1), padding: .same)
 
     let mixed0 = Concatenate([
       initial --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_conv"),
@@ -64,10 +64,10 @@ class Inception3: NeuralNetwork {
     ])
 
     let mixed3 = Concatenate([
-      mixed2 --> Convolution(kernel: (3, 3), channels: 384, stride: (2, 2), padding: false, activation: relu, name: "mixed_3_conv"),
+      mixed2 --> Convolution(kernel: (3, 3), channels: 384, stride: (2, 2), padding: .valid, activation: relu, name: "mixed_3_conv"),
       mixed2 --> Convolution(kernel: (1, 1), channels: 64, activation: relu, name: "mixed_3_tower_conv")
              --> Convolution(kernel: (3, 3), channels: 96, activation: relu, name: "mixed_3_tower_conv_1")
-             --> Convolution(kernel: (3, 3), channels: 96, stride: (2, 2), padding: false, activation: relu, name: "mixed_3_tower_conv_2"),
+             --> Convolution(kernel: (3, 3), channels: 96, stride: (2, 2), padding: .valid, activation: relu, name: "mixed_3_tower_conv_2"),
       mixed2 --> MaxPooling(kernel: (3, 3), stride: (2, 2))
     ])
 
@@ -129,11 +129,11 @@ class Inception3: NeuralNetwork {
 
     let mixed8 = Concatenate([
       mixed7 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_8_tower_conv")
-             --> Convolution(kernel: (3, 3), channels: 320, stride: (2, 2), padding: false, activation: relu, name: "mixed_8_tower_conv_1"),
+             --> Convolution(kernel: (3, 3), channels: 320, stride: (2, 2), padding: .valid, activation: relu, name: "mixed_8_tower_conv_1"),
       mixed7 --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_8_tower_1_conv")
              --> Convolution(kernel: (7, 1), channels: 192, activation: relu, name: "mixed_8_tower_1_conv_1")
              --> Convolution(kernel: (1, 7), channels: 192, activation: relu, name: "mixed_8_tower_1_conv_2")
-             --> Convolution(kernel: (3, 3), channels: 192, stride: (2, 2), padding: false, activation: relu, name: "mixed_8_tower_1_conv_3"),
+             --> Convolution(kernel: (3, 3), channels: 192, stride: (2, 2), padding: .valid, activation: relu, name: "mixed_8_tower_1_conv_3"),
       mixed7 --> MaxPooling(kernel: (3, 3), stride: (2, 2))
     ])
 
@@ -161,7 +161,7 @@ class Inception3: NeuralNetwork {
       tempC  --> Convolution(kernel: (1, 3), channels: 384, activation: relu, name: "mixed_10_tower_mixed_conv_1"),
       tempD  --> Convolution(kernel: (3, 1), channels: 384, activation: relu, name: "mixed_10_tower_1_mixed_conv"),
       tempD  --> Convolution(kernel: (1, 3), channels: 384, activation: relu, name: "mixed_10_tower_1_mixed_conv_1"),
-      mixed9 --> MaxPooling(kernel: (3, 3), stride: (1, 1), padding: true)
+      mixed9 --> MaxPooling(kernel: (3, 3), stride: (1, 1), padding: .same)
              --> Convolution(kernel: (1, 1), channels: 192, activation: relu, name: "mixed_10_tower_2_conv")
     ])
 

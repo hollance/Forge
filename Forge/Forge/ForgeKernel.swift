@@ -34,9 +34,9 @@ public struct KernelParams {
   var inputSlices: UInt16 = 0
 
   // Where to start reading in the input image. From ForgeKernel's offset.
-  var inputOffsetX: UInt16 = 0
-  var inputOffsetY: UInt16 = 0
-  var inputOffsetZ: UInt16 = 0
+  var inputOffsetX: Int16 = 0
+  var inputOffsetY: Int16 = 0
+  var inputOffsetZ: Int16 = 0
 
   // The dimensions of the output image, derived from clipRect.size.
   var outputWidth: UInt16 = 0
@@ -48,9 +48,9 @@ public struct KernelParams {
   var destinationSliceOffset: UInt16 = 0
 
   // Where to start writing in the output image, derived from clipRect.origin.
-  var outputOffsetX: UInt16 = 0
-  var outputOffsetY: UInt16 = 0
-  var outputOffsetZ: UInt16 = 0
+  var outputOffsetX: Int16 = 0
+  var outputOffsetY: Int16 = 0
+  var outputOffsetZ: Int16 = 0
 
   // Zero (0) or clamp (1).
   var edgeMode: UInt16 = 0

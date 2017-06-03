@@ -113,8 +113,8 @@
 		7B711C801ECC8B13001CB7C2 /* YOLO */ = {
 			isa = PBXGroup;
 			children = (
-				7B711C931ECC8B33001CB7C2 /* Common */,
 				7B711C981ECC8B37001CB7C2 /* Sources */,
+				7B711C931ECC8B33001CB7C2 /* Common */,
 				7B711C991ECC8B44001CB7C2 /* Parameters */,
 				7B711C851ECC8B13001CB7C2 /* Main.storyboard */,
 				7B711C881ECC8B13001CB7C2 /* Assets.xcassets */,
