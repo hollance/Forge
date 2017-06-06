@@ -7,10 +7,6 @@ import Forge
 /**
   The neural network from the paper "MobileNets: Efficient Convolutional Neural
   Networks for Mobile Vision Applications" https://arxiv.org/abs/1704.04861v1
-
-  **NOTE:** This is currently using random parameters; the network *hasn't been 
-  trained on anything yet*, so the predictions don't make any sense at all! 
-  I just wanted to see how fast/slow this network architecture is on iPhone.
 */
 class MobileNet: NeuralNetwork {
   typealias Prediction = (labelIndex: Int, probability: Float)
