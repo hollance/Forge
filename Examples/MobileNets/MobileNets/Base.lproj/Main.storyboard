@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="retina4_0" orientation="portrait">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -13,57 +13,64 @@
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="CameraViewController" customModule="MobileNets" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="gx6-8m-DXH"/>
+                        <viewControllerLayoutGuide type="bottom" id="4Cj-aH-ODL"/>
+                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" misplaced="YES" id="bCL-P6-Xzi" userLabel="Video Preview">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bCL-P6-Xzi" userLabel="Video Preview">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" id="RUc-kC-0Vd">
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RUc-kC-0Vd">
                                         <rect key="frame" x="16" y="20" width="56" height="56"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <view contentMode="scaleToFill" misplaced="YES" id="orI-nu-P9h" userLabel="Results">
-                                <rect key="frame" x="0.0" y="447" width="320" height="120"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="orI-nu-P9h" userLabel="Results">
+                                <rect key="frame" x="0.0" y="592" width="375" height="75"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="9" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="elR-uz-gFP">
-                                        <rect key="frame" x="20" y="14" width="280" height="40"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" weight="black" pointSize="36"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Extra info" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="30B-li-vem">
-                                        <rect key="frame" x="20" y="60" width="280" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Prediction" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="30B-li-vem">
+                                        <rect key="frame" x="20" y="10" width="335" height="21"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Elapsed time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Z1n-zk-6Ap">
-                                        <rect key="frame" x="20" y="89" width="280" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Elapsed time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z1n-zk-6Ap">
+                                        <rect key="frame" x="20" y="51" width="335" height="14"/>
                                         <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="12"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.5" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstItem="30B-li-vem" firstAttribute="top" secondItem="orI-nu-P9h" secondAttribute="top" constant="10" id="Ibi-Tt-S6C"/>
+                                    <constraint firstItem="Z1n-zk-6Ap" firstAttribute="top" secondItem="30B-li-vem" secondAttribute="bottom" constant="20" id="Rqx-21-Zvv"/>
+                                    <constraint firstItem="30B-li-vem" firstAttribute="leading" secondItem="orI-nu-P9h" secondAttribute="leading" constant="20" id="RtG-2x-YlV"/>
+                                    <constraint firstAttribute="bottom" secondItem="Z1n-zk-6Ap" secondAttribute="bottom" constant="10" id="hRC-Fj-1hq"/>
+                                    <constraint firstAttribute="trailing" secondItem="Z1n-zk-6Ap" secondAttribute="trailing" constant="20" id="iSM-Au-NlA"/>
+                                    <constraint firstItem="Z1n-zk-6Ap" firstAttribute="leading" secondItem="orI-nu-P9h" secondAttribute="leading" constant="20" id="php-4h-wmt"/>
+                                    <constraint firstAttribute="trailing" secondItem="30B-li-vem" secondAttribute="trailing" constant="20" id="sua-rb-Qsx"/>
+                                </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" red="0.078431372549019607" green="0.11764705882352941" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="orI-nu-P9h" secondAttribute="trailing" id="9cL-AJ-V7D"/>
+                            <constraint firstItem="4Cj-aH-ODL" firstAttribute="top" secondItem="orI-nu-P9h" secondAttribute="bottom" id="mhL-u8-JCU"/>
+                            <constraint firstItem="orI-nu-P9h" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="yDM-Ux-MFj"/>
+                        </constraints>
                     </view>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
                     <connections>
                         <outlet property="debugImageView" destination="RUc-kC-0Vd" id="vpu-er-0aD"/>
-                        <outlet property="extraLabel" destination="30B-li-vem" id="SBh-Hy-Kbz"/>
-                        <outlet property="predictionLabel" destination="elR-uz-gFP" id="tSq-5H-hc3"/>
+                        <outlet property="predictionLabel" destination="30B-li-vem" id="4sk-ZH-FQb"/>
                         <outlet property="timeLabel" destination="Z1n-zk-6Ap" id="Uip-Qq-CIm"/>
                         <outlet property="videoPreview" destination="bCL-P6-Xzi" id="16P-At-I63"/>
                     </connections>
@@ -76,6 +83,6 @@
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
-        <simulatedScreenMetrics key="destination" type="retina4_0.fullscreen"/>
+        <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
     </simulatedMetricsContainer>
 </document>

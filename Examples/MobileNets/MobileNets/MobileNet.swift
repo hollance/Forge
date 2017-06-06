@@ -13,7 +13,7 @@ import Forge
   I just wanted to see how fast/slow this network architecture is on iPhone.
 */
 class MobileNet: NeuralNetwork {
-  typealias Prediction = (label: String, probability: Float)
+  typealias Prediction = (labelIndex: Int, probability: Float)
 
   let classes: Int
   let model: Model
@@ -49,45 +49,49 @@ class MobileNet: NeuralNetwork {
 
     var x = input
         --> Resize(width: resolution, height: resolution)
-        --> Convolution(kernel: (3, 3), channels: channels, stride: (2, 2), activation: relu, name: "TODO")
-        --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-        --> PointwiseConvolution(channels: channels*2, activation: relu, name: "TODO")
-        --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "TODO")
-        --> PointwiseConvolution(channels: channels*4, activation: relu, name: "TODO")
-        --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-        --> PointwiseConvolution(channels: channels*4, activation: relu, name: "TODO")
-        --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "TODO")
-        --> PointwiseConvolution(channels: channels*8, activation: relu, name: "TODO")
-        --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-        --> PointwiseConvolution(channels: channels*8, activation: relu, name: "TODO")
-        --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "TODO")
-        --> PointwiseConvolution(channels: channels*16, activation: relu, name: "TODO")
+        --> Custom(Preprocessing(device: device), channels: 3)
+        --> Convolution(kernel: (3, 3), channels: channels, stride: (2, 2), activation: relu, name: "conv1")
+        --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv2_1_dw")
+        --> PointwiseConvolution(channels: channels*2, activation: relu, name: "conv2_1_sep")
+        --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "conv2_2_dw")
+        --> PointwiseConvolution(channels: channels*4, activation: relu, name: "conv2_2_sep")
+        --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv3_1_dw")
+        --> PointwiseConvolution(channels: channels*4, activation: relu, name: "conv3_1_sep")
+        --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "conv3_2_dw")
+        --> PointwiseConvolution(channels: channels*8, activation: relu, name: "conv3_2_sep")
+        --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv4_1_dw")
+        --> PointwiseConvolution(channels: channels*8, activation: relu, name: "conv4_1_sep")
+        --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "conv4_2_dw")
+        --> PointwiseConvolution(channels: channels*16, activation: relu, name: "conv4_2_sep")
 
     if !shallow {
-      x = x --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "TODO")
-            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "TODO")
-            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "TODO")
-            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "TODO")
-            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "TODO")
+      x = x --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv5_1_dw")
+            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "conv5_1_sep")
+            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv5_2_dw")
+            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "conv5_2_sep")
+            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv5_3_dw")
+            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "conv5_3_sep")
+            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv5_4_dw")
+            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "conv5_4_sep")
+            --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv5_5_dw")
+            --> PointwiseConvolution(channels: channels*16, activation: relu, name: "conv5_5_sep")
     }
 
-    x = x --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "TODO")
-          --> PointwiseConvolution(channels: channels*32, activation: relu, name: "TODO")
-          --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "TODO")
-          --> PointwiseConvolution(channels: channels*32, activation: relu, name: "TODO")
+    x = x --> DepthwiseConvolution(kernel: (3, 3), stride: (2, 2), activation: relu, name: "conv5_6_dw")
+          --> PointwiseConvolution(channels: channels*32, activation: relu, name: "conv5_6_sep")
+          --> DepthwiseConvolution(kernel: (3, 3), activation: relu, name: "conv6_dw")
+          --> PointwiseConvolution(channels: channels*32, activation: relu, name: "conv6_sep")
           --> GlobalAveragePooling()
-          --> Dense(neurons: classes, activation: relu, name: "TODO")
+          --> Dense(neurons: classes, activation: nil, name: "fc7")
           --> Softmax()
 
     model = Model(input: input, output: x)
 
     let success = model.compile(device: device, inflightBuffers: inflightBuffers) {
-      name, count, type in ParameterLoaderRandom(count: count)
+      name, count, type in ParameterLoaderBundle(name: name,
+                                                 count: count,
+                                                 suffix: type == .weights ? "_w" : "_b",
+                                                 ext: "bin")
     }
 
     if success {
@@ -102,10 +106,9 @@ class MobileNet: NeuralNetwork {
   public func fetchResult(inflightIndex: Int) -> NeuralNetworkResult<Prediction> {
     let probabilities = model.outputImage(inflightIndex: inflightIndex).toFloatArray()
     assert(probabilities.count == (self.classes / 4) * 4)
-    let (maxIndex, maxValue) = probabilities.argmax()
 
     var result = NeuralNetworkResult<Prediction>()
-    result.predictions.append((label: "\(maxIndex)", probability: maxValue))
+    result.predictions = probabilities.top(k: 5).map { x -> Prediction in (x.0, x.1) }
     return result
   }
 }

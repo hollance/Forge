@@ -500,26 +500,22 @@ public class Dense: MPSCNNLayer {
                                            outputFeatureChannels: neurons,
                                            neuronFilter: activation)
 
+    // NOTE: For some reason MPSCNNFullyConnected crashes when we write
+    // biases?.pointer, which makes no sense at all since it works fine
+    // for MPSCNNConvolution.
+    var biasTerms: UnsafeMutablePointer<Float>?
     if useBias {
-      // NOTE: For some reason MPSCNNFullyConnected crashes when we write
-      // biases?.pointer, which makes no sense at all since it works fine
-      // for MPSCNNConvolution. We have to unwrap biases and make a special
-      // case for when useBias = false.
       guard let biases = biases else {
         throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
       }
-      mpscnn = MPSCNNFullyConnected(device: device,
-                                    convolutionDescriptor: desc,
-                                    kernelWeights: weights.pointer,
-                                    biasTerms: biases.pointer,
-                                    flags: .none)
-    } else {
-      mpscnn = MPSCNNFullyConnected(device: device,
-                                    convolutionDescriptor: desc,
-                                    kernelWeights: weights.pointer,
-                                    biasTerms: nil,
-                                    flags: .none)
+      biasTerms = biases.pointer
     }
+
+    mpscnn = MPSCNNFullyConnected(device: device,
+                                  convolutionDescriptor: desc,
+                                  kernelWeights: weights.pointer,
+                                  biasTerms: biasTerms,
+                                  flags: .none)
   }
 }
 
@@ -759,8 +755,13 @@ public class DepthwiseConvolution: Layer {
     guard let weights = weights else {
       throw ModelError.compileError(message: "missing weights for layer '\(name)'")
     }
-    if useBias && biases == nil {
-      throw ModelError.compileError(message: "missing biases for layer '\(name)'")
+
+    var biasTerms: UnsafeMutablePointer<Float>?
+    if useBias {
+      guard let biases = biases else {
+        throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
+      }
+      biasTerms = biases.pointer
     }
 
     compute = DepthwiseConvolutionKernel(device: device,
@@ -772,7 +773,7 @@ public class DepthwiseConvolution: Layer {
                                          channelMultiplier: 1,
                                          neuronFilter: activation,
                                          kernelWeights: weights.pointer,
-                                         biasTerms: biases?.pointer)
+                                         biasTerms: biasTerms)
   }
 
   override public func encode(commandBuffer: MTLCommandBuffer,

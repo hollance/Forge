@@ -39,7 +39,6 @@ class CameraViewController: UIViewController {
 
   @IBOutlet weak var videoPreview: UIView!
   @IBOutlet weak var predictionLabel: UILabel!
-  @IBOutlet weak var extraLabel: UILabel!
   @IBOutlet weak var timeLabel: UILabel!
   @IBOutlet weak var debugImageView: UIImageView!
 
@@ -49,13 +48,14 @@ class CameraViewController: UIViewController {
   var runner: Runner!
   var network: MobileNet!
 
+  let labels = ImageNetLabels()
+
   var startupGroup = DispatchGroup()
 
   override func viewDidLoad() {
     super.viewDidLoad()
 
     predictionLabel.text = ""
-    extraLabel.text = ""
     timeLabel.text = ""
 
     device = MTLCreateSystemDefaultDevice()
@@ -70,7 +70,7 @@ class CameraViewController: UIViewController {
 
     videoCapture = VideoCapture(device: device)
     videoCapture.delegate = self
-    videoCapture.fps = 15
+    videoCapture.fps = 20
 
     // Initialize the camera.
     startupGroup.enter()
@@ -161,21 +161,18 @@ class CameraViewController: UIViewController {
   }
 
   private func show(predictions: [MobileNet.Prediction]) {
-    let p = predictions[0]
-    if p.probability > 0.9 {
-      predictionLabel.text = p.label
-      extraLabel.text = String(format: "%2.1f%%", p.probability * 100)
-    } else {
-      predictionLabel.text = "???"
-      extraLabel.text = String(format: "%@ (%2.1f%%)", p.label, p.probability * 100)
+    var s: [String] = []
+    for (i, pred) in predictions.enumerated() {
+      s.append(String(format: "%d: %@ (%3.2f%%)", i + 1, labels[pred.labelIndex], pred.probability * 100))
     }
+    predictionLabel.text = s.joined(separator: "\n\n")
   }
 }
 
 extension CameraViewController: VideoCaptureDelegate {
   func videoCapture(_ capture: VideoCapture, didCaptureVideoTexture texture: MTLTexture?, timestamp: CMTime) {
     // To test with a fixed image (useful for debugging), do this:
-    //predict(texture: loadTexture(named: "three.png")!)
+    //predict(texture: loadTexture(named: "cat224x224.png")!); return
 
     // Call the predict() method, which encodes the neural net's GPU commands,
     // on our own thread. Since NeuralNetwork.predict() can block, so can our

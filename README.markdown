@@ -97,7 +97,9 @@ The example app implements the Tiny YOLO network, which is not as accurate as th
 
 The **MobileNets** example app is an implementation of the network architecture from the paper [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861v1).
 
-NOTE: At the moment no pretrained model for MobileNets is available, so the app only outputs random nonsense. However, it's useful to get an idea of the runtime speed of this neural network.
+It works like Inception-v3 but is much faster. On the iPhone 6s it runs at 20 FPS with only moderate-to-high energy usage.
+
+Forge uses the pretrained weights from [shicai/MobileNet-Caffe](https://github.com/shicai/MobileNet-Caffe).
 
 ## How to add Forge to your own project
 
