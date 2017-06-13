@@ -95,11 +95,11 @@ public class BasicConvolutionKernel: ForgeKernel {
 
     let encoder = commandBuffer.makeComputeCommandEncoder()
     encoder.setComputePipelineState(pipeline)
-    encoder.setTexture(sourceImage.texture, at: 0)
-    encoder.setTexture(destinationImage.texture, at: 1)
-    encoder.setBytes(&params, length: MemoryLayout<KernelParams>.size, at: 0)
-    encoder.setBuffer(weightsBuffer, offset: 0, at: 1)
-    encoder.setBuffer(biasBuffer, offset: 0, at: 2)
+    encoder.setTexture(sourceImage.texture, index: 0)
+    encoder.setTexture(destinationImage.texture, index: 1)
+    encoder.setBytes(&params, length: MemoryLayout<KernelParams>.size, index: 0)
+    encoder.setBuffer(weightsBuffer, offset: 0, index: 1)
+    encoder.setBuffer(biasBuffer, offset: 0, index: 2)
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
     encoder.endEncoding()
 

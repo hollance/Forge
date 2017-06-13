@@ -29,7 +29,7 @@ var forgeMetalLibrary: MTLLibrary!
 
 func loadDefaultMetalLibrary(device: MTLDevice) -> MTLLibrary {
   if defaultMetalLibrary == nil {
-    defaultMetalLibrary = device.newDefaultLibrary()
+    defaultMetalLibrary = device.makeDefaultLibrary()
     if defaultMetalLibrary == nil {
       fatalError("Could not load default Metal library")
     }
@@ -104,11 +104,11 @@ extension MTLComputeCommandEncoder {
     for i in 0..<parameters.count {
       var obj = parameters[i]
       if let buffer = obj as? MTLBuffer {
-        setBuffer(buffer, offset: 0, at: i)
+        setBuffer(buffer, offset: 0, index: i)
       } else if let texture = obj as? MTLTexture {
-        setTexture(texture, at: i)
+        setTexture(texture, index: i)
       } else {
-        setBytes(&obj, length: MemoryLayout.size(ofValue: obj), at: i)
+        setBytes(&obj, length: MemoryLayout.size(ofValue: obj), index: i)
       }
     }
   }

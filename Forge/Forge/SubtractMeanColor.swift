@@ -57,9 +57,9 @@ public class SubtractMeanColor {
 
     let encoder = commandBuffer.makeComputeCommandEncoder()
     encoder.setComputePipelineState(pipeline)
-    encoder.setTexture(sourceImage.texture, at: 0)
-    encoder.setTexture(destinationImage.texture, at: 1)
-    encoder.setBytes(params, length: params.count * MemoryLayout<Float16>.stride, at: 0)
+    encoder.setTexture(sourceImage.texture, index: 0)
+    encoder.setTexture(destinationImage.texture, index: 1)
+    encoder.setBytes(params, length: params.count * MemoryLayout<Float16>.stride, index: 0)
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
     encoder.endEncoding()
 

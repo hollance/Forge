@@ -44,7 +44,7 @@ public func loadTexture(named filename: String) -> MTLTexture? {
 public func loadTexture(url: URL) -> MTLTexture? {
   do {
     return try textureLoader.newTexture(withContentsOf: url, options: [
-      MTKTextureLoaderOptionSRGB : NSNumber(value: false)
+      MTKTextureLoader.Option.SRGB : NSNumber(value: false)
     ])
   } catch {
     print("Error: could not load texture \(error)")

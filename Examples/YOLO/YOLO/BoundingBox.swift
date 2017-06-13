@@ -38,7 +38,7 @@ class BoundingBox {
     textLayer.isHidden = false
 
     let attributes = [
-      NSFontAttributeName: textLayer.font as Any
+      NSAttributedStringKey.font: textLayer.font as Any
     ]
 
     let textRect = label.boundingRect(with: CGSize(width: 400, height: 100),

@@ -66,9 +66,9 @@ public class TransposeChannelsKernel {
                      sourceImage: MPSImage, destinationImage: MPSImage) {
     let encoder = commandBuffer.makeComputeCommandEncoder()
     encoder.setComputePipelineState(pipeline)
-    encoder.setTexture(sourceImage.texture, at: 0)
-    encoder.setTexture(destinationImage.texture, at: 1)
-    encoder.setBuffer(buffer, offset: 0, at: 0)
+    encoder.setTexture(sourceImage.texture, index: 0)
+    encoder.setTexture(destinationImage.texture, index: 1)
+    encoder.setBuffer(buffer, offset: 0, index: 0)
     encoder.dispatch(pipeline: pipeline, image: destinationImage)
     encoder.endEncoding()
 

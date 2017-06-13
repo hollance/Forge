@@ -126,7 +126,7 @@ extension UIImage {
     var bytes = texture.toUInt8Array(width: w, height: h, featureChannels: 4)
 
     for i in 0..<bytes.count/4 {
-      swap(&bytes[i*4 + 0], &bytes[i*4 + 2])
+      bytes.swapAt(i*4 + 0, i*4 + 2)
     }
 
     return UIImage.fromByteArray(&bytes, width: w, height: h)
