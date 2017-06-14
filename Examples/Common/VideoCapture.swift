@@ -53,7 +53,7 @@ public class VideoCapture: NSObject {
     super.init()
   }
 
-  public func setUp(sessionPreset: AVCaptureSession.Preset = AVCaptureSession.Preset.medium,
+  public func setUp(sessionPreset: AVCaptureSession.Preset = .medium,
                     completion: @escaping (Bool) -> Void) {
     queue.async {
       let success = self.setUpCamera(sessionPreset: sessionPreset)
