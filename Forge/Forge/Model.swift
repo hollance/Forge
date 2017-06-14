@@ -114,6 +114,9 @@ public class Model {
       try createComputeForAllLayers()
 
       imageDescriptorList = Array(imageDescriptors.values)
+      for imageDesc in imageDescriptorList {
+        imageDesc.storageMode = .private
+      }
 
       let elapsed = CACurrentMediaTime() - startTime
       print("Compiling took \(elapsed) seconds")

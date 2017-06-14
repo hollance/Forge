@@ -67,6 +67,8 @@ class MNIST: NeuralNetwork {
 
   let grayImg: MPSImage
 
+  let temporaryImageDescriptors: [MPSImageDescriptor]
+
   public init(device: MTLDevice, inflightBuffers: Int) {
     // Since the GPU can be working on several inputs at once, this needs to
     // allocate multiple output images.
@@ -92,13 +94,21 @@ class MNIST: NeuralNetwork {
     // I want to show the output of the preprocessing shader on the screen for
     // debugging, so store its results in a real MSPImage, not a temporary one.
     grayImg = MPSImage(device: device, imageDescriptor: grayImgDesc)
+
+    temporaryImageDescriptors = [
+      scaledImgDesc, /*grayImgDesc,*/ conv1ImgDesc, pool1ImgDesc,
+      conv2ImgDesc, pool2ImgDesc, fc1ImgDesc, outputImgDesc
+    ]
+
+    // Temporary images must have private storage mode.
+    for imgDesc in temporaryImageDescriptors {
+      imgDesc.storageMode = .private
+    }
   }
 
   public func encode(commandBuffer: MTLCommandBuffer, texture inputTexture: MTLTexture, inflightIndex: Int) {
     // This lets us squeeze some extra speed out of Metal.
-    MPSTemporaryImage.prefetchStorage(with: commandBuffer, imageDescriptorList: [
-      scaledImgDesc, grayImgDesc, conv1ImgDesc, pool1ImgDesc,
-      conv2ImgDesc, pool2ImgDesc, fc1ImgDesc, outputImgDesc])
+    MPSTemporaryImage.prefetchStorage(with: commandBuffer, imageDescriptorList: temporaryImageDescriptors)
 
     // Resize the input image to 28x28 pixels.
     let scaledImg = MPSTemporaryImage(commandBuffer: commandBuffer, imageDescriptor: scaledImgDesc)
