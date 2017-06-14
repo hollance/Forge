@@ -27,21 +27,15 @@
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bCL-P6-Xzi" userLabel="Video Preview">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RUc-kC-0Vd">
-                                        <rect key="frame" x="20" y="20" width="64" height="64"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="64" id="l4d-Zw-XZ9"/>
-                                            <constraint firstAttribute="height" constant="64" id="rIJ-5U-gvS"/>
-                                        </constraints>
-                                    </imageView>
-                                </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstItem="RUc-kC-0Vd" firstAttribute="top" secondItem="bCL-P6-Xzi" secondAttribute="top" constant="20" id="9Gm-cF-ZgF"/>
-                                    <constraint firstItem="RUc-kC-0Vd" firstAttribute="leading" secondItem="bCL-P6-Xzi" secondAttribute="leading" constant="20" id="t4F-4d-LCP"/>
-                                </constraints>
                             </view>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RUc-kC-0Vd">
+                                <rect key="frame" x="20" y="40" width="64" height="64"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="64" id="l4d-Zw-XZ9"/>
+                                    <constraint firstAttribute="height" constant="64" id="rIJ-5U-gvS"/>
+                                </constraints>
+                            </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="orI-nu-P9h" userLabel="Results">
                                 <rect key="frame" x="0.0" y="494.5" width="320" height="73.5"/>
                                 <subviews>
@@ -73,10 +67,12 @@
                         <color key="backgroundColor" red="0.078431372549019607" green="0.11764705882352941" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="bCL-P6-Xzi" secondAttribute="bottom" id="aFe-O2-aUZ"/>
+                            <constraint firstItem="RUc-kC-0Vd" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="20" id="cdI-s8-hxM"/>
                             <constraint firstItem="bCL-P6-Xzi" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="e7s-hY-zDH"/>
                             <constraint firstItem="orI-nu-P9h" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="eWH-Zu-YEX"/>
                             <constraint firstAttribute="trailing" secondItem="orI-nu-P9h" secondAttribute="trailing" id="iQW-sJ-6HM"/>
                             <constraint firstItem="bCL-P6-Xzi" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="sC5-sg-Czw"/>
+                            <constraint firstItem="RUc-kC-0Vd" firstAttribute="top" secondItem="4iA-b4-NHG" secondAttribute="bottom" constant="20" id="tDN-e6-C02"/>
                             <constraint firstAttribute="bottom" secondItem="orI-nu-P9h" secondAttribute="bottom" id="umg-vt-Zr9"/>
                             <constraint firstAttribute="trailing" secondItem="bCL-P6-Xzi" secondAttribute="trailing" id="zBc-3I-dYS"/>
                         </constraints>
