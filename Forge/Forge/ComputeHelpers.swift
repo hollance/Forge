@@ -320,7 +320,7 @@ public func makeBuffer(device: MTLDevice,
   let paddedOutputChannels = outputSlices * 4
   let count = paddedOutputChannels * kernelHeight * kernelWidth * paddedInputChannels
 
-  let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
+  let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)!
 
   copy(weights: weights, to: buffer, channelFormat: channelFormat,
        kernelWidth: kernelWidth, kernelHeight: kernelHeight,
@@ -367,7 +367,7 @@ public func makeBuffer(device: MTLDevice,
 
   let outputSlices = (outputFeatureChannels + 3) / 4
   let count = outputSlices * 4
-  let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)
+  let buffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)!
 
   // The bias terms are often optional. If biasTerms is nil, just allocate a 
   // buffer containing zeros, otherwise copy the biases into the buffer.

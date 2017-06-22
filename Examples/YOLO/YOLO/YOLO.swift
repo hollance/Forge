@@ -193,6 +193,7 @@ class YOLO: NeuralNetwork {
     // use "non-maximum suppression" to prune those duplicate bounding boxes.
     var result = NeuralNetworkResult<Prediction>()
     result.predictions = nonMaxSuppression(boxes: predictions, limit: 10, threshold: 0.5)
+    //result.debugTexture = model.image(for: resized, inflightIndex: inflightIndex).texture
     return result
   }
 }

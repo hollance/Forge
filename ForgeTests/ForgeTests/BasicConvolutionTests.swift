@@ -68,7 +68,7 @@ class BasicConvolutionTests {
                                   flags: .none)
     conv2.edgeMode = .zero
 
-    let commandBuffer = commandQueue.makeCommandBuffer()
+    let commandBuffer = commandQueue.makeCommandBuffer()!
 
     conv2.applyPadding(type: .same, sourceImage: inputImage, destinationImage: outputImage2)
     conv1.offset = conv2.offset

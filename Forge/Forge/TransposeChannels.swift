@@ -48,7 +48,7 @@ public class TransposeChannelsKernel {
     self.device = device
 
     let slices = (featureChannels + 3) / 4
-    buffer = device.makeBuffer(length: MemoryLayout<UInt16>.stride * slices * 4)
+    buffer = device.makeBuffer(length: MemoryLayout<UInt16>.stride * slices * 4)!
     memcpy(buffer.contents(), permute, MemoryLayout<UInt16>.stride * featureChannels)
 
     // If there's more than one texture slice in the image, we have to use a
@@ -64,13 +64,14 @@ public class TransposeChannelsKernel {
 
   public func encode(commandBuffer: MTLCommandBuffer,
                      sourceImage: MPSImage, destinationImage: MPSImage) {
-    let encoder = commandBuffer.makeComputeCommandEncoder()
-    encoder.setComputePipelineState(pipeline)
-    encoder.setTexture(sourceImage.texture, index: 0)
-    encoder.setTexture(destinationImage.texture, index: 1)
-    encoder.setBuffer(buffer, offset: 0, index: 0)
-    encoder.dispatch(pipeline: pipeline, image: destinationImage)
-    encoder.endEncoding()
+    if let encoder = commandBuffer.makeComputeCommandEncoder() {
+      encoder.setComputePipelineState(pipeline)
+      encoder.setTexture(sourceImage.texture, index: 0)
+      encoder.setTexture(destinationImage.texture, index: 1)
+      encoder.setBuffer(buffer, offset: 0, index: 0)
+      encoder.dispatch(pipeline: pipeline, image: destinationImage)
+      encoder.endEncoding()
+    }
 
     if let image = sourceImage as? MPSTemporaryImage {
       image.readCount -= 1

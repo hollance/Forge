@@ -127,7 +127,7 @@ public class Runner {
     //commandQueue.insertDebugCaptureBoundary()
 
     autoreleasepool {
-      let commandBuffer = commandQueue.makeCommandBuffer()
+      guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
 
       network.encode(commandBuffer: commandBuffer, texture: inputTexture, inflightIndex: inflightIndex)
 

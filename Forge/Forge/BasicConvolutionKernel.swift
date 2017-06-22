@@ -93,15 +93,16 @@ public class BasicConvolutionKernel: ForgeKernel {
     params.inputOffsetY = Int16(offset.y);
     params.inputOffsetZ = Int16(offset.z);
 
-    let encoder = commandBuffer.makeComputeCommandEncoder()
-    encoder.setComputePipelineState(pipeline)
-    encoder.setTexture(sourceImage.texture, index: 0)
-    encoder.setTexture(destinationImage.texture, index: 1)
-    encoder.setBytes(&params, length: MemoryLayout<KernelParams>.size, index: 0)
-    encoder.setBuffer(weightsBuffer, offset: 0, index: 1)
-    encoder.setBuffer(biasBuffer, offset: 0, index: 2)
-    encoder.dispatch(pipeline: pipeline, image: destinationImage)
-    encoder.endEncoding()
+    if let encoder = commandBuffer.makeComputeCommandEncoder() {
+      encoder.setComputePipelineState(pipeline)
+      encoder.setTexture(sourceImage.texture, index: 0)
+      encoder.setTexture(destinationImage.texture, index: 1)
+      encoder.setBytes(&params, length: MemoryLayout<KernelParams>.size, index: 0)
+      encoder.setBuffer(weightsBuffer, offset: 0, index: 1)
+      encoder.setBuffer(biasBuffer, offset: 0, index: 2)
+      encoder.dispatch(pipeline: pipeline, image: destinationImage)
+      encoder.endEncoding()
+    }
 
     if let image = sourceImage as? MPSTemporaryImage {
       image.readCount -= 1

@@ -90,7 +90,7 @@ class DepthwiseConvolutionTests {
                                  flags: .none)
     conv.edgeMode = .zero
 
-    let commandBuffer = commandQueue.makeCommandBuffer()
+    let commandBuffer = commandQueue.makeCommandBuffer()!
 
     conv.applyPadding(type: .same, sourceImage: inputImage, destinationImage: outputImage2)
     depthwiseConv.offset = conv.offset
