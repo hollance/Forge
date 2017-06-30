@@ -129,4 +129,86 @@ class DepthwiseConvolutionTests {
       }
     }
   }
+
+  /*
+    Tests whether we can create a depthwise convolution by setting the number
+    of channels of a regular convolution equal to the number of groups.
+  */
+  func testGroups() {
+    print(#function)
+
+    let kernelWidth = 3
+    let kernelHeight = 3
+    let imageWidth = 128
+    let imageHeight = 128
+    let channels = 64
+
+    let count = kernelWidth * kernelHeight * channels
+    var weights = [Float](repeating: 0, count: count)
+    Random.uniformRandom(&weights, count: count, scale: 0.1, seed: time(nil))
+
+    var biases = [Float](repeating: 0, count: channels)
+    Random.uniformRandom(&biases, count: channels, scale: 0.3, seed: time(nil))
+
+    let inputImage = randomImage(device: device, width: imageWidth,
+                                 height: imageHeight, featureChannels: channels,
+                                 seed: time(nil))
+
+    let outputImageDesc = MPSImageDescriptor(channelFormat: .float16,
+                                       width: imageWidth,
+                                       height: imageHeight,
+                                       featureChannels: channels)
+
+    let outputImage1 = MPSImage(device: device, imageDescriptor: outputImageDesc)
+    let outputImage2 = MPSImage(device: device, imageDescriptor: outputImageDesc)
+
+    let depthwiseConv = DepthwiseConvolutionKernel(device: device,
+                                                   kernelWidth: kernelWidth,
+                                                   kernelHeight: kernelHeight,
+                                                   featureChannels: channels,
+                                                   strideInPixelsX: 1,
+                                                   strideInPixelsY: 1,
+                                                   channelMultiplier: 1,
+                                                   neuronFilter: nil,
+                                                   kernelWeights: weights,
+                                                   biasTerms: biases)
+
+    let desc = MPSCNNConvolutionDescriptor(kernelWidth: kernelWidth,
+                                           kernelHeight: kernelHeight,
+                                           inputFeatureChannels: channels,
+                                           outputFeatureChannels: channels,
+                                           neuronFilter: nil)
+    desc.strideInPixelsX = 1
+    desc.strideInPixelsY = 1
+    desc.groups = channels
+
+    let conv = MPSCNNConvolution(device: device,
+                                 convolutionDescriptor: desc,
+                                 kernelWeights: weights,
+                                 biasTerms: biases,
+                                 flags: .none)
+    conv.edgeMode = .zero
+
+    let commandBuffer = commandQueue.makeCommandBuffer()!
+
+    conv.applyPadding(type: .same, sourceImage: inputImage, destinationImage: outputImage2)
+    depthwiseConv.offset = conv.offset
+    print(conv.offset)
+
+    depthwiseConv.encode(commandBuffer: commandBuffer,
+                         sourceImage: inputImage,
+                         destinationImage: outputImage1)
+
+    conv.encode(commandBuffer: commandBuffer,
+                sourceImage: inputImage,
+                destinationImage: outputImage2)
+
+    commandBuffer.commit()
+    commandBuffer.waitUntilCompleted()
+
+    let output1 = outputImage1.toFloatArray()
+    let output2 = outputImage2.toFloatArray()
+
+    assertEqual(output1, output2, tolerance: 1e-3)
+  }
 }
