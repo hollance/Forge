@@ -3,7 +3,8 @@ import MetalPerformanceShaders
 import Forge
 
 class DepthwiseConvolutionTests {
-  func runTest(imageSize: (Int, Int), channels: Int, stride: Int, filter: MPSCNNNeuron?) {
+  func runTest(imageSize: (Int, Int), channels: Int, stride: Int,
+               filter: MPSCNNNeuron?, useMPSDepthWise: Bool) {
     print("  channels: \(channels), stride: \(stride)")
 
     let kernelWidth = 3
@@ -47,41 +48,73 @@ class DepthwiseConvolutionTests {
                                                    kernelWeights: depthwiseWeights,
                                                    biasTerms: biases)
 
-    let desc = MPSCNNConvolutionDescriptor(kernelWidth: kernelWidth,
-                                           kernelHeight: kernelHeight,
-                                           inputFeatureChannels: channels,
-                                           outputFeatureChannels: channels,
-                                           neuronFilter: filter)
-    desc.strideInPixelsX = stride
-    desc.strideInPixelsY = stride
+    let desc: MPSCNNConvolutionDescriptor
+    var convWeights: [Float]
 
-    // Running a depthwise convolution is like a regular convolution that
-    // has a lot of its weights set to 0.
-    //
-    // The weights for the 3x3 depthwise convolution are stored as:
-    //   1234 | 1234 | 1234
-    //   1234 | 1234 | 1234
-    //   1234 | 1234 | 1234
-    // 
-    // For the regular convolution we have to rearrange this as:
-    //   1--- | 1--- | 1---
-    //   1--- | 1--- | 1---
-    //   1--- | 1--- | 1---
-    //   -2-- | -2-- | -2--
-    //   -2-- | -2-- | -2--
-    //   -2-- | -2-- | -2--
-    //   --3- | --3- | --3-
-    // 
-    // and so on... where the - represents a 0 value.
+    if useMPSDepthWise {
+      desc = MPSCNNDepthWiseConvolutionDescriptor(kernelWidth: kernelWidth,
+                                                  kernelHeight: kernelHeight,
+                                                  inputFeatureChannels: channels,
+                                                  outputFeatureChannels: channels,
+                                                  neuronFilter: filter)
 
-    let convCount = channels * kernelWidth * kernelHeight * channels
-    var convWeights = [Float](repeating: 0, count: convCount)
-    let weightsPerSlice = kernelWidth*kernelHeight
-    for c in 0..<channels {
-      for w in 0..<weightsPerSlice {
-        convWeights[weightsPerSlice*channels*c + w*channels + c] = depthwiseWeights[w*channels + c]
+      // Forge's depthwise convolution expects the weights in this order:
+      //   [kW][kH][channels]
+      // but MPS's depthwise convolution expects them in this order:
+      //   [channels][channelMultiplier][kW][kH]
+      // so we have to transpose them.
+      let convCount = channels * kernelWidth * kernelHeight
+      convWeights = [Float](repeating: 0, count: convCount)
+      let mpsChanStride = kernelWidth * kernelHeight
+      let mpsHeightStride = kernelHeight
+      let mpsWidthStride = 1
+      let forgeChanStride = 1
+      let forgeHeightStride = channels * kernelWidth
+      let forgeWidthStride = channels
+      for c in 0..<channels {
+        for h in 0..<kernelHeight {
+          for w in 0..<kernelWidth {
+            convWeights[c*mpsChanStride + h*mpsHeightStride + w*mpsWidthStride] = depthwiseWeights[c*forgeChanStride + h*forgeHeightStride + w*forgeWidthStride]
+          }
+        }
+      }
+    } else {
+      desc = MPSCNNConvolutionDescriptor(kernelWidth: kernelWidth,
+                                         kernelHeight: kernelHeight,
+                                         inputFeatureChannels: channels,
+                                         outputFeatureChannels: channels,
+                                         neuronFilter: filter)
+
+      // Running a depthwise convolution is like a regular convolution that
+      // has a lot of its weights set to 0.
+      //
+      // The weights for the 3x3 depthwise convolution are stored as:
+      //   1234 | 1234 | 1234
+      //   1234 | 1234 | 1234
+      //   1234 | 1234 | 1234
+      //
+      // For the regular convolution we have to rearrange this as:
+      //   1--- | 1--- | 1---
+      //   1--- | 1--- | 1---
+      //   1--- | 1--- | 1---
+      //   -2-- | -2-- | -2--
+      //   -2-- | -2-- | -2--
+      //   -2-- | -2-- | -2--
+      //   --3- | --3- | --3-
+      //
+      // and so on... where the - represents a 0 value.
+
+      let convCount = channels * kernelWidth * kernelHeight * channels
+      convWeights = [Float](repeating: 0, count: convCount)
+      let weightsPerSlice = kernelWidth*kernelHeight
+      for c in 0..<channels {
+        for w in 0..<weightsPerSlice {
+          convWeights[weightsPerSlice*channels*c + w*channels + c] = depthwiseWeights[w*channels + c]
+        }
       }
     }
+    desc.strideInPixelsX = stride
+    desc.strideInPixelsY = stride
 
     let conv = MPSCNNConvolution(device: device,
                                  convolutionDescriptor: desc,
@@ -113,8 +146,8 @@ class DepthwiseConvolutionTests {
     assertEqual(output1, output2, tolerance: 1e-3)
   }
 
-  func testCorrectness() {
-    print("\(self)")
+  func testCorrectness(useMPSDepthWise: Bool) {
+    print("\(self) MPSDepthWise: \(useMPSDepthWise)")
 
     let relu = MPSCNNNeuronReLU(device: device, a: 0)
     let sigmoid = MPSCNNNeuronSigmoid(device: device)
@@ -123,7 +156,7 @@ class DepthwiseConvolutionTests {
       for c in [61, 13, 8, 4, 3, 2, 1] {
         for s in [1, 2, 3] {
           for f in [ relu, sigmoid, nil ] {
-            runTest(imageSize: (i, i), channels: c, stride: s, filter: f)
+            runTest(imageSize: (i, i), channels: c, stride: s, filter: f, useMPSDepthWise: useMPSDepthWise)
           }
         }
       }
