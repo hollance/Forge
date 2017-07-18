@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B0B93821F1E642B0002A11A /* FPSCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0B93811F1E64270002A11A /* FPSCounter.swift */; };
 		7BA396FF1EAA2D8100F4C4D6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7BA396FD1EAA2D8100F4C4D6 /* Main.storyboard */; };
 		7BA397011EAA2D8100F4C4D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BA397001EAA2D8100F4C4D6 /* Assets.xcassets */; };
 		7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA3970B1EAA2DB100F4C4D6 /* CameraViewController.swift */; };
@@ -230,6 +231,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7B0B93811F1E64270002A11A /* FPSCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FPSCounter.swift; sourceTree = "<group>"; };
 		7BA396F61EAA2D8100F4C4D6 /* Inception.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Inception.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BA396FE1EAA2D8100F4C4D6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		7BA397001EAA2D8100F4C4D6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -486,6 +488,7 @@
 			isa = PBXGroup;
 			children = (
 				7BA397121EAA2DBB00F4C4D6 /* AppDelegate.swift */,
+				7B0B93811F1E64270002A11A /* FPSCounter.swift */,
 				7BA397131EAA2DBB00F4C4D6 /* VideoCapture.swift */,
 			);
 			name = Common;
@@ -985,6 +988,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B0B93821F1E642B0002A11A /* FPSCounter.swift in Sources */,
 				7BA3970E1EAA2DB100F4C4D6 /* CameraViewController.swift in Sources */,
 				7BA397141EAA2DBB00F4C4D6 /* AppDelegate.swift in Sources */,
 				7BA397151EAA2DBB00F4C4D6 /* VideoCapture.swift in Sources */,

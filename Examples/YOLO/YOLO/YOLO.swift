@@ -15,6 +15,14 @@ let anchors: [Float] = [1.08, 1.19, 3.42, 4.41, 6.63, 11.38, 9.42, 5.11, 16.62, 
 class YOLO: NeuralNetwork {
   typealias PredictionType = YOLO.Prediction
 
+  public static let inputWidth = 416
+  public static let inputHeight = 416
+  public static let maxBoundingBoxes = 10
+
+  // Tweak these values to get more or fewer predictions.
+  let confidenceThreshold: Float = 0.3
+  let iouThreshold: Float = 0.5
+
   struct Prediction {
     let classIndex: Int
     let score: Float
@@ -34,7 +42,7 @@ class YOLO: NeuralNetwork {
     let input = Input()
 
     let output = input
-             --> Resize(width: 416, height: 416)
+             --> Resize(width: YOLO.inputWidth, height: YOLO.inputHeight)
              --> Convolution(kernel: (3, 3), channels: 16, activation: leaky, name: "conv1")
              --> MaxPooling(kernel: (2, 2), stride: (2, 2))
              --> Convolution(kernel: (3, 3), channels: 32, activation: leaky, name: "conv2")
@@ -175,7 +183,7 @@ class YOLO: NeuralNetwork {
 
           // Since we compute 13x13x5 = 845 bounding boxes, we only want to
           // keep the ones whose combined score is over a certain threshold.
-          if confidenceInClass > 0.3 {
+          if confidenceInClass > confidenceThreshold {
             let rect = CGRect(x: CGFloat(x - w/2), y: CGFloat(y - h/2),
                               width: CGFloat(w), height: CGFloat(h))
 
@@ -192,7 +200,7 @@ class YOLO: NeuralNetwork {
     // but there still may be boxes that overlap too much with others. We'll
     // use "non-maximum suppression" to prune those duplicate bounding boxes.
     var result = NeuralNetworkResult<Prediction>()
-    result.predictions = nonMaxSuppression(boxes: predictions, limit: 10, threshold: 0.5)
+    result.predictions = nonMaxSuppression(boxes: predictions, limit: YOLO.maxBoundingBoxes, threshold: iouThreshold)
     //result.debugTexture = model.image(for: resized, inflightIndex: inflightIndex).texture
     return result
   }

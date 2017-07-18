@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B0B93801F1E635F0002A11A /* FPSCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0B937F1F1E635A0002A11A /* FPSCounter.swift */; };
 		7B8237131EABDCE000127F0C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B8237111EABDCE000127F0C /* Main.storyboard */; };
 		7B8237151EABDCE000127F0C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B8237141EABDCE000127F0C /* Assets.xcassets */; };
 		7B8237371EABDD9200127F0C /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8237261EABDD9200127F0C /* CameraViewController.swift */; };
@@ -92,6 +93,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7B0B937F1F1E635A0002A11A /* FPSCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FPSCounter.swift; sourceTree = "<group>"; };
 		7B82370A1EABDCE000127F0C /* MobileNets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileNets.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B8237121EABDCE000127F0C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		7B8237141EABDCE000127F0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = MobileNets/Assets.xcassets; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 			children = (
 				7B8237481EABDDFD00127F0C /* AppDelegate.swift */,
 				7B8237491EABDDFD00127F0C /* VideoCapture.swift */,
+				7B0B937F1F1E635A0002A11A /* FPSCounter.swift */,
 			);
 			name = Common;
 			path = ../Common;
@@ -427,6 +430,7 @@
 				7B82374A1EABDDFD00127F0C /* AppDelegate.swift in Sources */,
 				7BD4246C1EB0DF0600451777 /* MobileNet.swift in Sources */,
 				7BCF76571EE5CBCD00EC1D70 /* ImageNetLabels.swift in Sources */,
+				7B0B93801F1E635F0002A11A /* FPSCounter.swift in Sources */,
 				7B82374B1EABDDFD00127F0C /* VideoCapture.swift in Sources */,
 				7B8237371EABDD9200127F0C /* CameraViewController.swift in Sources */,
 				7BCF765D1EE5DD9900EC1D70 /* Preprocessing.swift in Sources */,

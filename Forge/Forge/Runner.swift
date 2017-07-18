@@ -70,8 +70,12 @@ public struct NeuralNetworkResult<PredictionType> {
   public var debugScale: Float = 1       // for scaling down float images
   public var debugOffset: Float = 0      // for images with negative values
 
-  // This is filled in by Runner to measure the effective framerate.
-  public var elapsed: CFTimeInterval = 0
+  // This is filled in by Runner to measure the latency between starting a
+  // prediction and receiving the answer. (NOTE: Because we can start a new
+  // prediction while the previous one is still being processed, the latency
+  // actually becomes larger the more inflight buffers you're using. It is
+  // therefore *not* a good indicator of throughput, i.e. frames per second.)
+  public var latency: CFTimeInterval = 0
 
   public init() { }
 }
@@ -137,7 +141,7 @@ public class Runner {
       commandBuffer.addCompletedHandler { [inflightIndex] commandBuffer in
 
         var result = network.fetchResult(inflightIndex: inflightIndex)
-        result.elapsed = CACurrentMediaTime() - startTime
+        result.latency = CACurrentMediaTime() - startTime
 
         //print("GPU execution duration:", commandBuffer.gpuEndTime - commandBuffer.gpuStartTime)
         //print("Elapsed time: \(endTime - startTime) sec")

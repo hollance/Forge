@@ -30,6 +30,7 @@ class CameraViewController: UIViewController {
   var network: Inception3!
 
   var startupGroup = DispatchGroup()
+  let fpsCounter = FPSCounter()
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -49,7 +50,7 @@ class CameraViewController: UIViewController {
 
     videoCapture = VideoCapture(device: device)
     videoCapture.delegate = self
-    videoCapture.fps = 10
+    videoCapture.fps = 50
 
     // Initialize the camera.
     startupGroup.enter()
@@ -72,6 +73,7 @@ class CameraViewController: UIViewController {
     startupGroup.notify(queue: .main) {
       // NOTE: At this point you'd remove the spinner and enable the UI.
 
+      self.fpsCounter.start()
       self.videoCapture.start()
     }
   }
@@ -132,7 +134,9 @@ class CameraViewController: UIViewController {
       if let texture = result.debugTexture {
         self.debugImageView.image = UIImage.image(texture: texture)
       }
-      self.timeLabel.text = String(format: "Elapsed %.5f seconds (%.2f FPS)", result.elapsed, 1/result.elapsed)
+
+      self.fpsCounter.frameCompleted()
+      self.timeLabel.text = String(format: "%.1f FPS (latency: %.5f sec)", self.fpsCounter.fps, result.latency)
     }
   }
 
