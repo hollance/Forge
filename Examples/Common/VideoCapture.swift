@@ -133,7 +133,7 @@ public class VideoCapture: NSObject {
     ])
 
     settings.previewPhotoFormat = [
-      kCVPixelBufferPixelFormatTypeKey as String: settings.availablePreviewPhotoPixelFormatTypes[0],
+      kCVPixelBufferPixelFormatTypeKey as String: settings.__availablePreviewPhotoPixelFormatTypes[0],
       kCVPixelBufferWidthKey as String: 480,
       kCVPixelBufferHeightKey as String: 360,
     ]
