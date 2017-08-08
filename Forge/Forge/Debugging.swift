@@ -51,6 +51,31 @@ public func printChannelsForPixel(x: Int, y: Int, image: MPSImage) {
 }
 
 /**
+  Diagnostic tool for verifying that the neural network works correctly:
+  prints out the pixel values for a given channel.
+*/
+public func printChannel(_ c: Int, image: MPSImage) {
+  let count = image.featureChannels * image.height * image.width
+  var dataFloat16 = [Float16](repeating: 0, count: count)
+  image.readBytes(&dataFloat16, dataLayout: .featureChannelsxHeightxWidth, imageIndex: 0)
+
+  let dataFloat32 = float16to32(&dataFloat16, count: count)
+
+  let channelStride = image.height * image.width
+  let heightStride = image.width
+  let widthStride = 1
+
+  for h in 0..<image.height {
+    print("line \(h): ")
+    for w in 0..<image.width {
+      let value = dataFloat32[c*channelStride + h*heightStride + w*widthStride]
+      print(value, terminator: ", ")
+    }
+    print("\n")
+  }
+}
+
+/**
   Useful for checking that a computation gives the right answer, within the
   precision of 16-bit floats (which is only ~3 decimals).
   

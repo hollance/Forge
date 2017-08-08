@@ -81,7 +81,7 @@ public func makeFunction(library: MTLLibrary, name: String,
       return try library.device.makeComputePipelineState(function: kernelFunction)
     }
   } catch {
-    fatalError("Could not create compute pipeline for function '\(name)'")
+    fatalError("Could not create compute pipeline for function '\(name)'. Error: \(error)")
   }
 }
 

@@ -59,9 +59,9 @@ class DepthwiseConvolutionTests {
                                                   neuronFilter: filter)
 
       // Forge's depthwise convolution expects the weights in this order:
-      //   [kW][kH][channels]
+      //   [kH][kW][channels]
       // but MPS's depthwise convolution expects them in this order:
-      //   [channels][channelMultiplier][kW][kH]
+      //   [channels][channelMultiplier][kH][kW]
       // so we have to transpose them.
       let convCount = channels * kernelWidth * kernelHeight
       convWeights = [Float](repeating: 0, count: convCount)

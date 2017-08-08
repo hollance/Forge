@@ -34,12 +34,10 @@ extension Array where Element: Comparable {
         array.top(k: 5).map { x -> (String, Float) in (labels[x.0], x.1) }
   */
   public func top(k: Int) -> [(Int, Element)] {
-    precondition(k <= self.count)
-
     return Array<(Int, Element)>(
               zip(0..<self.count, self)
              .sorted(by: { a, b -> Bool in a.1 > b.1 })
-             .prefix(through: k - 1))
+             .prefix(through: Swift.min(k, self.count) - 1))
   }
 
   /**
@@ -66,7 +64,7 @@ extension Array where Element: Comparable {
   }
 
   /**
-    Returns an array containing the elements at the specified indices.
+    Returns a new array containing the elements at the specified indices.
   */
   public func gather(indices: [Array.Index]) -> [Element] {
     var a = [Element]()

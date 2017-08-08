@@ -11,7 +11,7 @@ public class ImageNetLabels {
       for (i, line) in lines(filename: path).enumerated() {
         if i < 1000 {
           // Strip off the WordNet ID (the first 10 characters).
-          labels[i] = line.substring(from: line.index(line.startIndex, offsetBy: 10))
+          labels[i] = String(line[line.index(line.startIndex, offsetBy: 10)...])
         }
       }
     }

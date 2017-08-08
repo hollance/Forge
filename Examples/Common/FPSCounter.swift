@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2016-2017 M.I. Hollemans
+  Copyright (c) 2017 M.I. Hollemans
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to
@@ -24,17 +24,17 @@ import Foundation
 import QuartzCore
 
 public class FPSCounter {
-  public private(set) var fps: Double = 0
+  private(set) public var fps: Double = 0
 
   var frames = 0
   var startTime: CFTimeInterval = 0
 
-  func start() {
+  public func start() {
     frames = 0
     startTime = CACurrentMediaTime()
   }
 
-  func frameCompleted() {
+  public func frameCompleted() {
     frames += 1
     let now = CACurrentMediaTime()
     let elapsed = now - startTime
