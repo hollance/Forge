@@ -54,6 +54,7 @@ public func printChannelsForPixel(x: Int, y: Int, image: MPSImage) {
   Diagnostic tool for verifying that the neural network works correctly:
   prints out the pixel values for a given channel.
 */
+@available(iOS 11.0, *)
 public func printChannel(_ c: Int, image: MPSImage) {
   let count = image.featureChannels * image.height * image.width
   var dataFloat16 = [Float16](repeating: 0, count: count)

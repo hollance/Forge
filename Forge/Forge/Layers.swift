@@ -703,8 +703,7 @@ public class DepthwiseConvolution: Layer {
   let kernel: (Int, Int)
   let stride: (Int, Int)
   let activation: MPSCNNNeuron?
-//  var compute: DepthwiseConvolutionKernel!
-  var compute: MPSCNNConvolution!
+  var compute: Any!
 
   /**
     Creates a depth-wise convolution layer.
@@ -765,73 +764,83 @@ public class DepthwiseConvolution: Layer {
       biasTerms = biases.pointer
     }
 
-    /*
-    compute = DepthwiseConvolutionKernel(device: device,
-                                         kernelWidth: kernel.0,
-                                         kernelHeight: kernel.1,
-                                         featureChannels: inputShape.channels,
-                                         strideInPixelsX: stride.0,
-                                         strideInPixelsY: stride.1,
-                                         channelMultiplier: 1,
-                                         neuronFilter: activation,
-                                         kernelWeights: weights.pointer,
-                                         biasTerms: biasTerms)
-     */
+    if #available(iOS 11.0, *) {
 
-    // TODO: MPS's depthwise convolution has the weights in a different
-    // order, so transpose them. I will change the API for this class so
-    // that it uses the same weights order as MPS, so that on iOS 10 it
-    // will use Forge's kernel but on 11 it uses the MPS kernel (which is
-    // faster).
-    let convCount = inputShape.channels * kernel.0 * kernel.1
-    var convWeights = [Float](repeating: 0, count: convCount)
-    let mpsChanStride = kernel.0 * kernel.1
-    let mpsHeightStride = kernel.1
-    let mpsWidthStride = 1
-    let forgeChanStride = 1
-    let forgeHeightStride = inputShape.channels * kernel.0
-    let forgeWidthStride = inputShape.channels
-    for c in 0..<inputShape.channels {
-      for h in 0..<kernel.1 {
-        for w in 0..<kernel.0 {
-          convWeights[c*mpsChanStride + h*mpsHeightStride + w*mpsWidthStride] = weights.pointer[c*forgeChanStride + h*forgeHeightStride + w*forgeWidthStride]
+      // TODO: MPS's depthwise convolution has the weights in a different
+      // order, so transpose them. I will change the API for this class so
+      // that it uses the same weights order as MPS, so that on iOS 10 it
+      // will use Forge's kernel but on 11 it uses the MPS kernel (which is
+      // faster).
+      let convCount = inputShape.channels * kernel.0 * kernel.1
+      var convWeights = [Float](repeating: 0, count: convCount)
+      let mpsChanStride = kernel.0 * kernel.1
+      let mpsHeightStride = kernel.1
+      let mpsWidthStride = 1
+      let forgeChanStride = 1
+      let forgeHeightStride = inputShape.channels * kernel.0
+      let forgeWidthStride = inputShape.channels
+      for c in 0..<inputShape.channels {
+        for h in 0..<kernel.1 {
+          for w in 0..<kernel.0 {
+            convWeights[c*mpsChanStride + h*mpsHeightStride + w*mpsWidthStride] = weights.pointer[c*forgeChanStride + h*forgeHeightStride + w*forgeWidthStride]
+          }
         }
       }
+
+      let desc = MPSCNNDepthWiseConvolutionDescriptor(kernelWidth: kernel.0,
+                                                      kernelHeight: kernel.1,
+                                                      inputFeatureChannels: inputShape.channels,
+                                                      outputFeatureChannels: inputShape.channels,
+                                                      neuronFilter: activation)
+
+      desc.strideInPixelsX = stride.0
+      desc.strideInPixelsY = stride.1
+
+      let compute = MPSCNNConvolution(device: device,
+                                      convolutionDescriptor: desc,
+                                      kernelWeights: convWeights,
+                                      biasTerms: biasTerms,
+                                      flags: .none)
+      compute.edgeMode = .zero
+      self.compute = compute
+    } else {
+      compute = DepthwiseConvolutionKernel(device: device,
+                                           kernelWidth: kernel.0,
+                                           kernelHeight: kernel.1,
+                                           featureChannels: inputShape.channels,
+                                           strideInPixelsX: stride.0,
+                                           strideInPixelsY: stride.1,
+                                           channelMultiplier: 1,
+                                           neuronFilter: activation,
+                                           kernelWeights: weights.pointer,
+                                           biasTerms: biasTerms)
     }
-
-    let desc = MPSCNNDepthWiseConvolutionDescriptor(kernelWidth: kernel.0,
-                                                    kernelHeight: kernel.1,
-                                                    inputFeatureChannels: inputShape.channels,
-                                                    outputFeatureChannels: inputShape.channels,
-                                                    neuronFilter: activation)
-    desc.strideInPixelsX = stride.0
-    desc.strideInPixelsY = stride.1
-
-    compute = MPSCNNConvolution(device: device,
-                                convolutionDescriptor: desc,
-                                kernelWeights: convWeights,
-                                biasTerms: biasTerms,
-                                flags: .none)
-    compute.edgeMode = .zero
   }
 
   override public func encode(commandBuffer: MTLCommandBuffer,
                               sourceTensor: Tensor,
                               destinationTensor: Tensor) {
+    let offset = offsetForConvolution(padding: .same,
+                                      sourceWidth: sourceTensor.shape.width,
+                                      sourceHeight: sourceTensor.shape.height,
+                                      destinationWidth: destinationTensor.shape.width,
+                                      destinationHeight: destinationTensor.shape.height,
+                                      kernelWidth: kernel.0,
+                                      kernelHeight: kernel.1,
+                                      strideInPixelsX: stride.0,
+                                      strideInPixelsY: stride.1)
 
-    compute.offset = offsetForConvolution(padding: .same,
-                                          sourceWidth: sourceTensor.shape.width,
-                                          sourceHeight: sourceTensor.shape.height,
-                                          destinationWidth: destinationTensor.shape.width,
-                                          destinationHeight: destinationTensor.shape.height,
-                                          kernelWidth: kernel.0,
-                                          kernelHeight: kernel.1,
-                                          strideInPixelsX: stride.0,
-                                          strideInPixelsY: stride.1)
-
-    compute.encode(commandBuffer: commandBuffer,
-                   sourceImage: sourceTensor.image!,
-                   destinationImage: destinationTensor.image!)
+    if let compute = compute as? MPSCNNConvolution {
+      compute.offset = offset
+      compute.encode(commandBuffer: commandBuffer,
+                     sourceImage: sourceTensor.image!,
+                     destinationImage: destinationTensor.image!)
+    } else if let compute = compute as? DepthwiseConvolutionKernel {
+      compute.offset = offset
+      compute.encode(commandBuffer: commandBuffer,
+                     sourceImage: sourceTensor.image!,
+                     destinationImage: destinationTensor.image!)
+    }
   }
 }
 
