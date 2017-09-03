@@ -33,6 +33,8 @@ import Accelerate
 
   A depth-wise convolution only performs filtering; it doesn't combine channels
   to create new features like a regular convolution does.
+
+  - Note: On iOS 11 and up, use MPSCNNDepthWiseConvolutionDescriptor instead.
 */
 public class DepthwiseConvolutionKernel: ForgeKernel {
   let pipeline: MTLComputePipelineState
@@ -48,7 +50,7 @@ public class DepthwiseConvolutionKernel: ForgeKernel {
         Default is 1.
       - relu: If true, applies a ReLU to the output. Default is false.
       - kernelWeights: The weights should be arranged in memory like this:
-        `[kernelHeight][kernelWidth][featureChannels]`.
+        `[featureChannels][kernelHeight][kernelWidth]`.
       - biasTerms: One bias term per channel (optional).
   */
   public init(device: MTLDevice,
@@ -65,14 +67,14 @@ public class DepthwiseConvolutionKernel: ForgeKernel {
     precondition(kernelWidth == 3 && kernelHeight == 3, "Only 3x3 kernels are currently supported")
     precondition(channelMultiplier == 1, "Channel multipliers are not supported yet")
 
-    let inputSlices = (featureChannels + 3) / 4
-    let paddedInputChannels = inputSlices * 4
-    let count = kernelHeight * kernelWidth * paddedInputChannels
+    let outputSlices = (featureChannels + 3) / 4
+    let paddedOutputChannels = outputSlices * 4
+    let count = paddedOutputChannels * kernelHeight * kernelWidth
     weightsBuffer = device.makeBuffer(length: MemoryLayout<Float16>.stride * count)!
 
-    copy(weights: kernelWeights, to: weightsBuffer, channelFormat: .float16,
-         kernelWidth: kernelWidth, kernelHeight: kernelHeight,
-         inputFeatureChannels: featureChannels, outputFeatureChannels: 1)
+    let ptr = UnsafeMutablePointer(mutating: kernelWeights)
+    let copyCount = featureChannels * kernelHeight * kernelWidth
+    float32to16(input: ptr, output: weightsBuffer.contents(), count: copyCount)
 
     biasBuffer = makeBuffer(device: device,
                             channelFormat: .float16,

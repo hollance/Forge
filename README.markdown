@@ -50,11 +50,31 @@ let model = Model(input: input, output: output)
 
 > **Note:** A lot of the code in this library is still *experimental* and subject to change. Use at your own risk!
 
+## iOS 10 and iOS 11 compatibility
+
+Forge supports both iOS 10 and iOS 11.
+
+Forge must be compiled with **Xcode 9** and the iOS 11 SDK. (An older version is available under the tag `xcode8`, but is no longer supported.)
+
+**Important changes:**
+
+The order of the weights for `DepthwiseConvolution` layers has changed. It used to be:
+
+	[kernelHeight][kernelWidth][channels]
+	
+now it is:
+
+	[channels][kernelHeight][kernelWidth]
+
+This was done to make this layer compatible with MPS's new depthwise convolution. On iOS 10, Forge will use its own `DepthwiseConvolutionKernel`, on iOS 11 and later is uses the MPS version (`MPSCNNDepthWiseConvolutionDescriptor`).
+
+Note: Forge does not yet take advantage of all the MPS improvements in iOS 11, such as the ability to load batch normalization parameters or loading weights via data sources. This functionality will be added in a future version.
+
 ## Run the examples!
 
 To see a demo of Forge in action, open **Forge.xcworkspace** in Xcode and run one of the example apps on your device.
 
-You need at least Xcode 8.3 and a device with an A8 processor (iPhone 6 or better) running iOS 10 or later. You cannot build for the simulator as it does not support Metal.
+You need at least Xcode 9 and a device with an A8 processor (iPhone 6 or better) running iOS 10 or later. You cannot build for the simulator as it does not support Metal.
 
 The included examples are:
 
@@ -103,7 +123,7 @@ Forge uses the pretrained weights from [shicai/MobileNet-Caffe](https://github.c
 
 ## How to add Forge to your own project
 
-Use Xcode 8.3 or better.
+Use Xcode 9 or better.
 
 1. Copy the **Forge** folder into your project.
 2. Use **File > Add Files to "YourProject" > Forge.xcodeproj** to add the Forge project inside your own project.

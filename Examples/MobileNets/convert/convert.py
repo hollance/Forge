@@ -120,9 +120,11 @@ for layer in layers:
 
                         conv_weights = weights * gamma / np.sqrt(variance + epsilon)
 
-                        if not is_depthwise:
-                            # Convert to (out_channels, height, width, in_channels),
-                            # which is the format Metal expects.
+                        # Convert to (out_channels, height, width, in_channels),
+                        # which is the format Metal expects.
+                        if is_depthwise:
+                            conv_weights = conv_weights.transpose(2, 0, 1)
+                        else:
                             conv_weights = conv_weights.transpose(3, 0, 1, 2)
 
                         conv_bias = beta - mean * gamma / np.sqrt(variance + epsilon)

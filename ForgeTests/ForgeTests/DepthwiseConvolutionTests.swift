@@ -4,7 +4,7 @@ import Forge
 
 class DepthwiseConvolutionTests {
   func runTest(imageSize: (Int, Int), channels: Int, stride: Int,
-               filter: MPSCNNNeuron?, useMPSDepthWise: Bool) {
+               filter: MPSCNNNeuron?, versusMPSDepthWise: Bool) {
     print("  channels: \(channels), stride: \(stride)")
 
     let kernelWidth = 3
@@ -12,7 +12,7 @@ class DepthwiseConvolutionTests {
     let imageWidth = imageSize.0
     let imageHeight = imageSize.0
 
-    let depthwiseCount = kernelWidth * kernelHeight * channels
+    let depthwiseCount = channels * kernelWidth * kernelHeight
     var depthwiseWeights = [Float](repeating: 0, count: depthwiseCount)
     Random.uniformRandom(&depthwiseWeights, count: depthwiseCount, scale: 0.1, seed: time(nil))
 
@@ -51,32 +51,16 @@ class DepthwiseConvolutionTests {
     let desc: MPSCNNConvolutionDescriptor
     var convWeights: [Float]
 
-    if useMPSDepthWise {
-      desc = MPSCNNDepthWiseConvolutionDescriptor(kernelWidth: kernelWidth,
-                                                  kernelHeight: kernelHeight,
-                                                  inputFeatureChannels: channels,
-                                                  outputFeatureChannels: channels,
-                                                  neuronFilter: filter)
-
-      // Forge's depthwise convolution expects the weights in this order:
-      //   [kH][kW][channels]
-      // but MPS's depthwise convolution expects them in this order:
-      //   [channels][channelMultiplier][kH][kW]
-      // so we have to transpose them.
-      let convCount = channels * kernelWidth * kernelHeight
-      convWeights = [Float](repeating: 0, count: convCount)
-      let mpsChanStride = kernelWidth * kernelHeight
-      let mpsHeightStride = kernelHeight
-      let mpsWidthStride = 1
-      let forgeChanStride = 1
-      let forgeHeightStride = channels * kernelWidth
-      let forgeWidthStride = channels
-      for c in 0..<channels {
-        for h in 0..<kernelHeight {
-          for w in 0..<kernelWidth {
-            convWeights[c*mpsChanStride + h*mpsHeightStride + w*mpsWidthStride] = depthwiseWeights[c*forgeChanStride + h*forgeHeightStride + w*forgeWidthStride]
-          }
-        }
+    if versusMPSDepthWise {
+      if #available(iOS 11.0, *) {
+        desc = MPSCNNDepthWiseConvolutionDescriptor(kernelWidth: kernelWidth,
+                                                    kernelHeight: kernelHeight,
+                                                    inputFeatureChannels: channels,
+                                                    outputFeatureChannels: channels,
+                                                    neuronFilter: filter)
+        convWeights = depthwiseWeights
+      } else {
+        fatalError("MPSCNNDepthWiseConvolutionDescriptor is only available on iOS 11 or later")
       }
     } else {
       desc = MPSCNNConvolutionDescriptor(kernelWidth: kernelWidth,
@@ -85,10 +69,20 @@ class DepthwiseConvolutionTests {
                                          outputFeatureChannels: channels,
                                          neuronFilter: filter)
 
+      // Transpose from [channels][kH][kW] to [kH][kW][channels].
+      var transposedWeights = [Float](repeating: 0, count: depthwiseCount)
+      for c in 0..<channels {
+        for h in 0..<kernelHeight {
+          for w in 0..<kernelWidth {
+            transposedWeights[h*channels*kernelWidth + w*channels + c] = depthwiseWeights[c*kernelWidth*kernelHeight + h*kernelHeight + w]
+          }
+        }
+      }
+
       // Running a depthwise convolution is like a regular convolution that
       // has a lot of its weights set to 0.
       //
-      // The weights for the 3x3 depthwise convolution are stored as:
+      // The transposed weights for the depthwise convolution are stored as:
       //   1234 | 1234 | 1234
       //   1234 | 1234 | 1234
       //   1234 | 1234 | 1234
@@ -106,13 +100,14 @@ class DepthwiseConvolutionTests {
 
       let convCount = channels * kernelWidth * kernelHeight * channels
       convWeights = [Float](repeating: 0, count: convCount)
-      let weightsPerSlice = kernelWidth*kernelHeight
+      let weightsPerSlice = kernelWidth * kernelHeight
       for c in 0..<channels {
         for w in 0..<weightsPerSlice {
-          convWeights[weightsPerSlice*channels*c + w*channels + c] = depthwiseWeights[w*channels + c]
+          convWeights[weightsPerSlice*channels*c + w*channels + c] = transposedWeights[w*channels + c]
         }
       }
     }
+
     desc.strideInPixelsX = stride
     desc.strideInPixelsY = stride
 
@@ -146,8 +141,8 @@ class DepthwiseConvolutionTests {
     assertEqual(output1, output2, tolerance: 1e-3)
   }
 
-  func testCorrectness(useMPSDepthWise: Bool) {
-    print("\(self) MPSDepthWise: \(useMPSDepthWise)")
+  func testCorrectness(versusMPSDepthWise: Bool) {
+    print("\(self) versus MPSDepthWise: \(versusMPSDepthWise)")
 
     let relu = MPSCNNNeuronReLU(device: device, a: 0)
     let sigmoid = MPSCNNNeuronSigmoid(device: device)
@@ -156,7 +151,7 @@ class DepthwiseConvolutionTests {
       for c in [61, 13, 8, 4, 3, 2, 1] {
         for s in [1, 2, 3] {
           for f in [ relu, sigmoid, nil ] {
-            runTest(imageSize: (i, i), channels: c, stride: s, filter: f, useMPSDepthWise: useMPSDepthWise)
+            runTest(imageSize: (i, i), channels: c, stride: s, filter: f, versusMPSDepthWise: versusMPSDepthWise)
           }
         }
       }

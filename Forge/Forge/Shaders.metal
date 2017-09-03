@@ -253,7 +253,7 @@ kernel void depthwiseConv3x3(
   texture2d<half, access::sample> inTexture [[texture(0)]],
   texture2d<half, access::write> outTexture [[texture(1)]],
   constant KernelParams& params [[buffer(0)]],
-  const device half4* weights [[buffer(1)]],
+  const device half* weights [[buffer(1)]],
   const device half4* biasTerms [[buffer(2)]],
   ushort2 gid [[thread_position_in_grid]])
 {
@@ -282,11 +282,18 @@ kernel void depthwiseConv3x3(
   in[7] = inTexture.sample(s, float2(pos.x    , pos.y + 1));
   in[8] = inTexture.sample(s, float2(pos.x + 1, pos.y + 1));
 
+  const ushort kW = 3;
+  const ushort kH = 3;
+
   // Multiply by the weights and put the weighted sum in the output pixel.
   // Do these calculations as 32-bit float or we lose too much precision.
   float4 out = float4(0.0f);
-  for (ushort t = 0; t < 9; ++t) {
-    out += float4(in[t]) * float4(weights[t]);
+  for (ushort t = 0; t < kH*kW; ++t) {
+    const auto pixel = float4(in[t]);
+    out.x += pixel.x * float(weights[0*kH*kW + t]);
+    out.y += pixel.y * float(weights[1*kH*kW + t]);
+    out.z += pixel.z * float(weights[2*kH*kW + t]);
+    out.w += pixel.w * float(weights[3*kH*kW + t]);
   }
 
   out += float4(biasTerms[0]);
@@ -300,7 +307,7 @@ kernel void depthwiseConv3x3_array(
   texture2d_array<half, access::sample> inTexture [[texture(0)]],
   texture2d_array<half, access::write> outTexture [[texture(1)]],
   constant KernelParams& params [[buffer(0)]],
-  const device half4* weights [[buffer(1)]],
+  const device half* weights [[buffer(1)]],
   const device half4* biasTerms [[buffer(2)]],
   ushort3 gid [[thread_position_in_grid]])
 {
@@ -311,7 +318,6 @@ kernel void depthwiseConv3x3_array(
   constexpr sampler s(coord::pixel, filter::nearest, address::clamp_to_zero);
 
   const ushort2 pos = gid.xy * stride + ushort2(params.inputOffsetX, params.inputOffsetY);
-  const ushort slices = outTexture.get_array_size();
   const ushort slice = gid.z;
 
   half4 in[9];
@@ -325,9 +331,16 @@ kernel void depthwiseConv3x3_array(
   in[7] = inTexture.sample(s, float2(pos.x    , pos.y + 1), slice);
   in[8] = inTexture.sample(s, float2(pos.x + 1, pos.y + 1), slice);
 
+  const ushort kW = 3;
+  const ushort kH = 3;
+
   float4 out = float4(0.0f);
-  for (ushort t = 0; t < 9; ++t) {
-    out += float4(in[t]) * float4(weights[t*slices + slice]);
+  for (ushort t = 0; t < kH*kW; ++t) {
+    const auto pixel = float4(in[t]);
+    out.x += pixel.x * float(weights[(slice*4 + 0)*kH*kW + t]);
+    out.y += pixel.y * float(weights[(slice*4 + 1)*kH*kW + t]);
+    out.z += pixel.z * float(weights[(slice*4 + 2)*kH*kW + t]);
+    out.w += pixel.w * float(weights[(slice*4 + 3)*kH*kW + t]);
   }
 
   out += float4(biasTerms[slice]);

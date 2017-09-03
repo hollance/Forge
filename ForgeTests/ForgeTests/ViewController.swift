@@ -54,8 +54,11 @@ class ViewController: UIViewController {
     basicConvTests.testCorrectness()
 
     let depthwiseConvTests = DepthwiseConvolutionTests()
-    depthwiseConvTests.testCorrectness(useMPSDepthWise: false)
-    depthwiseConvTests.testCorrectness(useMPSDepthWise: true)
+    if #available(iOS 11.0, *) {
+      depthwiseConvTests.testCorrectness(versusMPSDepthWise: true)
+    } else {
+      depthwiseConvTests.testCorrectness(versusMPSDepthWise: false)
+    }
     //depthwiseConvTests.testGroups()
 
     print("All tests successful!")

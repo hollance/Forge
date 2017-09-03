@@ -28,6 +28,12 @@ For MPSCNN, the weights must be arranged like this in memory:
 [outputChannels][kernelHeight][kernelWidth][inputChannels]
 ```
 
+For a depthwise convolution layer the memory layout is as follows:
+
+```
+[channels][channelMultiplier][kernelHeight][kernelWidth]
+```
+
 Most training packages will use a different format, so you'll need to convert the weights by transposing some of their dimensions.
 
 #### TensorFlow / Keras
