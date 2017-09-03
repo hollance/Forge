@@ -37,7 +37,7 @@ public class VideoCapture: NSObject {
 
   public var previewLayer: AVCaptureVideoPreviewLayer?
   public weak var delegate: VideoCaptureDelegate?
-  public var fps = 15
+  public var fps = -1
 
   let device: MTLDevice
   var textureCache: CVMetalTextureCache?
@@ -182,11 +182,11 @@ extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
   public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
     // Because lowering the capture device's FPS looks ugly in the preview,
     // we capture at full speed but only call the delegate at its desired
-    // framerate.
+    // framerate. If `fps` is -1, we run at the full framerate.
 
     let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
     let deltaTime = timestamp - lastTimestamp
-    if deltaTime >= CMTimeMake(1, Int32(fps)) {
+    if fps == -1 || deltaTime >= CMTimeMake(1, Int32(fps)) {
       lastTimestamp = timestamp
 
       let texture = convertToMTLTexture(sampleBuffer: sampleBuffer)

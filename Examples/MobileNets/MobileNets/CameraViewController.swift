@@ -71,7 +71,6 @@ class CameraViewController: UIViewController {
 
     videoCapture = VideoCapture(device: device)
     videoCapture.delegate = self
-    videoCapture.fps = 50
 
     // Initialize the camera.
     startupGroup.enter()
