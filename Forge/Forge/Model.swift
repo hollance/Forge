@@ -84,6 +84,17 @@ public class Model {
     self.output = output
   }
 
+  deinit {
+    freeTensors(&tensors)
+  }
+
+  func freeTensors(_ tensors: inout [Tensor]) {
+    for tensor in tensors {
+      freeTensors(&tensor.next)
+    }
+    tensors = []
+  }
+
   /**
     Creates all the MPSCNN objects for this graph.
     
