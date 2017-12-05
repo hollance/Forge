@@ -253,9 +253,6 @@ public class Convolution: MPSCNNLayer {
     guard let weights = weights else {
       throw ModelError.compileError(message: "missing weights for layer '\(name)'")
     }
-    if useBias && biases == nil {
-      throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
-    }
 
     let desc = MPSCNNConvolutionDescriptor(kernelWidth: kernel.0,
                                            kernelHeight: kernel.1,
@@ -265,11 +262,23 @@ public class Convolution: MPSCNNLayer {
     desc.strideInPixelsX = stride.0
     desc.strideInPixelsY = stride.1
 
-    conv = MPSCNNConvolution(device: device,
-                             convolutionDescriptor: desc,
-                             kernelWeights: weights.pointer,
-                             biasTerms: biases?.pointer,
-                             flags: .none)
+    if useBias {
+      guard let biases = biases else {
+        throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
+      }
+
+      conv = MPSCNNConvolution(device: device,
+                               convolutionDescriptor: desc,
+                               kernelWeights: weights.pointer,
+                               biasTerms: biases.pointer,
+                               flags: .none)
+    } else {
+      conv = MPSCNNConvolution(device: device,
+                               convolutionDescriptor: desc,
+                               kernelWeights: weights.pointer,
+                               biasTerms: nil,
+                               flags: .none)
+    }
     conv.edgeMode = .zero
     mpscnn = conv
   }
@@ -500,22 +509,26 @@ public class Dense: MPSCNNLayer {
                                            outputFeatureChannels: neurons,
                                            neuronFilter: activation)
 
-    // NOTE: For some reason MPSCNNFullyConnected crashes when we write
-    // biases?.pointer, which makes no sense at all since it works fine
-    // for MPSCNNConvolution.
-    var biasTerms: UnsafeMutablePointer<Float>?
+    // NOTE: With optimizations enabled, the biases object gets deallocated too
+    // soon, even though we still have a strong reference to it. The following
+    // workaround fixes this, since `guard let` creates a new strong reference.
     if useBias {
       guard let biases = biases else {
         throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
       }
-      biasTerms = biases.pointer
-    }
 
-    mpscnn = MPSCNNFullyConnected(device: device,
-                                  convolutionDescriptor: desc,
-                                  kernelWeights: weights.pointer,
-                                  biasTerms: biasTerms,
-                                  flags: .none)
+      mpscnn = MPSCNNFullyConnected(device: device,
+                                    convolutionDescriptor: desc,
+                                    kernelWeights: weights.pointer,
+                                    biasTerms: biases.pointer,
+                                    flags: .none)
+    } else {
+      mpscnn = MPSCNNFullyConnected(device: device,
+                                    convolutionDescriptor: desc,
+                                    kernelWeights: weights.pointer,
+                                    biasTerms: nil,
+                                    flags: .none)
+    }
   }
 }
 
@@ -756,14 +769,6 @@ public class DepthwiseConvolution: Layer {
       throw ModelError.compileError(message: "missing weights for layer '\(name)'")
     }
 
-    var biasTerms: UnsafeMutablePointer<Float>?
-    if useBias {
-      guard let biases = biases else {
-        throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
-      }
-      biasTerms = biases.pointer
-    }
-
     if #available(iOS 11.0, *) {
       let desc = MPSCNNDepthWiseConvolutionDescriptor(kernelWidth: kernel.0,
                                                       kernelHeight: kernel.1,
@@ -773,24 +778,53 @@ public class DepthwiseConvolution: Layer {
       desc.strideInPixelsX = stride.0
       desc.strideInPixelsY = stride.1
 
-      let compute = MPSCNNConvolution(device: device,
-                                      convolutionDescriptor: desc,
-                                      kernelWeights: weights.pointer,
-                                      biasTerms: biasTerms,
-                                      flags: .none)
-      compute.edgeMode = .zero
-      self.compute = compute
+      if useBias {
+        guard let biases = biases else {
+          throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
+        }
+
+        compute = MPSCNNConvolution(device: device,
+                                    convolutionDescriptor: desc,
+                                    kernelWeights: weights.pointer,
+                                    biasTerms: biases.pointer,
+                                    flags: .none)
+      } else {
+        compute = MPSCNNConvolution(device: device,
+                                    convolutionDescriptor: desc,
+                                    kernelWeights: weights.pointer,
+                                    biasTerms: nil,
+                                    flags: .none)
+      }
+      (compute as! MPSCNNConvolution).edgeMode = .zero
+
     } else {
-      compute = DepthwiseConvolutionKernel(device: device,
-                                           kernelWidth: kernel.0,
-                                           kernelHeight: kernel.1,
-                                           featureChannels: inputShape.channels,
-                                           strideInPixelsX: stride.0,
-                                           strideInPixelsY: stride.1,
-                                           channelMultiplier: 1,
-                                           neuronFilter: activation,
-                                           kernelWeights: weights.pointer,
-                                           biasTerms: biasTerms)
+      if useBias {
+        guard let biases = biases else {
+          throw ModelError.compileError(message: "missing bias terms for layer '\(name)'")
+        }
+
+        compute = DepthwiseConvolutionKernel(device: device,
+                                             kernelWidth: kernel.0,
+                                             kernelHeight: kernel.1,
+                                             featureChannels: inputShape.channels,
+                                             strideInPixelsX: stride.0,
+                                             strideInPixelsY: stride.1,
+                                             channelMultiplier: 1,
+                                             neuronFilter: activation,
+                                             kernelWeights: weights.pointer,
+                                             biasTerms: biases.pointer)
+      } else {
+        compute = DepthwiseConvolutionKernel(device: device,
+                                             kernelWidth: kernel.0,
+                                             kernelHeight: kernel.1,
+                                             featureChannels: inputShape.channels,
+                                             strideInPixelsX: stride.0,
+                                             strideInPixelsY: stride.1,
+                                             channelMultiplier: 1,
+                                             neuronFilter: activation,
+                                             kernelWeights: weights.pointer,
+                                             biasTerms: nil)
+      }
     }
   }
 

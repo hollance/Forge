@@ -32,6 +32,7 @@ public protocol ParameterData {
 }
 
 public class ParameterLoaderBundle: ParameterData {
+  private let resourceName: String
   private var fileSize: Int
   private var fd: CInt!
   private var hdr: UnsafeMutableRawPointer!
@@ -50,7 +51,7 @@ public class ParameterLoaderBundle: ParameterData {
   public init?(name: String, count: Int, prefix: String = "", suffix: String = "", ext: String) {
     fileSize = count * MemoryLayout<Float>.stride
 
-    let resourceName = prefix + name + suffix
+    resourceName = prefix + name + suffix
     guard let path = Bundle.main.path(forResource: resourceName, ofType: ext) else {
       print("Error: resource \"\(resourceName)\" not found")
       return nil
@@ -83,6 +84,12 @@ public class ParameterLoaderBundle: ParameterData {
     if let fd = fd {
       close(fd)
     }
+  }
+}
+
+extension ParameterLoaderBundle: CustomStringConvertible {
+  public var description: String {
+    return "ParameterLoaderBundle: " + resourceName
   }
 }
 
