@@ -10,6 +10,7 @@
 		7B3DA4E81EBB36D100BD3F06 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DA4E71EBB36D100BD3F06 /* Model.swift */; };
 		7B3DA4EA1EBBB45D00BD3F06 /* Tensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DA4E91EBBB45D00BD3F06 /* Tensor.swift */; };
 		7B3DA4EC1EBBB48F00BD3F06 /* Layers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DA4EB1EBBB48F00BD3F06 /* Layers.swift */; };
+		7B4F51362074CA8900D70983 /* MPSCNNConvolution+MPSCNNConvolution_iOS10.h in Headers */ = {isa = PBXBuildFile; fileRef = 7B4F51322074C99900D70983 /* MPSCNNConvolution+MPSCNNConvolution_iOS10.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7B711C701EC73F97001CB7C2 /* ForgeKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711C6F1EC73F97001CB7C2 /* ForgeKernel.swift */; };
 		7B711C721EC751C1001CB7C2 /* BasicConvolutionKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B711C711EC751C1001CB7C2 /* BasicConvolutionKernel.swift */; };
 		7B8236B81EAA4F4700127F0C /* RGB2Gray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */; };
@@ -43,6 +44,7 @@
 		7B3DA4E71EBB36D100BD3F06 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		7B3DA4E91EBBB45D00BD3F06 /* Tensor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tensor.swift; sourceTree = "<group>"; };
 		7B3DA4EB1EBBB48F00BD3F06 /* Layers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Layers.swift; sourceTree = "<group>"; };
+		7B4F51322074C99900D70983 /* MPSCNNConvolution+MPSCNNConvolution_iOS10.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPSCNNConvolution+MPSCNNConvolution_iOS10.h"; sourceTree = "<group>"; };
 		7B711C6F1EC73F97001CB7C2 /* ForgeKernel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ForgeKernel.swift; sourceTree = "<group>"; };
 		7B711C711EC751C1001CB7C2 /* BasicConvolutionKernel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicConvolutionKernel.swift; sourceTree = "<group>"; };
 		7B8236B61EAA4F4700127F0C /* RGB2Gray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RGB2Gray.swift; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 				7BA396851EAA0B8F00F4C4D6 /* Math */,
 				7BA3966B1EA9391400F4C4D6 /* Other Utilities */,
 				7BA395C11EA8C24100F4C4D6 /* Forge.h */,
+				7B4F51322074C99900D70983 /* MPSCNNConvolution+MPSCNNConvolution_iOS10.h */,
 				7BA395C21EA8C24100F4C4D6 /* Info.plist */,
 			);
 			path = Forge;
@@ -195,6 +198,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7BA395CF1EA8C24100F4C4D6 /* Forge.h in Headers */,
+				7B4F51362074CA8900D70983 /* MPSCNNConvolution+MPSCNNConvolution_iOS10.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,7 +236,7 @@
 					7BA395BD1EA8C24100F4C4D6 = {
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = MGCEKGP4Y4;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -431,7 +435,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.machinethink.Forge;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 				VALID_ARCHS = arm64;
@@ -455,7 +460,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.machinethink.Forge;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 				VALID_ARCHS = arm64;
