@@ -1,5 +1,9 @@
 # Forge: a neural network toolkit for Metal
 
+:warning: :warning: :warning: **IMPORTANT:** I'm no longer maintaining Forge. It uses an older version of the MPSCNN API that is no longer supported by Apple. I also feel that Core ML has largely taken away the need for a library like this. However, neural networks implemented in Metal are still faster than Core ML. If you're looking for very fast implementations of MobileNet V1, MobileNet V2, and SSD for iOS and macOS, check out [my new source code library](http://machinethink.net/faster-neural-networks/).
+
+---
+
 **Forge** is a collection of helper code that makes it a little easier to construct deep neural networks using Apple's MPSCNN framework.
 
 [Read the blog post](http://machinethink.net/blog/forge-neural-network-toolkit-for-metal/)
